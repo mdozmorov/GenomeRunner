@@ -644,7 +644,7 @@ Public Class frmCreateGenomeRunnerDatabase
                     Using sr As New StreamReader(DownloadedTableDir & curFileName & ".txt")
                         While sr.EndOfStream = False
                             Dim line As String() = sr.ReadLine().Split(vbTab)
-                            swRMSK.WriteLine(line(5) & vbTab & line(6) & vbTab & line(7) & vbTab & line(9) & vbTab & line(8) & line(10) & ":" & line(11) & ":" & line(12))
+                            swRMSK.WriteLine(line(5) & vbTab & line(6) & vbTab & line(7) & vbTab & line(9) & vbTab & line(10) & vbTab & line(11) & vbTab & line(12))
                         End While
                     End Using
                 End If
@@ -653,7 +653,7 @@ Public Class frmCreateGenomeRunnerDatabase
 
         'create the rmsk tables
         cn = New MySqlConnection(ConnectionStringLocal) : cn.Open()
-        cmd = New MySqlCommand("DROP TABLE IF EXISTS rmsk; CREATE  TABLE `rmsk` ( `chrom` VARCHAR(45) NULL , `chromStart` INT NULL , `chromEnd` INT NULL , `strand` VARCHAR(45) NULL , `name` VARCHAR(255) NULL );", cn)
+        cmd = New MySqlCommand("DROP TABLE IF EXISTS rmsk; CREATE  TABLE `rmsk` ( `chrom` VARCHAR(45) NULL , `chromStart` INT NULL , `chromEnd` INT NULL , `strand` VARCHAR(45) NULL , `repName` VARCHAR(255) NULL , `repClass` VARCHAR(255) NULL , `name` VARCHAR(255) NULL );", cn)
         cmd.ExecuteNonQuery()
         cn.Close() : cmd.Dispose()
 
@@ -729,7 +729,7 @@ Public Class frmCreateGenomeRunnerDatabase
                     Using sr As New StreamReader(DownloadedTableDir & curFileName & ".txt")
                         While sr.EndOfStream = False
                             Dim line As String() = sr.ReadLine().Split(vbTab)
-                            swRMSK.WriteLine(line(5) & vbTab & line(6) & vbTab & line(7) & vbTab & line(9) & vbTab & line(8) & line(10) & ":" & line(11) & ":" & line(12))
+                            swRMSK.WriteLine(line(5) & vbTab & line(6) & vbTab & line(7) & vbTab & line(9) & vbTab & line(10) & vbTab & line(11) & vbTab & line(12))
                         End While
                     End Using
                 End If
@@ -738,7 +738,7 @@ Public Class frmCreateGenomeRunnerDatabase
 
         'create the rmskRM327 tables
         cn = New MySqlConnection(ConnectionStringLocal) : cn.Open()
-        cmd = New MySqlCommand("DROP TABLE IF EXISTS rmskRM327; CREATE  TABLE `rmskRM327` ( `chrom` VARCHAR(45) NULL , `chromStart` INT NULL , `chromEnd` INT NULL , `strand` VARCHAR(45) NULL , `name` VARCHAR(255) NULL );", cn)
+        cmd = New MySqlCommand("DROP TABLE IF EXISTS rmskRM327; CREATE  TABLE `rmskRM327` ( `chrom` VARCHAR(45) NULL , `chromStart` INT NULL , `chromEnd` INT NULL , `strand` VARCHAR(45) NULL , `repName` VARCHAR(255) NULL , `repClass` VARCHAR(255) NULL , `name` VARCHAR(255) NULL );", cn)
         cmd.ExecuteNonQuery()
         cn.Close() : cmd.Dispose()
 

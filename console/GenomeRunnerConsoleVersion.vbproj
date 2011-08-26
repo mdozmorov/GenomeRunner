@@ -31,9 +31,10 @@
     <ErrorReportUrl>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</ErrorReportUrl>
     <TargetCulture>en</TargetCulture>
     <ProductName>GenomeRunner</ProductName>
+    <PublisherName>GenomeRunner</PublisherName>
     <SuiteName>GenomeRunner</SuiteName>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>2.0.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>

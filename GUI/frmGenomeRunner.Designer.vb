@@ -254,7 +254,7 @@ Partial Class frmGenomeRunner
         Me.btnPValue.Name = "btnPValue"
         Me.btnPValue.Size = New System.Drawing.Size(161, 23)
         Me.btnPValue.TabIndex = 21
-        Me.btnPValue.Text = "Enrichment"
+        Me.btnPValue.Text = "Enrichment Analysis"
         Me.btnPValue.UseVisualStyleBackColor = False
         '
         'listFeaturesToRun
@@ -299,7 +299,7 @@ Partial Class frmGenomeRunner
         Me.btnRun.Name = "btnRun"
         Me.btnRun.Size = New System.Drawing.Size(161, 23)
         Me.btnRun.TabIndex = 20
-        Me.btnRun.Text = "Annotation"
+        Me.btnRun.Text = "Annotation Analysis"
         Me.btnRun.UseVisualStyleBackColor = False
         '
         'ListFeaturesAvailable
@@ -353,7 +353,7 @@ Partial Class frmGenomeRunner
         Me.GroupBox7.Size = New System.Drawing.Size(259, 258)
         Me.GroupBox7.TabIndex = 83
         Me.GroupBox7.TabStop = False
-        Me.GroupBox7.Text = "Enrichment Settings"
+        Me.GroupBox7.Text = "Enrichment Analysis Settings"
         '
         'txtPvalueThreshold
         '
@@ -641,7 +641,7 @@ Partial Class frmGenomeRunner
         Me.btnCustomizeFilters.Size = New System.Drawing.Size(247, 23)
         Me.btnCustomizeFilters.TabIndex = 15
         Me.btnCustomizeFilters.Text = "Cusomize Thresholds"
-        Me.ToolTip2.SetToolTip(Me.btnCustomizeFilters, "Does an enrichment for all names available")
+        Me.ToolTip2.SetToolTip(Me.btnCustomizeFilters, "Customize available thresholds for selected genomic  features")
         Me.btnCustomizeFilters.UseVisualStyleBackColor = False
         '
         'btnLoadCustomGenomicFeatures
