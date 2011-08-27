@@ -508,7 +508,7 @@ Namespace GenomeRunner
             Dim ObsWithinChi, RandWithinChi, NumOfExptsChi, NumOfRandChi As Double
             ObsWithinChi = ObservedWithin : RandWithinChi = ExpectedWithinMean : NumOfExptsChi = NumOfFeatures : NumOfRandChi = NumOfFeatures
             Pval = 1
-            If ObservedWithin = 0 And ExpectedWithinMean = 0 Then
+            If (ObservedWithin = 0 And ExpectedWithinMean = 0) Or (ObservedWithin = ExpectedWithinMean) Then
                 Return Pval
             End If
             Row1 = NumOfExptsChi
