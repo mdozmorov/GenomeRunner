@@ -363,11 +363,12 @@ Namespace GenomeRunner
                     CurrBkgChr = hqrnduniformi(state, BackgroundInterval.Count)                         'Select random interval from the background
                     'CurrBkgChr = rand.Next(0, BackgroundInterval.Count - 1)
                     CurrBkgIntervalLength = FeaturesOfInterest(i).ChromEnd - FeaturesOfInterest(i).ChromStart  'gets the length of the FOI in order to create a random feature of the same length(this was calculated earlier and stored in an array before FIO start and end arrays were errased)
-                    'Random intraval coordinate: random number from 0 through [End-Length]
+                    'Random interval coordinate: random number from 0 through [End-Length]
                     CurrBkgBufferEnd = BackgroundInterval(CurrBkgChr).ChromEnd - CurrBkgIntervalLength      'is a buffer that prevents the region from being larger than the interval
 
-                    If CurrBkgBufferEnd >= 0 Then
-                        CurrBkgIntervalStart = rand.Next(BackgroundInterval(CurrBkgChr).ChromStart, CurrBkgBufferEnd)
+                    If CurrBkgBufferEnd - BackgroundInterval(CurrBkgChr).ChromStart >= 0 Then
+                        'CurrBkgIntervalStart = rand.Next(BackgroundInterval(CurrBkgChr).ChromStart, CurrBkgBufferEnd)
+                        CurrBkgIntervalStart = hqrnduniformi(state, CurrBkgBufferEnd - BackgroundInterval(CurrBkgChr).ChromStart + 1) + BackgroundInterval(CurrBkgChr).ChromStart 'LC 6/20/11 changed to prevent random startpoint that falls within the end region "---" |......---|
                         randomFeature.Chrom = BackgroundInterval(CurrBkgChr).Chrom                          'Store CurrBkgChr chromosome
                         randomFeature.ChromStart = CurrBkgIntervalStart                                     'and corresponding random coordinate within it
                         randomFeature.ChromEnd = CurrBkgIntervalStart + CurrBkgIntervalLength                   'the endpoint is start+length of feature
