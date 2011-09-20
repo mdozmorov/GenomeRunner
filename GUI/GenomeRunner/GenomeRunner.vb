@@ -33,6 +33,10 @@ Namespace GenomeRunner
             If cn.State = ConnectionState.Closed Then
                 cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
             End If
+            If ConnectionString <> cn.ConnectionString Then
+                cn.Close()
+                cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
+            End If
             'opens a second connection so that two reader objects can be used at once
             If IsNothing(cn1) Then
                 cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
