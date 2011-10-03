@@ -507,7 +507,7 @@ Namespace GenomeRunner
         Public Function pValueChiSquare(ByVal ObservedWithin As Double, ByVal ExpectedWithinMean As Double, ByVal NumOfFeatures As Integer) As Double
             Dim Pval, Row1, Row2, Col1, Col2, N, chi2, ExpMatrix(2, 2) As Double, ChiMatrix(2, 2) As Double
             Dim ObsWithinChi, RandWithinChi, NumOfExptsChi, NumOfRandChi As Double
-            ObsWithinChi = ObservedWithin : RandWithinChi = ExpectedWithinMean : NumOfExptsChi = NumOfFeatures : NumOfRandChi = NumOfFeatures
+            ObsWithinChi = ObservedWithin : RandWithinChi = System.Math.Round(ExpectedWithinMean, 0) : NumOfExptsChi = NumOfFeatures : NumOfRandChi = NumOfFeatures
             Pval = 1
             If (ObservedWithin = 0 And ExpectedWithinMean = 0) Or (ObservedWithin = System.Math.Round(ExpectedWithinMean, 0)) Then
                 Return Pval

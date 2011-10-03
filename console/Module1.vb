@@ -262,7 +262,7 @@ ConnectionSettingsRetry:
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
             uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
-            ConnectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";password=" & uPassword
+            ConnectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";password=" & uPassword & ";default command timeout=600;"
             cn = New MySqlConnection(ConnectionString)
             cn.Open()
             cmd = New MySqlCommand("SELECT * from GenomeRunner limit 1", cn)

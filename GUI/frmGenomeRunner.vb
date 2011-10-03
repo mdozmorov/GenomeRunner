@@ -89,7 +89,7 @@ Public Class frmGenomeRunner
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
             uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
         End Try
-        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword
+        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword & ";default command timeout=600;"
         Return connectionString
     End Function
 
