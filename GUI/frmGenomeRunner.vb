@@ -59,7 +59,13 @@ Public Class frmGenomeRunner
         While ConnectionWorks = False
             Try
                 cn = New MySqlConnection(ConnectionString) : cn.Open()
-                cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                If cmbDatabase.SelectedIndex = -1 Then
+                    'get only the ones that have a genomerunner table in them.
+                    cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+                Else
+                    'Dummy command just to see if the selected db has a genomerunner table.
+                    cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                End If
                 dr = cmd.ExecuteReader()
                 ConnectionWorks = True
                 dr.Close() : cmd.Dispose()
@@ -68,7 +74,30 @@ Public Class frmGenomeRunner
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
             End Try
         End While
+        If cmbDatabase.SelectedIndex = -1 Then
+            ReloadCmbDatabase()
+        End If
+    End Sub
 
+    Private Sub ReloadCmbDatabase()
+        'Reload databases based on organism selected in cmbOrganism.
+        cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+        dr = cmd.ExecuteReader()
+        cmbDatabase.Items.Clear()
+        While dr.Read()
+            If cmbOrganism.SelectedItem = "Human" And dr(0) Like "hg*" Then
+                cmbDatabase.Items.Add(dr(0))
+            ElseIf cmbOrganism.SelectedItem = "Mouse" And dr(0) Like "mm*" Then
+                cmbDatabase.Items.Add(dr(0))
+            End If
+        End While
+        dr.Close() : cmd.Dispose()
+        'Now reset SelectedIndex to first available option.
+        If cmbDatabase.Items.Count > 0 Then
+            cmbDatabase.SelectedIndex() = 0
+        Else
+            cmbDatabase.SelectedIndex() = -1
+        End If
     End Sub
 
     Private Function GetConnectionSettings(ByRef uName As String, ByRef uPassword As String, ByRef uServer As String, ByRef uDatabase As String) As String
@@ -78,7 +107,8 @@ Public Class frmGenomeRunner
             uName = GetSetting("GenomeRunner", "Database", "uName")
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
-            uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
+            'uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
+            uDatabase = cmbDatabase.SelectedItem
         Catch
             SaveSetting("GenomeRunner", "Database", "uName", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uPassword", "genomerunner")
@@ -89,18 +119,12 @@ Public Class frmGenomeRunner
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
             uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
         End Try
-        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword
+        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword & ";default command timeout=600"
         Return connectionString
     End Function
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'tests to see if the connection works
-        'Try
-        '    OpenDatabase()
-        'Catch
-        '    frmLogin.ShowDialog()
-        '    OpenDatabase()
-        'End Try
         OpenDatabase()
         GREngine = New GenomeRunnerEngine()
         SetGenomeRunnerDefaults()
@@ -218,18 +242,22 @@ Public Class frmGenomeRunner
 
     Private Sub ComboBoxTier_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbTier.SelectedIndexChanged
         If cmbTier.SelectedIndex <> -1 Then
-            ListFeaturesAvailable.Items.Clear() 'clears all of the features available 
-            LoadAvailableGenomicFeatures() 're-add all of the features of interest
-
-            'removes all of the genomic features that are not included in the tier filter
-            For j As Integer = ListFeaturesAvailable.Items.Count - 1 To 0 Step -1
-                Dim selectedTier As Integer = cmbTier.SelectedItem.Replace("Tier", "").Replace("TFBS", "")
-                Dim lvGF As ListItemGenomicFeature = ListFeaturesAvailable.Items.Item(j)
-                If (lvGF.GenomicFeature.Tier > selectedTier) Or (lvGF.GenomicFeature.Tier <> selectedTier And selectedTier >= 100) Then
-                    ListFeaturesAvailable.Items(j).Remove()
-                End If
-            Next
+            UpdateListFeaturesAvailable()
         End If
+    End Sub
+
+    Private Sub UpdateListFeaturesAvailable()
+        ListFeaturesAvailable.Items.Clear() 'clears all of the features available 
+        LoadAvailableGenomicFeatures() 're-add all of the features of interest
+
+        'removes all of the genomic features that are not included in the tier filter
+        For j As Integer = ListFeaturesAvailable.Items.Count - 1 To 0 Step -1
+            Dim selectedTier As Integer = cmbTier.SelectedItem.Replace("Tier", "").Replace("TFBS", "")
+            Dim lvGF As ListItemGenomicFeature = ListFeaturesAvailable.Items.Item(j)
+            If (lvGF.GenomicFeature.Tier > selectedTier) Or (lvGF.GenomicFeature.Tier <> selectedTier And selectedTier >= 100) Then
+                ListFeaturesAvailable.Items(j).Remove()
+            End If
+        Next
     End Sub
 
     Public Sub LoadAvailableGenomicFeatures()
@@ -735,6 +763,25 @@ Public Class frmGenomeRunner
 
     Private Sub AboutToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AboutToolStripMenuItem.Click
         frmAbout.ShowDialog()
+    End Sub
+
+    Private Sub cmbDatabase_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbDatabase.SelectedIndexChanged
+        'Update MySQL connection to use newly selected database.
+        'Reload list of genomic features if a tier is already selected.
+        If cmbDatabase.SelectedIndex <> -1 Then
+            OpenDatabase()
+            If cmbTier.SelectedIndex <> -1 Then
+                UpdateListFeaturesAvailable()
+            End If
+        End If
+    End Sub
+
+    Private Sub cmbOrganism_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbOrganism.SelectedIndexChanged
+        'Update MySQL connection to only show tables beginning with this organism's prefix.
+        'TODO This is probably a lot of extra work for nothing.
+        '     Maybe save the list of all the tables but only show those belonging to the selected organism.
+        OpenDatabase()
+        ReloadCmbDatabase()
     End Sub
 End Class
 
