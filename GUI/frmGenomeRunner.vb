@@ -46,6 +46,10 @@ Public Class frmGenomeRunner
         Public fileName As String
     End Class
 
+    Public Function DatabaseConnection() As MySqlConnection
+        OpenDatabase()
+        Return cn
+    End Function
 
     Private Sub OpenDatabase()
         Dim uName As String = ""
@@ -152,7 +156,7 @@ Public Class frmGenomeRunner
     Private Sub SetGenomeRunnerDefaults()
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
-        Background = GREngine.GetGenomeBackgroundHG18()
+        Background = GREngine.GetGenomeBackground()
         BackgroundName = "hg18"
     End Sub
 
@@ -261,6 +265,8 @@ Public Class frmGenomeRunner
     End Sub
 
     Public Sub LoadAvailableGenomicFeatures()
+        'TODO this call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
+        GREngine = New GenomeRunnerEngine()
         Dim GenomicFeatures As List(Of GenomicFeature) = GREngine.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features and adds them to a list
         Dim strCurrCate As String = ""
         Dim CurrCateIndex As Integer = -1
@@ -754,7 +760,7 @@ Public Class frmGenomeRunner
     End Sub
 
     Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetGenomeBackgroundHG18()
+        Background = GREngine.GetGenomeBackground()
         lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
         rbUseMonteCarlo.Enabled = True
         UseSpotBackground = False
