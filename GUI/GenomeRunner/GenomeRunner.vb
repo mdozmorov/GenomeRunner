@@ -217,9 +217,9 @@ Namespace GenomeRunner
             Return Background
         End Function
 
-        Public Function GetGenomeBackground() As List(Of Feature)
+        Public Function GetGenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
             Dim Background As New List(Of Feature)
-            cn = frmGenomeRunner.DatabaseConnection()
+            OpenDatabase(ConnectionString)
             cmd = New MySqlCommand("SELECT * FROM background WHERE useful = true;", cn)
             dr = cmd.ExecuteReader()
             While dr.Read()
@@ -252,7 +252,7 @@ Namespace GenomeRunner
         End Function
 
         Public Sub New()
-            GetGenomeBackground() 'sets the default interval to cover the entire genome
+            'GetGenomeBackground() 'sets the default interval to cover the entire genome
         End Sub
 
         Protected Overrides Sub Finalize()

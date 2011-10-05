@@ -47,7 +47,7 @@ Public Class frmGenomeRunner
     End Class
 
     Public Function DatabaseConnection() As MySqlConnection
-        OpenDatabase()
+        'OpenDatabase()
         Return cn
     End Function
 
@@ -78,14 +78,17 @@ Public Class frmGenomeRunner
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
             End Try
         End While
+        'TODO This shouldn't be necessary because it's already called in Form1_Load. But for some reason everything breaks when it's not called here as well.
+        GREngine = New GenomeRunnerEngine
         If cmbDatabase.SelectedIndex = -1 Then
             ReloadCmbDatabase()
         End If
+        lblBackground.Text = "Using " & cmbDatabase.Text & " genome assembly as genomic background"
     End Sub
 
     Private Sub ReloadCmbDatabase()
         'Reload databases based on organism selected in cmbOrganism.
-        cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+        cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner' order by TABLE_SCHEMA desc;", cn)
         dr = cmd.ExecuteReader()
         cmbDatabase.Items.Clear()
         While dr.Read()
@@ -156,7 +159,7 @@ Public Class frmGenomeRunner
     Private Sub SetGenomeRunnerDefaults()
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
-        Background = GREngine.GetGenomeBackground()
+        Background = GREngine.GetGenomeBackground(ConnectionString)
         BackgroundName = "hg18"
     End Sub
 
@@ -265,8 +268,8 @@ Public Class frmGenomeRunner
     End Sub
 
     Public Sub LoadAvailableGenomicFeatures()
-        'TODO this call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
-        GREngine = New GenomeRunnerEngine()
+        'TODO the following call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
+        'GREngine = New GenomeRunnerEngine()
         Dim GenomicFeatures As List(Of GenomicFeature) = GREngine.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features and adds them to a list
         Dim strCurrCate As String = ""
         Dim CurrCateIndex As Integer = -1
@@ -760,7 +763,7 @@ Public Class frmGenomeRunner
     End Sub
 
     Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetGenomeBackground()
+        Background = GREngine.GetGenomeBackground(ConnectionString)
         lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
         rbUseMonteCarlo.Enabled = True
         UseSpotBackground = False
@@ -779,6 +782,7 @@ Public Class frmGenomeRunner
             If cmbTier.SelectedIndex <> -1 Then
                 UpdateListFeaturesAvailable()
             End If
+            GREngine.GetGenomeBackground(ConnectionString)
         End If
     End Sub
 
