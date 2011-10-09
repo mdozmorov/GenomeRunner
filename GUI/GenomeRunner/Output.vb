@@ -208,7 +208,7 @@ Namespace GenomeRunner
             If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
             '...header string that shows what method was used to calculate the number of random associations expected
             Dim strExpectedMethodUsed As String = "Expected associations calculated using: "
-            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= "Monte Carlo" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
+            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= Settings.NumMCtoRun & " Monte Carlo runs" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
             '...header string showing how pvalue was calculated 
             Dim strPvalueCalcMethod As String = "P-value was calculated using: "
             If Settings.UseChiSquare = True Then : strPvalueCalcMethod &= "Chi-Square test" : ElseIf Settings.UseBinomialDistribution = True Then : strPvalueCalcMethod &= "Binomial Distribution" : End If

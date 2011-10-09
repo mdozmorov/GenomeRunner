@@ -131,10 +131,12 @@ Namespace GenomeRunner
                 Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
                                             OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
 
-                Settings.OutputPercentOverlapPvalueMatrix = True
-                Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-                Settings.OutputPercentOverlapPvalueMatrix = False
+                'Uncomment to additionally output percent weighted matrix
+                'Settings.OutputPercentOverlapPvalueMatrix = True
+                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
+                '            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
+                'Settings.OutputPercentOverlapPvalueMatrix = False
+
                 'Settings.SquarePercentOverlap = True
                 'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
                 '                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
