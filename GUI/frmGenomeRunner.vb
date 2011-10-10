@@ -160,7 +160,7 @@ Public Class frmGenomeRunner
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
         Background = GREngine.GetGenomeBackground(ConnectionString)
-        BackgroundName = "hg18"
+        BackgroundName = cmbDatabase.SelectedItem
     End Sub
 
     Private Sub btnLoadPOIs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLoadPOIs.Click
@@ -441,7 +441,7 @@ Public Class frmGenomeRunner
                 FeatureFilePaths.Add(FeatureFile.filPath)
             Next
 
-            Dim Settings As EnrichmentSettings = GetUserSettings()                                                   'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
+            Dim Settings As EnrichmentSettings = GetUserSettings() 'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
             Dim args As EnrichmentArgument = New EnrichmentArgument(GenomicFeaturesToAnalyze, Settings, FeatureFilePaths, Background)
             BackgroundWorkerEnrichmentAnalysis.RunWorkerAsync(args)
             'Analyzer.RunEnrichmentAnlysis(FeatureFilePaths, GenomicFeaturesToAnalyze, Background, Settings)
@@ -780,9 +780,11 @@ Public Class frmGenomeRunner
         If cmbDatabase.SelectedIndex <> -1 Then
             OpenDatabase()
             If cmbTier.SelectedIndex <> -1 Then
+                listFeaturesToRun.Clear()
                 UpdateListFeaturesAvailable()
             End If
-            GREngine.GetGenomeBackground(ConnectionString)
+            Background = GREngine.GetGenomeBackground(ConnectionString)
+            BackgroundName = cmbDatabase.SelectedItem
         End If
     End Sub
 
