@@ -232,7 +232,13 @@ Namespace GenomeRunner
                     End If
                 Next
                 'get percentages by dividing each of these values by Settings.NumMCtoRun
-                GFeature.PValueMonteCarloChisquare = {GFeature.RandUnder / Settings.NumMCtoRun, GFeature.RandOver / Settings.NumMCtoRun, GFeature.RandTie / Settings.NumMCtoRun}.Min
+                Dim possiblePValues As New List(Of Double)
+                For Each value In {GFeature.RandUnder, GFeature.RandOver, GFeature.RandTie}
+                    If value <> 0 Then
+                        possiblePValues.Add(value)
+                    End If
+                Next
+                GFeature.PValueMonteCarloChisquare = possiblePValues.Min / Settings.NumMCtoRun
                 Debug.Print("MC p-value: " & GFeature.PValueMonteCarloChisquare)
             End If
             'TODO Still need this other if, I think...
@@ -377,8 +383,8 @@ Namespace GenomeRunner
                 hqrndrandomize(state)                                                                       'Initialize random number generator
                 For i As Integer = 0 To NumOfFeatures - 1 Step +1
                     Dim randomFeature As New Feature                                                        'stores the random feature generated and is added to the list of Random Features
-                    'CurrBkgChr = getWeightedRandomChromosome(state, BackgroundInterval)
-                    CurrBkgChr = hqrnduniformi(state, BackgroundInterval.Count)                         'Select random interval from the background
+                    CurrBkgChr = getWeightedRandomChromosome(state, BackgroundInterval)
+                    'CurrBkgChr = hqrnduniformi(state, BackgroundInterval.Count)                         'Select random interval from the background
                     'CurrBkgChr = rand.Next(0, BackgroundInterval.Count - 1)
                     CurrBkgIntervalLength = FeaturesOfInterest(i).ChromEnd - FeaturesOfInterest(i).ChromStart  'gets the length of the FOI in order to create a random feature of the same length(this was calculated earlier and stored in an array before FIO start and end arrays were errased)
                     'Random interval coordinate: random number from 0 through [End-Length]
@@ -463,7 +469,7 @@ Namespace GenomeRunner
             Next
 
             'For calculation purposes, chrom will be assigned values between 0 & 1 based on their percentage of total length.
-            Dim weightedChromPositions As New List(Of Integer)
+            Dim weightedChromPositions As New List(Of Double)
             weightedChromPositions.Add(background(0).ChromEnd / combinedChromLength)
             For i As Integer = 1 To background.Count - 1
                 weightedChromPositions.Add((background(i).ChromEnd / combinedChromLength) + weightedChromPositions(i - 1))
