@@ -17,6 +17,6 @@
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>"F:\222\cdbox.bed" "F:\222\tier1sub.txt" e -m mc2</StartArguments>
+    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" e -m mc2 -h vm-wren-01 -u root -p VentuK78A- -db hg18test</StartArguments>
   </PropertyGroup>
 </Project>

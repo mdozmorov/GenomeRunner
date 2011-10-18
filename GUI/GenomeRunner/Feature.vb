@@ -61,6 +61,11 @@ Namespace GenomeRunner
         Public PCCMonteCarloChiSquare As Double = Nothing 'stores the Pearson's Contingency Coefficient (C) for the Chi Square 
         Public PCCAnalyticalChiSquare As Double = Nothing 'stores the Pearson's Contingency Coefficient (C) for the analytical method
 
+        'Values for simple Monte-Carlo p-value calculations
+        Public RandTie As UInteger 'store number of tied hits
+        Public RandUnder As UInteger 'store number of under hits
+        Public RandOver As UInteger 'store number of over hits
+
     End Class
 
     ' stores the data on GR features that are positive

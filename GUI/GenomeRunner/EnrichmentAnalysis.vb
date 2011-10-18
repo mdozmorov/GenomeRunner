@@ -57,6 +57,7 @@ Namespace GenomeRunner
         Dim progStart As ProgressStart                                                                      'used to set initial progress
         Dim progUpdate As ProgressUpdate                                                                    'used to update progress
         Dim progDone As ProgressDone                                                                    'used return progress complete
+        Dim RandomClass As New Random()
 
         Public Sub New(ByVal ConnectionString As String, ByVal progStart As ProgressStart, ByVal progUpdate As ProgressUpdate, ByVal progDone As ProgressDone)
             Me.ConnectionString = ConnectionString
@@ -217,12 +218,28 @@ Namespace GenomeRunner
             samplemoments(randEventsCountMC, mean, variance, skewness, kurtosis)
             GFeature.MCMean = mean : GFeature.MCvariance = variance : GFeature.MCskewness = skewness : GFeature.MCkurtosis = kurtosis
             If Settings.UseMonteCarlo = True Then
-                GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+                'TODO old way:
+                'GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+                'New way:
+                GFeature.RandUnder = 0 : GFeature.RandOver = 0 : GFeature.RandTie = 0
+                For Each rFOI In randEventsCountMC
+                    If rFOI < GFeature.ActualHits Then
+                        GFeature.RandUnder += 1
+                    ElseIf rFOI > GFeature.ActualHits Then
+                        GFeature.RandOver += 1
+                    Else
+                        GFeature.RandTie += 1
+                    End If
+                Next
+                'get percentages by dividing each of these values by Settings.NumMCtoRun
+                GFeature.PValueMonteCarloChisquare = {GFeature.RandUnder / Settings.NumMCtoRun, GFeature.RandOver / Settings.NumMCtoRun, GFeature.RandTie / Settings.NumMCtoRun}.Min
+                Debug.Print("MC p-value: " & GFeature.PValueMonteCarloChisquare)
             End If
-            If Settings.UseBinomialDistribution = True Then
-                ' GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
-            End If
-            GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
+            'TODO Still need this other if, I think...
+            'If Settings.UseBinomialDistribution = True Then
+            '    ' GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
+            'End If
+            'GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
             GFeature.MCExpectedHits = randEventsCountMC.Average
             GFeature.ActualHits = ObservedWithin
             Return GFeature
@@ -360,6 +377,7 @@ Namespace GenomeRunner
                 hqrndrandomize(state)                                                                       'Initialize random number generator
                 For i As Integer = 0 To NumOfFeatures - 1 Step +1
                     Dim randomFeature As New Feature                                                        'stores the random feature generated and is added to the list of Random Features
+                    'CurrBkgChr = getWeightedRandomChromosome(state, BackgroundInterval)
                     CurrBkgChr = hqrnduniformi(state, BackgroundInterval.Count)                         'Select random interval from the background
                     'CurrBkgChr = rand.Next(0, BackgroundInterval.Count - 1)
                     CurrBkgIntervalLength = FeaturesOfInterest(i).ChromEnd - FeaturesOfInterest(i).ChromStart  'gets the length of the FOI in order to create a random feature of the same length(this was calculated earlier and stored in an array before FIO start and end arrays were errased)
@@ -425,6 +443,69 @@ Namespace GenomeRunner
                 'Return RandomFeatures                                                                       'returns the list of randomly generated features
             End If
             Return RandomFeatures
+        End Function
+
+        Private Function getWeightedRandomChromosome(ByRef state As hqrndstate, ByVal background As List(Of Feature)) As UInteger
+            'This function essentially goes from this:
+            '|------chr1-----|---chr2---|--chr3--| etc.
+            '0             1000       1500     1750
+            '
+            'To this:
+            '|------chr1-----|---chr2---|--chr3--| etc.
+            '0               57         86      100
+            'Since total summing up chromosome length gets bigger than VB data types can handle,
+            'these are handled as percentages instead.
+
+            'Find combined length of all chromosomes from background.
+            Dim combinedChromLength As ULong = 0
+            For Each elem In background
+                combinedChromLength = combinedChromLength + elem.ChromEnd
+            Next
+
+            'For calculation purposes, chrom will be assigned values between 0 & 1 based on their percentage of total length.
+            Dim weightedChromPositions As New List(Of Integer)
+            weightedChromPositions.Add(background(0).ChromEnd / combinedChromLength)
+            For i As Integer = 1 To background.Count - 1
+                weightedChromPositions.Add((background(i).ChromEnd / combinedChromLength) + weightedChromPositions(i - 1))
+            Next
+
+            'Randomly select number between 0 & 1.0; find which chrom this number would be part of.
+            Dim randomIndex As Double = RandomClass.NextDouble()
+            'Dim randomIndex As UInteger = hqrnduniformi(state, weightedChromPositions.Last)
+            Dim randChrom As Integer = -1
+            'Dim sRand As Single
+            Dim counter As Integer = 0
+            While randChrom = -1
+                If randomIndex <= weightedChromPositions(counter) Then
+                    randChrom = counter
+                End If
+                counter = counter + 1
+            End While
+            Return randChrom
+            ''Generate random chromosome; weight likelihood of chromosomes based on their length from background.
+            'Dim sequentialChroms As New List(Of ULong)
+            ''will end up with a simple array of ints (chr start points); their index + 1 will tell which chromosome to use
+            ''insert first manually since loop needs to look back one element; the rest can be handled in loop.
+            'sequentialChroms.Add(background(0).ChromEnd)
+            'Dim accumulatedChrPosition As ULong
+            'For i As Integer = 1 To background.Count - 1
+            '    accumulatedChrPosition = background(i).ChromEnd + sequentialChroms(i - 1)
+            '    sequentialChroms.Add(accumulatedChrPosition)
+            'Next
+            'Dim randomHugeNumber As ULong = hqrnduniformi(state, sequentialChroms.Last)
+            ''now find where this huge number fits in the line of chromosomes.
+            ''e.g. |------chr1-----|---chr2---|--chr3--| etc.
+            ''     0             1000       1500     17500
+            ''Dim randChrom As UInteger = hqrnduniformi(state, background.Count)
+            'Dim randChrom As Integer = -1
+            'Dim counter As Integer = 0
+            'While randChrom = -1
+            '    If randomHugeNumber < sequentialChroms(counter) Then
+            '        randChrom = counter + 1
+            '    End If
+            '    counter = counter + 1
+            'End While
+            'Return randChrom
         End Function
 
         Public Function PearsonsContigencyCoeffcient(ByVal ObservedWithin As Double, ByVal ExpectedWithinMean As Double, ByVal NumOfFeatures As Integer) As Double

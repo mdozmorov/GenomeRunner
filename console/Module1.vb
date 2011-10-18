@@ -12,11 +12,20 @@ Module Module1
         Dim Name As String
         Dim arguments As List(Of String)
     End Structure
+    Structure ConnectionSettings
+        Dim host As String
+        Dim user As String
+        Dim password As String
+        Dim database As String
+    End Structure
+    Dim connectSettings As New ConnectionSettings
 
     Sub Main(ByVal Argument As String())
         'Flags used : (path of features of interest file) (path of genomic features ids file)  a | [e [-m [mc [10] | an] [-p [ct | bd]] [-a [pc | po]] ]
-        Dim args As String() = ConvertArrayToLowerCase(Argument)
-        Dim Parameters As List(Of Parameters)
+        'TODO why is lower casing everything necessary? Should be input correctly do begin with. Also this is messing up db password input.
+        'Dim args As String() = ConvertArrayToLowerCase(Argument)
+        Dim args As String() = Argument
+        Dim params As List(Of Parameters)
         Dim Settings As EnrichmentSettings
         Dim flags As New List(Of String)
         Dim progStart As ProgressStart : progStart = AddressOf HandleProgressStart
@@ -24,11 +33,15 @@ Module Module1
         Dim progDone As ProgressDone : progDone = AddressOf HandleProgressDone
         Console.WriteLine("Welcome to GenomeRunner")
         PrintHelp()
+        params = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
+        connectSettings = GetConnectionSettings(params)
+        Dim ConnectionString As String = GetConnectionString()
         If args.Length > 2 Then
             If args(2) = "e" Then
-                AnalysisType = "Enrichment"                                                                                 'Used to determine what to write for progress updates
+                AnalysisType = "Enrichment" 'Used to determine what to write for progress updates
                 Dim GenomicFeatureIDsToRun As New List(Of Integer)
                 Dim featureOfInterestPath As New List(Of String)
+                'Read genomic features file from args(1) into GenomicFeatureIDsToRun
                 Try
                     Using sr As New StreamReader(args(1))
                         While sr.EndOfStream = False
@@ -39,12 +52,13 @@ Module Module1
                     Console.WriteLine("Please ensure that the file at '" & args(1) & "' only integers and valid genomic feature ids")
                 End Try
                 featureOfInterestPath.Add(args(0))
-                Parameters = GetParameters(args)                                                                                 'get the parameters inputed by the command line and orginizes them into parameters
-                Dim OutputDir As String = Path.GetDirectoryName(args(0)) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\"  'sets what directory the results are to outputed to
-                Settings = GetEnrichmentSettings(OutputDir, Parameters)                         'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
+                'TODO Moved this outside of the loop. If db is to be entered as param, they will always be necessary.
+                'Parameters = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
+                Dim OutputDir As String = Path.GetDirectoryName(args(0)) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
+                Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun)
                 Dim Analyzer As New EnrichmentAnalysis(Settings.ConnectionString, progStart, progUpdate, progDone)
-                Dim Background As List(Of Feature) = GREngin.GetGenomeBackgroundHG18()
+                Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(ConnectionString)
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
             ElseIf args(2) = "a" Then
@@ -62,7 +76,8 @@ Module Module1
                     Console.WriteLine("Please ensure that the file at '" & args(1) & "' only integers and valid genomic feature ids")
                 End Try
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun)
-                Dim ConnectionString As String = GetConnectionString()
+                'TODO get this above the loop now
+                'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis(ConnectionString)
                 Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\"
                 Dim AnoSettings As New AnnotationSettings(5000, 1000, 0)
@@ -93,19 +108,13 @@ Module Module1
         Console.WriteLine("           'pc' to weight by Pearson's coefficient | 'po' to weight by percent of features of interest that overlap with genomic features")
         Console.WriteLine("")
         Console.WriteLine("If no parameters given, default are used (e -m mc10 -p ct)")
-        'Console.WriteLine("Example: 'C:\FeatureOfInterest.bed' 'C:\GenomicFeatureIDsFile' e -m mc10 -p ct -a po")
-        'Console.WriteLine("OR: ... e -m mc10 -p chisquare -a(no weighting is used)")
-        'Console.WriteLine("")
         Console.WriteLine("--------------------------------------------------------------------------------")
         Console.WriteLine("Example: 'C:\FeatureOfInterest.bed' 'C:\GenomicFeatureIDsFile' e -m mc10 -p ct -a po")
         Console.WriteLine("")
         Console.WriteLine("*This will do an enrichment analysis on the features of interest contained in the first file against the genomic features identified by ID's in the GenomeRunnerTable in the MySQL database")
         Console.WriteLine("*This run will use the Monte-Carlo simulation with 10 runs to calculate the number of expected associations by random chance.")
-        'Console.WriteLine("")
         Console.WriteLine("*The p-value will be calculated using the Chi-Square test.")
-        'Console.WriteLine("")
         Console.WriteLine("*The matrix will be weighted by the percent overlap")
-        'Console.WriteLine("")
         Console.WriteLine("--------------------------------------------------------------------------------")
         Console.WriteLine("")
        
@@ -132,7 +141,7 @@ Module Module1
 
     Function GetParameters(ByVal Args As String()) As List(Of Parameters)
         Dim Parameters As New List(Of Parameters)
-        Dim IsNewParameter As Boolean = False                                                                              'The first parameters are the paths of the files, these are skipped 
+        Dim IsNewParameter As Boolean = False 'The first parameters are the paths of the files, these are skipped 
         Dim nParameter As New Parameters
         For Each arg In Args
             If arg(0) = "-" Then
@@ -151,11 +160,27 @@ Module Module1
         Return Parameters
     End Function
 
+    Function GetConnectionSettings(ByVal params As List(Of Parameters)) As ConnectionSettings
+        Dim connectSettings As New ConnectionSettings
+        For Each param In params
+            Select Case param.Name
+                Case "-h"
+                    connectSettings.host = param.arguments(0)
+                Case "-u"
+                    connectSettings.user = param.arguments(0)
+                Case "-p"
+                    connectSettings.password = param.arguments(0)
+                Case "-db"
+                    connectSettings.database = param.arguments(0)
+            End Select
+        Next
+        Return connectSettings
+    End Function
 
     Function GetGenomicFeaturesFromIDsInputed(ByVal listIDs As List(Of Integer)) As List(Of GenomicFeature)
         Dim GenomicFeaturesToRemove As New List(Of Integer)
         Dim ConnectionString As String = GetConnectionString()
-        Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GREngin.GetGenomicFeaturesAvailable(ConnectionString)                                  'gets all of the genomic features available from the GenomeRunner Table
+        Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GREngin.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features available from the GenomeRunner Table
         'adds all of the genomic features ids in the GenomicFeaturesToRun list that are not included in the 
         'list genomic features to run for removal
         For i As Integer = 0 To GenomicFeaturesToRun.Count - 1
@@ -244,7 +269,7 @@ PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boo
                     Next
             End Select
         Next
-        Settings = New EnrichmentSettings(GetConnectionString(), "", outputDirectory, UseMonteCarlo, UseAnalytical, UseChiSquareTest, UseBinomialDistribution, OutputPercentOverlapWeightedMatrix, True, OutputPearsonsCoefficientWeightedMatrix, 0, "hg18", False, NumOfMCToRun, PvalueThreshold, "none", 2000, 0, 0)
+        Settings = New EnrichmentSettings(GetConnectionString(), "", outputDirectory, UseMonteCarlo, UseAnalytical, UseChiSquareTest, UseBinomialDistribution, OutputPercentOverlapWeightedMatrix, True, OutputPearsonsCoefficientWeightedMatrix, 0, connectSettings.database, False, NumOfMCToRun, PvalueThreshold, "none", 2000, 0, 0)
         Return Settings
     End Function
 
@@ -256,13 +281,15 @@ PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boo
         Dim uDatabase As String
         Dim ConnectionString As String
 ConnectionSettingsRetry:
+        'TODO this is just finding db info from what's saved in the registry
         Try
             'gets the connection settings from the registry and builds a connection string
             uName = GetSetting("GenomeRunner", "Database", "uName")
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
             uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
-            ConnectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";password=" & uPassword
+            'ConnectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";password=" & uPassword
+            ConnectionString = "Server=" & connectSettings.host & ";Database=" & connectSettings.database & ";User ID=" & connectSettings.user & ";password=" & connectSettings.password
             cn = New MySqlConnection(ConnectionString)
             cn.Open()
             cmd = New MySqlCommand("SELECT * from GenomeRunner limit 1", cn)

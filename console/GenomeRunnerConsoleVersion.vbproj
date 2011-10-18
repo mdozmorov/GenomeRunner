@@ -93,7 +93,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="alglibnet2">
-      <HintPath>..\..\alglib-3.2.0.vbnet\vbnet\alglibnet2.dll</HintPath>
+      <HintPath>..\GUI\alglibnet2.dll</HintPath>
     </Reference>
     <Reference Include="MySql.Data, Version=6.3.6.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
