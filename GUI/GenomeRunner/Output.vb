@@ -355,6 +355,132 @@ Namespace GenomeRunner
             End Using
         End Sub
 
+        'outputs the results of the enrichement analysis into a log file
+        Public Sub OutputPvalueLogFileShort(ByRef outputHeader As Boolean, ByRef GFeature As GenomicFeature, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
+            Dim mean As Double, variance As Double, skewness As Double, kurtosis As Double
+            mean = GFeature.MCMean : variance = GFeature.MCvariance : skewness = GFeature.MCskewness : kurtosis = GFeature.MCkurtosis
+            '...header string showing what strand the genomic feature was filtered by
+            Dim strStrandsIncluded As String
+            If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
+            '...header string that shows what method was used to calculate the number of random associations expected
+            Dim strExpectedMethodUsed As String = "Expected associations calculated using: "
+            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= "Monte Carlo" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
+            '...header string showing how pvalue was calculated 
+            Dim strPvalueCalcMethod As String = "P-value was calculated using: "
+            If Settings.UseChiSquare = True Then : strPvalueCalcMethod &= "Chi-Square test" : ElseIf Settings.UseBinomialDistribution = True Then : strPvalueCalcMethod &= "Binomial Distribution" : End If
+            Dim strPromoterUpstream As String = ""
+
+            'used to calculate the ratio of actual/expected
+            'Dim MCObsRandRatio As Double = 0
+            'If GFeature.MCExpectedHits <> 0 Then
+            '    MCObsRandRatio = GFeature.ActualHits / GFeature.MCExpectedHits
+            'End If
+            'Dim AnalObsRandRatio As Double = 0
+            'If GFeature.AnalyticalExpectedWithin <> 0 Then
+            '    AnalObsRandRatio = GFeature.ActualHits / GFeature.AnalyticalExpectedWithin
+            'End If
+
+
+            'this header is outputed at the start of each new features of interest file analysis 
+            Dim currentTime As System.DateTime = System.DateTime.Now                                'used in the header of the output
+            Dim body As String = ""
+            If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
+                Dim header As String = vbCrLf & currentTime.Date & " " & currentTime.Hour & ":" & currentTime.Minute & " " _
+                    & vbCrLf & "Name of background used: " & Settings.BackgroundName _
+                    & vbCrLf & "Threshold at: " & Settings.FilterLevel _
+                    & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
+                    & vbCrLf & "Proximity (bp): " & Settings.Proximity _
+                    & vbCrLf & strExpectedMethodUsed _
+                    & vbCrLf & strPvalueCalcMethod
+                'writes the header to the log file
+                Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
+                    writer.WriteLine(header)
+                End Using
+            End If
+
+            'outputs the log file depending on what combination of tests are used, different values are outputted
+            Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
+
+                Dim diff As String = ""
+                Dim pVal As String = ""
+                Dim pcc As String = ""
+
+                If Settings.UseMonteCarlo = True Then
+                    If GFeature.ActualHits >= GFeature.MCExpectedHits Then
+                        'features are OVERrepresented
+                        If Settings.UseChiSquare = True Then
+                            If GFeature.PValueMonteCarloChisquare < Settings.PvalueThreshold Then
+                                diff = "OVER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueMonteCarloChisquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = GFeature.PCCMonteCarloChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                        End If
+                    ElseIf GFeature.ActualHits < GFeature.MCExpectedHits Then
+                        'features are UNDERrepresented
+                        If Settings.UseChiSquare = True Then
+                            If GFeature.PValueMonteCarloChisquare < Settings.PvalueThreshold Then
+                                diff = "UNDER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueMonteCarloChisquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = GFeature.PCCMonteCarloChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                        End If
+                    End If
+
+                ElseIf Settings.UseAnalytical = True Then
+                    If GFeature.ActualHits >= GFeature.AnalyticalExpectedWithin Then
+                        'features are OVERrepresented 
+                        If Settings.UseBinomialDistribution = True Then
+                            If GFeature.PValueAnalyticalBinomialDistribution < Settings.PvalueThreshold Then
+                                diff = "OVER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueAnalyticalBinomialDistribution.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = "NA"
+                        ElseIf Settings.UseChiSquare = True Then
+                            If GFeature.PValueAnalyticalChisquare < Settings.PvalueThreshold Then
+                                diff = "OVER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueAnalyticalChisquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = GFeature.PCCAnalyticalChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                        End If
+                    ElseIf GFeature.ActualHits < GFeature.AnalyticalExpectedWithin Then
+                        'features are UNDERrepresented 
+                        If Settings.UseBinomialDistribution = True Then
+                            If GFeature.PValueAnalyticalBinomialDistribution < Settings.PvalueThreshold Then
+                                diff = "UNDER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueAnalyticalBinomialDistribution.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = "NA"
+                        ElseIf Settings.UseChiSquare = True Then
+                            If GFeature.PValueAnalyticalChisquare < Settings.PvalueThreshold Then
+                                diff = "UNDER"
+                            Else
+                                diff = "no"
+                            End If
+                            pVal = GFeature.PValueAnalyticalChisquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                            pcc = GFeature.PCCAnalyticalChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                        End If
+                    End If
+                End If
+
+                'header row for FOI
+                body = vbCrLf & FeaturesOfInterestName & " (Total " & NumOfFeatures & ")" & vbCrLf
+                body &= FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot" & vbCrLf
+                body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                writer.WriteLine(body)
+
+            End Using
+        End Sub
+
         'outputs a line of the matrix.  If it is the first line (DoOutputHeader = true), the header columns are outputed first
         Public Sub OutputPValueMatrix(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal DoOutputHeader As Boolean, ByVal FeaturesOfInterestName As String)
             If Settings.UseMonteCarlo = True Then

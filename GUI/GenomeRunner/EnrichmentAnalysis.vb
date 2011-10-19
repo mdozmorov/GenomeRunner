@@ -123,7 +123,7 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    Outputer.OutputPvalueLogFile(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
+                    Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
                     currGF += 1
@@ -132,10 +132,10 @@ Namespace GenomeRunner
                 Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
                                             OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
 
-                Settings.OutputPercentOverlapPvalueMatrix = True
-                Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-                Settings.OutputPercentOverlapPvalueMatrix = False
+                'Settings.OutputPercentOverlapPvalueMatrix = True
+                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
+                '            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
+                'Settings.OutputPercentOverlapPvalueMatrix = False
                 'Settings.SquarePercentOverlap = True
                 'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
                 '                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
@@ -219,33 +219,34 @@ Namespace GenomeRunner
             GFeature.MCMean = mean : GFeature.MCvariance = variance : GFeature.MCskewness = skewness : GFeature.MCkurtosis = kurtosis
             If Settings.UseMonteCarlo = True Then
                 'TODO old way:
-                'GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+                GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+
                 'New way:
-                GFeature.RandUnder = 0 : GFeature.RandOver = 0 : GFeature.RandTie = 0
-                For Each rFOI In randEventsCountMC
-                    If rFOI < GFeature.ActualHits Then
-                        GFeature.RandUnder += 1
-                    ElseIf rFOI > GFeature.ActualHits Then
-                        GFeature.RandOver += 1
-                    Else
-                        GFeature.RandTie += 1
-                    End If
-                Next
-                'get percentages by dividing each of these values by Settings.NumMCtoRun
-                Dim possiblePValues As New List(Of Double)
-                For Each value In {GFeature.RandUnder, GFeature.RandOver, GFeature.RandTie}
-                    If value <> 0 Then
-                        possiblePValues.Add(value)
-                    End If
-                Next
-                GFeature.PValueMonteCarloChisquare = possiblePValues.Min / Settings.NumMCtoRun
-                Debug.Print("MC p-value: " & GFeature.PValueMonteCarloChisquare)
+                'GFeature.RandUnder = 0 : GFeature.RandOver = 0 : GFeature.RandTie = 0
+                'For Each rFOI In randEventsCountMC
+                '    If rFOI < GFeature.ActualHits Then
+                '        GFeature.RandUnder += 1
+                '    ElseIf rFOI > GFeature.ActualHits Then
+                '        GFeature.RandOver += 1
+                '    Else
+                '        GFeature.RandTie += 1
+                '    End If
+                'Next
+                ''get percentages by dividing each of these values by Settings.NumMCtoRun
+                'Dim possiblePValues As New List(Of Double)
+                'For Each value In {GFeature.RandUnder, GFeature.RandOver, GFeature.RandTie}
+                '    If value <> 0 Then
+                '        possiblePValues.Add(value)
+                '    End If
+                'Next
+                'GFeature.PValueMonteCarloChisquare = possiblePValues.Min / Settings.NumMCtoRun
+                'Debug.Print("MC p-value: " & GFeature.PValueMonteCarloChisquare)
             End If
             'TODO Still need this other if, I think...
-            'If Settings.UseBinomialDistribution = True Then
-            '    ' GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
-            'End If
-            'GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
+            If Settings.UseBinomialDistribution = True Then
+                'GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
+            End If
+            GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
             GFeature.MCExpectedHits = randEventsCountMC.Average
             GFeature.ActualHits = ObservedWithin
             Return GFeature
