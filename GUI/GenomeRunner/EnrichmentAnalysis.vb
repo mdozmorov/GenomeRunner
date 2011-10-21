@@ -102,12 +102,18 @@ Namespace GenomeRunner
             Directory.CreateDirectory(Settings.OutputDir)
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
+            Dim FeaturesOfInterestNames As New List(Of String)
+            Dim Outputer As Output
+            Dim AccumulatedGenomicFeatures As New Hashtable
 
             'goes through each filepath and runs an enrichment analysis on the features in the file
             For Each FeatureFilePath In FeatureOfInterestFilePaths
+                FeaturesOfInterestNames.Add(Path.GetFileNameWithoutExtension(FeatureFilePath))
                 FeaturesOfInterest = LoadFeatureOfInterests(FeatureFilePath)
                 FeaturesOfInterest = OrganizeFeaturesByChrom(FeaturesOfInterest)
-                Dim Outputer As New Output(FeaturesOfInterest.Count)
+                'TODO is it ok that I moved this above the loop?
+                'Dim Outputer As New Output(FeaturesOfInterest.Count)
+                Outputer = New Output(FeaturesOfInterest.Count)
                 Dim isFirstPvalue As Boolean = True                                                                                    'Whether the general information for the feature file should be outputed
                 Dim currGF As Integer = 0
                 'runs the features of interest against the genomic features that were selected to be run
@@ -123,25 +129,26 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
+
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
+                    If Not AccumulatedGenomicFeatures.ContainsKey(GF.Name) Then
+                        AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
+                    End If
+                    AccumulatedGenomicFeatures(GF.Name).Add(GF)
+
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
                     currGF += 1
                 Next
 
-                Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-
-                'Settings.OutputPercentOverlapPvalueMatrix = True
-                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                '            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-                'Settings.OutputPercentOverlapPvalueMatrix = False
-                'Settings.SquarePercentOverlap = True
-                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                '                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
+                'TODO since this is transposed, it doesn't need to happen with each GenomicFeature. Do it after this loop, all at once.
+                'Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath)) 'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
 
                 OutputMatrixColumnHeaders = False
             Next
+            'Dim Outputer As New Output(FeaturesOfInterest.Count)
+            Outputer = New Output(FeatureOfInterestFilePaths.Count)
+            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
             progDone.Invoke(Settings.OutputDir)
         End Sub
 

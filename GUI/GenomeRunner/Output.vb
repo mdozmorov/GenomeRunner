@@ -519,6 +519,241 @@ Namespace GenomeRunner
             End If
         End Sub
 
+        Public Sub OutputPValueMatrixTransposed(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestNames As List(Of String), ByVal AccumulatedGenomicFeatures As Hashtable)
+            '8 Possible options:
+            '---------------------------------------------------------------------------
+            '1. UseMonteCarlo, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '2. UseMonteCarlo, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '3. UseMonteCarlo, UseChiSquare
+            '4. UseAnalytical, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '5. UseAnalytical, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '6. UseAnalytical, UseChiSquare
+            '7. UseAnalytical, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix
+            '8. UseAnalytical, UseBinomialDistribution
+
+            'Output lines.
+            Dim PvalueFilename As String = getPvalueFilename(Settings)
+            Dim Log10Pvalues As New List(Of Double)
+            Using sw As New StreamWriter(PvalueFilename)
+                'writes the header columns
+                sw.Write(vbTab & String.Join(vbTab, FeaturesOfInterestNames) & vbCrLf)
+                'assembles a row of pvalue results
+                For Each gfName In AccumulatedGenomicFeatures.Keys
+                    'TODO how does one loop this through features of interest?
+                    'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
+                    'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
+                    Log10Pvalues.Clear()
+                    For Each GF In AccumulatedGenomicFeatures(gfName)
+                        Log10Pvalues.Add(getLog10Pvalue(GF, Settings))
+                    Next
+                    sw.Write(gfName & vbTab & String.Join(vbTab, Log10Pvalues) & vbCrLf)
+                Next
+            End Using
+
+        End Sub
+
+        Private Function getPvalueFilename(ByVal Settings As EnrichmentSettings) As String
+            Dim name As String = ""
+            If Settings.UseMonteCarlo = True Then
+                If Settings.UseChiSquare = True Then
+                    If Settings.OutputPCCweightedPvalueMatrix = True Then
+                        name = "_MonteCarlo_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
+                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        name = "_MonteCarlo_ChiSquare_WeightedPercentOverlap_Matrix.gr"
+                    Else
+                        name = "_Pvalue_MonteCarlo_ChiSquare_Matrix.gr"
+                    End If
+                Else
+
+                End If
+            ElseIf Settings.UseAnalytical = True Then
+                If Settings.UseChiSquare = True Then
+                    If Settings.OutputPCCweightedPvalueMatrix = True Then
+                        name = "_Analytical_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
+                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        name = "_Analytical_ChiSquare_WeightedPercentOverlap_Matrix.gr"
+                    Else
+                        name = "_Pvalue_Analytical_ChiSquare_Matrix.gr"
+                    End If
+                End If
+                If Settings.UseBinomialDistribution = True Then
+                    If Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        name = "_Analytical_BD_WeightedPercentOverlap_Matrix.gr"
+                    Else
+                        name = "_Pvalue_Analytical_BinomialD_Matrix.gr"
+                    End If
+                End If
+
+            End If
+            Return Settings.OutputDir & Settings.EnrichmentJobName & name
+        End Function
+
+        Private Function getLog10Pvalue(ByVal GF As GenomicFeature, ByVal Settings As EnrichmentSettings) As Double
+            Dim Log10Pvalue As New Double
+            If Settings.UseMonteCarlo = True Then
+                If Settings.UseChiSquare = True Then
+                    If Settings.OutputPCCweightedPvalueMatrix = True Then
+                        If GF.PValueMonteCarloChisquare <> 0 Then                                       'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
+                            Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCMonteCarloChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        End If
+                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        If GF.ActualHits > GF.MCExpectedHits Then
+                            If Settings.SquarePercentOverlap = True Then
+                                Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.MCExpectedHits / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
+                            Else
+                                Log10Pvalue = (GF.ActualHits / NumOfFeatures) * (1 - (GF.MCExpectedHits / NumOfFeatures)) * Log10Pvalue
+                            End If
+                        Else 'For underrepresentation correction for percentage is 1-
+                            If Settings.SquarePercentOverlap = True Then
+                                Log10Pvalue = System.Math.Sqrt((1 - (GF.ActualHits / NumOfFeatures)) * (GF.MCExpectedHits / NumOfFeatures)) * Log10Pvalue          'takes the square root of the ratio
+                            Else
+                                Log10Pvalue = (1 - (GF.ActualHits / NumOfFeatures)) * (GF.MCExpectedHits / NumOfFeatures) * Log10Pvalue
+                            End If
+                            Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
+                        End If
+                    ElseIf Settings.OutputPCCweightedPvalueMatrix = False And Settings.OutputPercentOverlapPvalueMatrix = False Then
+                        If GF.PValueMonteCarloChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        End If
+                    End If
+                Else
+
+                End If
+            ElseIf Settings.UseAnalytical = True Then
+                If Settings.UseChiSquare = True Then
+                    If Settings.OutputPCCweightedPvalueMatrix = True Then
+                        If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
+                            Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCAnalyticalChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                            If GF.ActualHits < GF.MCExpectedHits Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        End If
+                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        If GF.PValueAnalyticalChisquare <> 0 Then
+                            Log10Pvalue = System.Math.Log10(GF.PValueAnalyticalChisquare)     'Take antilog10 of the p-value
+                            If GF.ActualHits > GF.AnalyticalExpectedWithin Then
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue
+                                End If
+                            Else 'For underrepresentation correction for percentage is 1-
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures) * Log10Pvalue
+                                End If
+                                Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
+                            End If
+                        Else
+                            Log10Pvalue = System.Math.Log10(Double.MaxValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                            If GF.ActualHits > GF.AnalyticalExpectedWithin Then
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue
+                                End If
+                            Else 'For underrepresentation correction for percentage is 1-
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures) * Log10Pvalue
+                                End If
+                                Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
+                            End If
+                        End If
+                    ElseIf Settings.OutputPCCweightedPvalueMatrix = False And Settings.OutputPercentOverlapPvalueMatrix = False Then
+                        If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
+                            If GF.ActualHits < GF.AnalyticalExpectedWithin Then 'Add - if the p-value related to under representation
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)    'If p-value is 0 then set it to max of Double type
+                            If GF.ActualHits < GF.AnalyticalExpectedWithin Then 'Add - if the p-value related to under representation
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        End If
+                    End If
+                End If
+                If Settings.UseBinomialDistribution = True Then
+                    If Settings.OutputPercentOverlapPvalueMatrix = True Then
+                        If GF.PValueAnalyticalBinomialDistribution <> 0 Then                                     'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
+                            If GF.ActualHits > GF.AnalyticalExpectedWithin Then
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures))) * Log10Pvalue          'takes the square root of the result
+                                Else
+                                    Log10Pvalue = (GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue
+                                End If
+                            Else
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures) * Log10Pvalue
+                                End If
+                                Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
+                            End If
+
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                            If GF.ActualHits > GF.AnalyticalExpectedWithin Then
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue
+                                End If
+                            Else 'For underrepresentation correction for percentage is 1-
+                                If Settings.SquarePercentOverlap = True Then
+                                    Log10Pvalue = System.Math.Sqrt((1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures)) * Log10Pvalue          'takes the square root of the ratio
+                                Else
+                                    Log10Pvalue = (1 - (GF.ActualHits / NumOfFeatures)) * (GF.AnalyticalExpectedWithin / NumOfFeatures) * Log10Pvalue
+                                End If
+                                Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
+                            End If
+                        End If
+                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = False Then
+                        If GF.PValueAnalyticalBinomialDistribution <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
+                            Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
+                            If GF.ActualHits < GF.AnalyticalExpectedWithin Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        Else
+                            Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)
+                            If GF.ActualHits < GF.AnalyticalExpectedWithin Then
+                                Log10Pvalue = -1 * Log10Pvalue
+                            End If
+                        End If
+                    End If
+                End If
+
+            End If
+            Return Log10Pvalue
+        End Function
+
         Private Sub OutputPValueAnalytical_Binomial_Matrix_Line(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal DoOutputHeader As Boolean, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
             Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_Pvalue_Analytical_BinomialD_Matrix.gr", Not DoOutputHeader)
                 'writes the header columns
@@ -535,11 +770,6 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
                     If GF.PValueAnalyticalBinomialDistribution <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                        'If GF.PValueAnalyticalBinomialDistribution < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                        '    Log10Pvalue = 20
-                        'Else
-                        '    Log10Pvalue = -1 * Math.Log10(GF.PValueAnalyticalBinomialDistribution)
-                        'End If
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
                         If GF.ActualHits < GF.AnalyticalExpectedWithin Then
                             Log10Pvalue = -1 * Log10Pvalue
@@ -603,24 +833,6 @@ Namespace GenomeRunner
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-                    'If GF.PValueMonteCarloChisquare <> 0 Then                                       'the log10 of 0 cannot be taken so it is manually set to 0
-                    '    If GF.PValueMonteCarloChisquare < 10 ^ (-20) Then                           'if less then 10^-20 the value is manually set to 20
-                    '        Log10Pvalue = 20
-                    '    Else
-                    '        Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
-                    '    End If
-                    '    Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCMonteCarloChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * Log10Pvalue
-                    '    End If
-                    'Else
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * 20
-                    '    Else
-                    '        Log10Pvalue = 20
-                    '    End If
-                    'End If
-
                     If GF.PValueMonteCarloChisquare <> 0 Then                                       'the log10 of 0 cannot be taken so it is manually set to 0
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
                         Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCMonteCarloChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
@@ -649,7 +861,7 @@ Namespace GenomeRunner
                 'assembles a row of pvalue results
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-                    
+
                     If GF.PValueMonteCarloChisquare <> 0 Then                                       'the log10 of 0 cannot be taken so it is manually set to 0
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
                         Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCMonteCarloChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
@@ -683,30 +895,6 @@ Namespace GenomeRunner
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-                    'If GF.PValueMonteCarloChisquare <> 0 Then                                                   'the log10 of 0 cannot be taken so it is manually set to 0
-                    '    If GF.PValueMonteCarloChisquare < 10 ^ (-20) Then                                       'if less then 10^-20 the value is manually set to 20
-                    '        Log10Pvalue = 20
-                    '    Else
-                    '        Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
-                    '    End If
-
-                    '    If Settings.SquarePercentOverlap = True Then
-                    '        Log10Pvalue = System.Math.Sqrt(GF.ActualHits / NumOfFeatures) * Log10Pvalue          'takes the square root of the result
-                    '    Else
-                    '        Log10Pvalue = (GF.ActualHits / NumOfFeatures) * Log10Pvalue
-                    '    End If
-
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * Log10Pvalue
-                    '    End If
-                    'Else
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    Else
-                    '        Log10Pvalue = 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    End If
-                    'End If
-
                     If GF.PValueMonteCarloChisquare <> 0 Then
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)     'Take antilog10 of the p-value
                         If GF.ActualHits > GF.MCExpectedHits Then
@@ -762,11 +950,6 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
                     If GF.PValueMonteCarloChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                        'If GF.PValueMonteCarloChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                        '    Log10Pvalue = 20
-                        'Else
-                        '    Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
-                        'End If
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
                         If GF.ActualHits < GF.MCExpectedHits Then
                             Log10Pvalue = -1 * Log10Pvalue
@@ -793,11 +976,6 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
                     If GF.PValueMonteCarloChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                        'If GF.PValueMonteCarloChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                        '    Log10Pvalue = 20
-                        'Else
-                        '    Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
-                        'End If
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
                         If GF.ActualHits < GF.MCExpectedHits Then
                             Log10Pvalue = -1 * Log10Pvalue
@@ -828,31 +1006,6 @@ Namespace GenomeRunner
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-
-                    'If GF.PValueAnalyticalBinomialDistribution <> 0 Then                                     'the log10 of 0 cannot be taken so it is manually set to 0
-                    '    'if less then 10^-20 the value is manually set to 20
-                    '    If GF.PValueAnalyticalBinomialDistribution < 10 ^ (-20) Then
-                    '        Log10Pvalue = 20
-                    '    Else
-                    '        Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
-                    '    End If
-                    '    If Settings.SquarePercentOverlap = True Then
-                    '        Log10Pvalue = System.Math.Sqrt(GF.ActualHits / NumOfFeatures) * Log10Pvalue          'takes the square root of the result
-                    '    Else
-                    '        Log10Pvalue = (GF.ActualHits / NumOfFeatures) * Log10Pvalue
-                    '    End If
-                    '    If GF.ActualHits < GF.AnalyticalExpectedWithin Then
-                    '        Log10Pvalue = -1 * Log10Pvalue
-                    '    End If
-
-                    'Else
-                    '    If GF.ActualHits < GF.AnalyticalExpectedWithin Then
-                    '        Log10Pvalue = -1 * 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    Else
-                    '        Log10Pvalue = 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    End If
-
-                    'End If 
                     If GF.PValueAnalyticalBinomialDistribution <> 0 Then                                     'the log10 of 0 cannot be taken so it is manually set to 0
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
                         If GF.ActualHits > GF.AnalyticalExpectedWithin Then
@@ -887,7 +1040,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
                         End If
                     End If
-                        sw.Write(vbTab & Log10Pvalue)
+                    sw.Write(vbTab & Log10Pvalue)
                 Next
                 sw.WriteLine()
             End Using
@@ -908,28 +1061,6 @@ Namespace GenomeRunner
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-                    'If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                    'If GF.PValueAnalyticalChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                    '    Log10Pvalue = 20
-                    'Else
-                    '    Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
-                    'End If
-                    '    If Settings.SquarePercentOverlap = True Then
-                    '        Log10Pvalue = System.Math.Sqrt(GF.ActualHits / NumOfFeatures) * Log10Pvalue          'takes the square root of the ratio
-                    '    Else
-                    '        Log10Pvalue = (GF.ActualHits / NumOfFeatures) * Log10Pvalue
-                    '    End If
-                    '    If GF.ActualHits < GF.AnalyticalExpectedWithin Then
-                    '        Log10Pvalue = -1 * Log10Pvalue
-                    '    End If
-                    'Else
-                    '    If GF.ActualHits < GF.AnalyticalExpectedWithin Then
-                    '        Log10Pvalue = -1 * 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    Else
-                    '        Log10Pvalue = 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
-                    '    End If
-                    'End If
-
                     If GF.PValueAnalyticalChisquare <> 0 Then
                         Log10Pvalue = System.Math.Log10(GF.PValueAnalyticalChisquare)     'Take antilog10 of the p-value
                         If GF.ActualHits > GF.AnalyticalExpectedWithin Then
@@ -985,11 +1116,6 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
                     If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                        'If GF.PValueAnalyticalChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                        '    Log10Pvalue = 20
-                        'Else
-                        '    Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
-                        'End If
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
                         If GF.ActualHits < GF.AnalyticalExpectedWithin Then 'Add - if the p-value related to under representation
                             Log10Pvalue = -1 * Log10Pvalue
