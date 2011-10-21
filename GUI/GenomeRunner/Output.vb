@@ -364,7 +364,7 @@ Namespace GenomeRunner
             If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
             '...header string that shows what method was used to calculate the number of random associations expected
             Dim strExpectedMethodUsed As String = "Expected associations calculated using: "
-            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= "Monte Carlo" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
+            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= Settings.NumMCtoRun & " Monte Carlo simulations" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
             '...header string showing how pvalue was calculated 
             Dim strPvalueCalcMethod As String = "P-value was calculated using: "
             If Settings.UseChiSquare = True Then : strPvalueCalcMethod &= "Chi-Square test" : ElseIf Settings.UseBinomialDistribution = True Then : strPvalueCalcMethod &= "Binomial Distribution" : End If
@@ -386,6 +386,7 @@ Namespace GenomeRunner
             Dim body As String = ""
             If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
                 Dim header As String = vbCrLf & currentTime.Date & " " & currentTime.Hour & ":" & currentTime.Minute & " " _
+                    & vbCrLf & "Features analyzed: " & FeaturesOfInterestName & " (Total " & NumOfFeatures & ")" _
                     & vbCrLf & "Name of background used: " & Settings.BackgroundName _
                     & vbCrLf & "Threshold at: " & Settings.FilterLevel _
                     & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
@@ -395,6 +396,8 @@ Namespace GenomeRunner
                 'writes the header to the log file
                 Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
                     writer.WriteLine(header)
+                    'write minor header as well
+                    writer.WriteLine(vbCrLf & FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot")
                 End Using
             End If
 
@@ -473,9 +476,8 @@ Namespace GenomeRunner
                 End If
 
                 'header row for FOI
-                body = vbCrLf & FeaturesOfInterestName & " (Total " & NumOfFeatures & ")" & vbCrLf
-                body &= FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot" & vbCrLf
-                body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                'body &= FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot" & vbCrLf
+                body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
                 writer.WriteLine(body)
 
             End Using
@@ -483,6 +485,7 @@ Namespace GenomeRunner
 
         'outputs a line of the matrix.  If it is the first line (DoOutputHeader = true), the header columns are outputed first
         Public Sub OutputPValueMatrix(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal DoOutputHeader As Boolean, ByVal FeaturesOfInterestName As String)
+            'TODO this seems like a lot of work to do essentially the same thing. Could use some cleaning up.
             If Settings.UseMonteCarlo = True Then
                 If Settings.UseChiSquare = True Then
                     If Settings.OutputPCCweightedPvalueMatrix = True Then
@@ -490,14 +493,12 @@ Namespace GenomeRunner
                     ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
                         OutputPValueMonteCarlo_ChiSquare_WeightedPercentOverlap__Matrix_Line(genomicFeatures, DoOutputHeader, Settings, FeaturesOfInterestName)
                     ElseIf Settings.OutputPCCweightedPvalueMatrix = False And Settings.OutputPercentOverlapPvalueMatrix = False Then
-                        OutputPValueMonteCarlo_ChiSquare__Matrix_Line(genomicFeatures, DoOutputHeader, Settings, FeaturesOfInterestName)
+                        OutputPValueMonteCarlo_ChiSquare__Matrix_LineTransposed(genomicFeatures, DoOutputHeader, Settings, FeaturesOfInterestName)
                     End If
                 Else
 
                 End If
-            End If
-
-            If Settings.UseAnalytical = True Then
+            ElseIf Settings.UseAnalytical = True Then
                 If Settings.UseChiSquare = True Then
                     If Settings.OutputPCCweightedPvalueMatrix = True Then
                         OutputPValueAnalytical_ChiSquare_WeightedPearsonsCoefficient__Matrix_Line(genomicFeatures, DoOutputHeader, Settings, FeaturesOfInterestName)
@@ -569,23 +570,6 @@ Namespace GenomeRunner
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
                     Dim Log10Pvalue As Double
-                    'If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
-                    '    If GF.PValueAnalyticalChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
-                    '        Log10Pvalue = 20
-                    '    Else
-                    '        Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
-                    '    End If
-                    '    Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCAnalyticalChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * Log10Pvalue
-                    '    End If
-                    'Else
-                    '    If GF.ActualHits < GF.MCExpectedHits Then
-                    '        Log10Pvalue = -1 * 20
-                    '    Else
-                    '        Log10Pvalue = 20
-                    '    End If
-                    'End If
                     If GF.PValueAnalyticalChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare)
                         Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCAnalyticalChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
@@ -653,6 +637,34 @@ Namespace GenomeRunner
                     sw.Write(vbTab & Log10Pvalue)
                 Next
                 sw.Write(vbCrLf)
+            End Using
+        End Sub
+
+        Private Sub OutputPValueMonteCarlo_ChiSquare_WeightedPearsonsCoefficient__Matrix_LineTransposed(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal DoOutputHeader As Boolean, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
+            Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "MonteCarlo_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr", Not DoOutputHeader)
+                'writes the header columns
+                If DoOutputHeader = True Then
+                    sw.Write(vbTab & FeaturesOfInterestName & vbCrLf)
+                End If
+                'assembles a row of pvalue results
+                For Each GF In GenomicFeatures
+                    Dim Log10Pvalue As Double
+                    
+                    If GF.PValueMonteCarloChisquare <> 0 Then                                       'the log10 of 0 cannot be taken so it is manually set to 0
+                        Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
+                        Log10Pvalue = Settings.PearsonsAudjustment * GF.PCCMonteCarloChiSquare * Log10Pvalue     'multiplies the Pearson's Coefficient by the audjustment factor 
+                        If GF.ActualHits < GF.MCExpectedHits Then
+                            Log10Pvalue = -1 * Log10Pvalue
+                        End If
+                    Else
+                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                        If GF.ActualHits < GF.MCExpectedHits Then
+                            Log10Pvalue = -1 * Log10Pvalue
+                        End If
+                    End If
+
+                    sw.Write(GF.Name & vbTab & Log10Pvalue & vbCrLf)
+                Next
             End Using
         End Sub
 
@@ -771,6 +783,36 @@ Namespace GenomeRunner
             End Using
         End Sub
 
+        Private Sub OutputPValueMonteCarlo_ChiSquare__Matrix_LineTransposed(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal DoOutputHeader As Boolean, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
+            Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_Pvalue_MonteCarlo_ChiSquare_Matrix.gr", Not DoOutputHeader)
+                'writes the header columns
+                If DoOutputHeader = True Then
+                    sw.Write(vbTab & FeaturesOfInterestName & vbCrLf)
+                End If
+                'assembles a row of pvalue results
+                For Each GF In GenomicFeatures
+                    Dim Log10Pvalue As Double
+                    If GF.PValueMonteCarloChisquare <> 0 Then 'the log10 of 0 cannot be taken so it is manually set to 0
+                        'If GF.PValueMonteCarloChisquare < 10 ^ (-20) Then 'if less then 10^-20 the value is manually set to 20
+                        '    Log10Pvalue = 20
+                        'Else
+                        '    Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
+                        'End If
+                        Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare)
+                        If GF.ActualHits < GF.MCExpectedHits Then
+                            Log10Pvalue = -1 * Log10Pvalue
+                        End If
+                    Else
+                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)
+                        If GF.ActualHits < GF.MCExpectedHits Then
+                            Log10Pvalue = -1 * Log10Pvalue
+                        End If
+                    End If
+                    sw.Write(GF.Name & vbTab & Log10Pvalue & vbCrLf)
+                Next
+            End Using
+        End Sub
+
         Private Sub OutputPValueAnalytical_Binomial_WeightedPercentOverlap_Matrix_Line(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal DoOutputHeader As Boolean, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
             'generates a weighted matrix for the analyitcal BD results
             Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_Analytical_BD_WeightedPercentOverlap_Matrix.gr", Not DoOutputHeader)
@@ -810,7 +852,7 @@ Namespace GenomeRunner
                     '        Log10Pvalue = 20 * System.Math.Sqrt(GF.ActualHits / NumOfFeatures)
                     '    End If
 
-                    'End If
+                    'End If 
                     If GF.PValueAnalyticalBinomialDistribution <> 0 Then                                     'the log10 of 0 cannot be taken so it is manually set to 0
                         Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
                         If GF.ActualHits > GF.AnalyticalExpectedWithin Then
