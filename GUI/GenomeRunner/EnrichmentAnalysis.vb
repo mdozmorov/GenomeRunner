@@ -106,6 +106,18 @@ Namespace GenomeRunner
             Dim Outputer As Output
             Dim AccumulatedGenomicFeatures As New Hashtable
 
+            'NOTE: AccumulatedGenomicFeatures is a Hashtable that stores GenomicFeatures specific to each FeatureOfInterest file.
+            '      So, given x genomic features & f features of interest files, there will be:
+            '          x * f genomic features in AccumulatedGenomicFeatures.
+            '      EXAMPLE:
+            '      Features of interest files: "CDBox", "HAcaBox"
+            '      Genomic features: "CpGIslands", "ORegAnno"
+            '      AccumulatedGenomicFeatures = ["CpGIslands"] => {CpGIslands Genomic Feature calculated with CDBox, CpGIslands Genomic Feature calculated with HAcaBox},
+            '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
+            For Each GF In GenomicFeatures
+                AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
+            Next
+
             'goes through each filepath and runs an enrichment analysis on the features in the file
             For Each FeatureFilePath In FeatureOfInterestFilePaths
                 FeaturesOfInterestNames.Add(Path.GetFileNameWithoutExtension(FeatureFilePath))
@@ -129,12 +141,9 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
+                    AccumulatedGenomicFeatures(GF.Name).Add(GF.Clone)
 
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
-                    If Not AccumulatedGenomicFeatures.ContainsKey(GF.Name) Then
-                        AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
-                    End If
-                    AccumulatedGenomicFeatures(GF.Name).Add(GF)
 
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
