@@ -220,7 +220,7 @@ Namespace GenomeRunner
         Public Function GetGenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
             Dim Background As New List(Of Feature)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT * FROM background WHERE useful = true;", cn)
+            cmd = New MySqlCommand("SELECT * FROM background;", cn)
             dr = cmd.ExecuteReader()
             While dr.Read()
                 Dim feature As New Feature

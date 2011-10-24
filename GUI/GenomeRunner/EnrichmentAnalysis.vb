@@ -475,17 +475,17 @@ Namespace GenomeRunner
             '
             'To this:
             '|------chr1-----|---chr2---|--chr3--| etc.
-            '0               57         86      100
+            '0              .57        .86      1.0
             'Since total summing up chromosome length gets bigger than VB data types can handle,
             'these are handled as percentages instead.
 
             'Find combined length of all chromosomes from background.
             Dim combinedChromLength As ULong = 0
             For Each elem In background
-                combinedChromLength = combinedChromLength + elem.ChromEnd
+                combinedChromLength += elem.ChromEnd
             Next
 
-            'For calculation purposes, chrom will be assigned values between 0 & 1 based on their percentage of total length.
+            'For calculation purposes, chrom will be assigned values between 0.0 & 1.0 based on their percentage of total length.
             Dim weightedChromPositions As New List(Of Double)
             weightedChromPositions.Add(background(0).ChromEnd / combinedChromLength)
             For i As Integer = 1 To background.Count - 1
@@ -494,9 +494,7 @@ Namespace GenomeRunner
 
             'Randomly select number between 0 & 1.0; find which chrom this number would be part of.
             Dim randomIndex As Double = RandomClass.NextDouble()
-            'Dim randomIndex As UInteger = hqrnduniformi(state, weightedChromPositions.Last)
             Dim randChrom As Integer = -1
-            'Dim sRand As Single
             Dim counter As Integer = 0
             While randChrom = -1
                 If randomIndex <= weightedChromPositions(counter) Then
@@ -505,30 +503,6 @@ Namespace GenomeRunner
                 counter = counter + 1
             End While
             Return randChrom
-            ''Generate random chromosome; weight likelihood of chromosomes based on their length from background.
-            'Dim sequentialChroms As New List(Of ULong)
-            ''will end up with a simple array of ints (chr start points); their index + 1 will tell which chromosome to use
-            ''insert first manually since loop needs to look back one element; the rest can be handled in loop.
-            'sequentialChroms.Add(background(0).ChromEnd)
-            'Dim accumulatedChrPosition As ULong
-            'For i As Integer = 1 To background.Count - 1
-            '    accumulatedChrPosition = background(i).ChromEnd + sequentialChroms(i - 1)
-            '    sequentialChroms.Add(accumulatedChrPosition)
-            'Next
-            'Dim randomHugeNumber As ULong = hqrnduniformi(state, sequentialChroms.Last)
-            ''now find where this huge number fits in the line of chromosomes.
-            ''e.g. |------chr1-----|---chr2---|--chr3--| etc.
-            ''     0             1000       1500     17500
-            ''Dim randChrom As UInteger = hqrnduniformi(state, background.Count)
-            'Dim randChrom As Integer = -1
-            'Dim counter As Integer = 0
-            'While randChrom = -1
-            '    If randomHugeNumber < sequentialChroms(counter) Then
-            '        randChrom = counter + 1
-            '    End If
-            '    counter = counter + 1
-            'End While
-            'Return randChrom
         End Function
 
         Public Function PearsonsContigencyCoeffcient(ByVal ObservedWithin As Double, ByVal ExpectedWithinMean As Double, ByVal NumOfFeatures As Integer) As Double
