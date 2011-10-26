@@ -11,6 +11,32 @@ Namespace GenomeRunner
             Me.NumOfFeatures = NumOfFeatures
         End Sub
 
+        'Outputs combined log file of all files passed
+        Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String))
+            Dim AccumulatedRows As New Hashtable
+            For Each filePath In FilePaths
+                Using SR As New StreamReader(filePath)
+                    While SR.EndOfStream = False
+                        Dim Line = SR.ReadLine().Split(vbTab)
+                        If Not AccumulatedRows.ContainsKey(Line(0)) Then
+                            AccumulatedRows.Add(Line(0), New List(Of String))
+                        End If
+                        AccumulatedRows(Line(0)).Add(Line(1))
+                    End While
+                    'TODO raise error if # of keys != # of lines in file
+                End Using
+
+                Using writer As New StreamWriter(Path.GetDirectoryName(FilePaths(0)) & "\combined.gr", False)
+                    For Each key In AccumulatedRows.Keys
+                        'writer.WriteLine(key & vbTab & AccumulatedRows(key).toArray(0))
+                        'TODO Join isn't working for some reason.
+                        writer.WriteLine(key & vbTab & String.Join(vbTab, AccumulatedRows(key).toArray))
+                    Next
+                End Using
+
+            Next
+        End Sub
+
         'Outputs the results of the annotation analysis
         Public Sub OutputAnnotationAnalysis(ByVal OutputFilePath As String, ByVal GRFeaturesToAnalyze As List(Of GenomicFeature), ByVal Features As List(Of Feature))
 
@@ -1131,5 +1157,6 @@ Namespace GenomeRunner
                 sw.Write(vbCrLf)
             End Using
         End Sub
+
     End Class
 End Namespace

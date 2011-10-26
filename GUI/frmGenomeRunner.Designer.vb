@@ -108,6 +108,7 @@ Partial Class frmGenomeRunner
         Me.txtJobName = New System.Windows.Forms.TextBox()
         Me.BackgroundWorkerEnrichmentAnalysis = New System.ComponentModel.BackgroundWorker()
         Me.BackgroundWorkerAnnotationAnalysis = New System.ComponentModel.BackgroundWorker()
+        Me.mnuMergeLogFiles = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
@@ -778,7 +779,7 @@ Partial Class frmGenomeRunner
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCoordinatesToSNPs, Me.mnuSNPsToCoordinates, Me.mnuGenerateListOfRandomCoordinates, Me.mnuGenerateListOfRandomSNPs, Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem, Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem, Me.SetDatabaseConnectionSettingsToolStripMenuItem, Me.CreateLocalGenomeRunnerTableToolStripMenuItem})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCoordinatesToSNPs, Me.mnuSNPsToCoordinates, Me.mnuGenerateListOfRandomCoordinates, Me.mnuGenerateListOfRandomSNPs, Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem, Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem, Me.SetDatabaseConnectionSettingsToolStripMenuItem, Me.CreateLocalGenomeRunnerTableToolStripMenuItem, Me.mnuMergeLogFiles})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(44, 20)
         Me.mnuTools.Text = "&Tools"
@@ -914,6 +915,12 @@ Partial Class frmGenomeRunner
         'BackgroundWorkerAnnotationAnalysis
         '
         '
+        'mnuMergeLogFiles
+        '
+        Me.mnuMergeLogFiles.Name = "mnuMergeLogFiles"
+        Me.mnuMergeLogFiles.Size = New System.Drawing.Size(291, 22)
+        Me.mnuMergeLogFiles.Text = "Merge log files"
+        '
         'frmGenomeRunner
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1044,5 +1051,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents cmbDatabase As System.Windows.Forms.ComboBox
     Friend WithEvents lblOrganism As System.Windows.Forms.Label
     Friend WithEvents cmbOrganism As System.Windows.Forms.ComboBox
+    Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
 
 End Class

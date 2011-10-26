@@ -795,6 +795,24 @@ Public Class frmGenomeRunner
         OpenDatabase()
         ReloadCmbDatabase()
     End Sub
+
+    Private Sub mnuMergeLogFiles_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuMergeLogFiles.Click
+        Dim FolderBrowser As New System.Windows.Forms.FolderBrowserDialog
+        FolderBrowser.Description = "Select folder of .gr files to merge."
+        Dim dlgResult As DialogResult = FolderBrowser.ShowDialog()
+        Dim filePaths As New List(Of String)
+        Dim output As New Output(0)
+
+        If dlgResult = Windows.Forms.DialogResult.OK Then
+            For Each filePath In Directory.GetFiles(FolderBrowser.SelectedPath)
+                If filePath.Contains(".gr") Then
+                    filePaths.Add(filePath)
+                End If
+            Next
+            output.OutputMergedLogFiles(filePaths)
+        End If
+    End Sub
+
 End Class
 
 'these settings are passed onto the background worker as arguments
