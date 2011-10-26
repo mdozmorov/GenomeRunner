@@ -216,6 +216,21 @@ Namespace GenomeRunner
             Return Background
         End Function
 
+        Public Function GetGenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
+            Dim Background As New List(Of Feature)
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT * FROM background WHERE useful = true;", cn)
+            dr = cmd.ExecuteReader()
+            While dr.Read()
+                Dim feature As New Feature
+                feature.Chrom = dr(0)
+                feature.ChromStart = dr(1)
+                feature.ChromEnd = dr(2)
+                Background.Add(feature)
+            End While
+            Return Background
+        End Function
+
         'returns a list of features that can be used as a background, can be spot or interval
         Public Function GenerateCustomGenomeBackground(ByVal BackgroundFilePath As String) As List(Of Feature)
             Dim Background As New List(Of Feature)
@@ -236,7 +251,7 @@ Namespace GenomeRunner
         End Function
 
         Public Sub New()
-            GetGenomeBackgroundHG18() 'sets the default interval to cover the entire genome
+            'GetGenomeBackgroundHG18() 'sets the default interval to cover the entire genome
         End Sub
 
         Protected Overrides Sub Finalize()

@@ -40,6 +40,10 @@ Namespace GenomeRunner
         Public PCCAnalyticalChiSquare As Double = Nothing 'stores the Pearson's Contingency Coefficient (C) for the analytical method
         Public PValueMonteCarloTradMC As Double = Nothing ' Stores the p-value calculate via traditional Monte-Carlo simulation
 
+        'Values for simple Monte-Carlo p-value calculations
+        Public RandTie As UInteger 'store number of tied hits
+        Public RandUnder As UInteger 'store number of under hits
+        Public RandOver As UInteger 'store number of over hits
         'Sets all of the values needed for the Genomic Feature. If no names are to be filtered, then "Nothing" should be passed as its argument 
         Public Sub New(ByVal id As Integer, ByVal Name As String, ByVal TableName As String, ByVal QueryType As String, ByVal ThresholdType As String, ByVal Threshold As Integer, ByVal ThresholdMin As String, ByVal ThresholdMax As String, ByVal ThresholdMean As String, ByVal Category As String, ByVal OrderInCategory As Integer, ByVal NamesToFilter As List(Of String), ByVal StrandToFilterBy As String, ByVal Tier As Integer)
             'sets the properties of the feature
@@ -87,9 +91,10 @@ Namespace GenomeRunner
             GF.PValueMonteCarloTradMC = PValueMonteCarloTradMC
             GF.PCCMonteCarloChiSquare = PCCMonteCarloChiSquare
             GF.PCCAnalyticalChiSquare = PCCAnalyticalChiSquare
-            'GF.RandTie = RandTie
-            'GF.RandUnder = RandUnder
-            'GF.RandOver = RandOver
+            GF.RandTie = RandTie
+            GF.RandUnder = RandUnder
+            GF.RandOver = RandOver
+
             Return GF
         End Function
 

@@ -46,6 +46,10 @@ Public Class frmGenomeRunner
         Public fileName As String
     End Class
 
+    Public Function DatabaseConnection() As MySqlConnection
+        'OpenDatabase()
+        Return cn
+    End Function
 
     Private Sub OpenDatabase()
         Dim uName As String = ""
@@ -59,7 +63,13 @@ Public Class frmGenomeRunner
         While ConnectionWorks = False
             Try
                 cn = New MySqlConnection(ConnectionString) : cn.Open()
-                cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                If cmbDatabase.SelectedIndex = -1 Then
+                    'get only the ones that have a genomerunner table in them.
+                    cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+                Else
+                    'Dummy command just to see if the selected db has a genomerunner table.
+                    cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                End If
                 dr = cmd.ExecuteReader()
                 ConnectionWorks = True
                 dr.Close() : cmd.Dispose()
@@ -68,7 +78,33 @@ Public Class frmGenomeRunner
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
             End Try
         End While
+        'TODO This shouldn't be necessary because it's already called in Form1_Load. But for some reason everything breaks when it's not called here as well.
+        GREngine = New GenomeRunnerEngine
+        If cmbDatabase.SelectedIndex = -1 Then
+            ReloadCmbDatabase()
+        End If
+        lblBackground.Text = "Using " & cmbDatabase.Text & " genome assembly as genomic background"
+    End Sub
 
+    Private Sub ReloadCmbDatabase()
+        'Reload databases based on organism selected in cmbOrganism.
+        cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner' order by TABLE_SCHEMA desc;", cn)
+        dr = cmd.ExecuteReader()
+        cmbDatabase.Items.Clear()
+        While dr.Read()
+            If cmbOrganism.SelectedItem = "Human" And dr(0) Like "hg*" Then
+                cmbDatabase.Items.Add(dr(0))
+            ElseIf cmbOrganism.SelectedItem = "Mouse" And dr(0) Like "mm*" Then
+                cmbDatabase.Items.Add(dr(0))
+            End If
+        End While
+        dr.Close() : cmd.Dispose()
+        'Now reset SelectedIndex to first available option.
+        If cmbDatabase.Items.Count > 0 Then
+            cmbDatabase.SelectedIndex() = 0
+        Else
+            cmbDatabase.SelectedIndex() = -1
+        End If
     End Sub
 
     Private Function GetConnectionSettings(ByRef uName As String, ByRef uPassword As String, ByRef uServer As String, ByRef uDatabase As String) As String
@@ -78,7 +114,8 @@ Public Class frmGenomeRunner
             uName = GetSetting("GenomeRunner", "Database", "uName")
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
-            uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
+            'uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
+            uDatabase = cmbDatabase.SelectedItem
         Catch
             SaveSetting("GenomeRunner", "Database", "uName", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uPassword", "genomerunner")
@@ -89,18 +126,12 @@ Public Class frmGenomeRunner
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
             uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
         End Try
-        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword & ";default command timeout=600;"
+        connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword & ";default command timeout=600"
         Return connectionString
     End Function
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'tests to see if the connection works
-        'Try
-        '    OpenDatabase()
-        'Catch
-        '    frmLogin.ShowDialog()
-        '    OpenDatabase()
-        'End Try
         OpenDatabase()
         GREngine = New GenomeRunnerEngine()
         SetGenomeRunnerDefaults()
@@ -128,8 +159,8 @@ Public Class frmGenomeRunner
     Private Sub SetGenomeRunnerDefaults()
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
-        Background = GREngine.GetGenomeBackgroundHG18()
-        BackgroundName = "hg18"
+        Background = GREngine.GetGenomeBackground(ConnectionString)
+        BackgroundName = cmbDatabase.SelectedItem
     End Sub
 
     Private Sub btnLoadPOIs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLoadPOIs.Click
@@ -218,21 +249,27 @@ Public Class frmGenomeRunner
 
     Private Sub ComboBoxTier_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbTier.SelectedIndexChanged
         If cmbTier.SelectedIndex <> -1 Then
-            ListFeaturesAvailable.Items.Clear() 'clears all of the features available 
-            LoadAvailableGenomicFeatures() 're-add all of the features of interest
-
-            'removes all of the genomic features that are not included in the tier filter
-            For j As Integer = ListFeaturesAvailable.Items.Count - 1 To 0 Step -1
-                Dim selectedTier As Integer = cmbTier.SelectedItem.Replace("Tier", "").Replace("TFBS", "")
-                Dim lvGF As ListItemGenomicFeature = ListFeaturesAvailable.Items.Item(j)
-                If (lvGF.GenomicFeature.Tier > selectedTier) Or (lvGF.GenomicFeature.Tier <> selectedTier And selectedTier >= 100) Then
-                    ListFeaturesAvailable.Items(j).Remove()
-                End If
-            Next
+            UpdateListFeaturesAvailable()
         End If
     End Sub
 
+    Private Sub UpdateListFeaturesAvailable()
+        ListFeaturesAvailable.Items.Clear() 'clears all of the features available 
+        LoadAvailableGenomicFeatures() 're-add all of the features of interest
+
+        'removes all of the genomic features that are not included in the tier filter
+        For j As Integer = ListFeaturesAvailable.Items.Count - 1 To 0 Step -1
+            Dim selectedTier As Integer = cmbTier.SelectedItem.Replace("Tier", "").Replace("TFBS", "")
+            Dim lvGF As ListItemGenomicFeature = ListFeaturesAvailable.Items.Item(j)
+            If (lvGF.GenomicFeature.Tier > selectedTier) Or (lvGF.GenomicFeature.Tier <> selectedTier And selectedTier >= 100) Then
+                ListFeaturesAvailable.Items(j).Remove()
+            End If
+        Next
+    End Sub
+
     Public Sub LoadAvailableGenomicFeatures()
+        'TODO the following call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
+        'GREngine = New GenomeRunnerEngine()
         Dim GenomicFeatures As List(Of GenomicFeature) = GREngine.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features and adds them to a list
         Dim strCurrCate As String = ""
         Dim CurrCateIndex As Integer = -1
@@ -404,7 +441,7 @@ Public Class frmGenomeRunner
                 FeatureFilePaths.Add(FeatureFile.filPath)
             Next
 
-            Dim Settings As EnrichmentSettings = GetUserSettings()                                                   'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
+            Dim Settings As EnrichmentSettings = GetUserSettings() 'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
             Dim args As EnrichmentArgument = New EnrichmentArgument(GenomicFeaturesToAnalyze, Settings, FeatureFilePaths, Background)
             BackgroundWorkerEnrichmentAnalysis.RunWorkerAsync(args)
             'Analyzer.RunEnrichmentAnlysis(FeatureFilePaths, GenomicFeaturesToAnalyze, Background, Settings)
@@ -733,7 +770,7 @@ Public Class frmGenomeRunner
     End Sub
 
     Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetGenomeBackgroundHG18()
+        Background = GREngine.GetGenomeBackground(ConnectionString)
         lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
         rbUseMonteCarlo.Enabled = True
         UseSpotBackground = False
@@ -744,11 +781,52 @@ Public Class frmGenomeRunner
         frmAbout.ShowDialog()
     End Sub
 
+
     Private Sub rbTradMC_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbTradMC.CheckedChanged
         If rbUseAnalytical.Checked = True And rbTradMC.Checked = True Then MessageBox.Show("Traditional Monte-Carlo test is not available for analytical method") : rbBinomialDistrobution.Checked = True
         If rbUseMonteCarlo.Checked = True And rbTradMC.Checked = True Then txtNumMCtoRun.Value = 10000
         If rbUseMonteCarlo.Checked = True And rbChiSquareTest.Checked = True Then txtNumMCtoRun.Value = 10
     End Sub
+	
+    Private Sub cmbDatabase_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbDatabase.SelectedIndexChanged
+        'Update MySQL connection to use newly selected database.
+        'Reload list of genomic features if a tier is already selected.
+        If cmbDatabase.SelectedIndex <> -1 Then
+            OpenDatabase()
+            If cmbTier.SelectedIndex <> -1 Then
+                listFeaturesToRun.Clear()
+                UpdateListFeaturesAvailable()
+            End If
+            Background = GREngine.GetGenomeBackground(ConnectionString)
+            BackgroundName = cmbDatabase.SelectedItem
+        End If
+    End Sub
+
+    Private Sub cmbOrganism_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbOrganism.SelectedIndexChanged
+        'Update MySQL connection to only show tables beginning with this organism's prefix.
+        'TODO This is probably a lot of extra work for nothing.
+        '     Maybe save the list of all the tables but only show those belonging to the selected organism.
+        OpenDatabase()
+        ReloadCmbDatabase()
+    End Sub
+
+    Private Sub mnuMergeLogFiles_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuMergeLogFiles.Click
+        Dim FolderBrowser As New System.Windows.Forms.FolderBrowserDialog
+        FolderBrowser.Description = "Select folder of .gr files to merge."
+        Dim dlgResult As DialogResult = FolderBrowser.ShowDialog()
+        Dim filePaths As New List(Of String)
+        Dim output As New Output(0)
+
+        If dlgResult = Windows.Forms.DialogResult.OK Then
+            For Each filePath In Directory.GetFiles(FolderBrowser.SelectedPath)
+                If filePath.Contains(".gr") Then
+                    filePaths.Add(filePath)
+                End If
+            Next
+            output.OutputMergedLogFiles(filePaths)
+        End If
+    End Sub
+
 End Class
 
 'these settings are passed onto the background worker as arguments

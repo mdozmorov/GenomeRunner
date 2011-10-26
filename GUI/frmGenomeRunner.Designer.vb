@@ -29,6 +29,10 @@ Partial Class frmGenomeRunner
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.lblOrganism = New System.Windows.Forms.Label()
+        Me.cmbOrganism = New System.Windows.Forms.ComboBox()
+        Me.lblDatabase = New System.Windows.Forms.Label()
+        Me.cmbDatabase = New System.Windows.Forms.ComboBox()
         Me.btnRemoveFeaturesToRun = New System.Windows.Forms.Button()
         Me.btnRemoveFOI = New System.Windows.Forms.Button()
         Me.lblLoadFile = New System.Windows.Forms.Label()
@@ -105,6 +109,7 @@ Partial Class frmGenomeRunner
         Me.txtJobName = New System.Windows.Forms.TextBox()
         Me.BackgroundWorkerEnrichmentAnalysis = New System.ComponentModel.BackgroundWorker()
         Me.BackgroundWorkerAnnotationAnalysis = New System.ComponentModel.BackgroundWorker()
+        Me.mnuMergeLogFiles = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
@@ -160,7 +165,7 @@ Partial Class frmGenomeRunner
         Me.Label2.AutoSize = True
         Me.Label2.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(212, 24)
+        Me.Label2.Location = New System.Drawing.Point(206, 82)
         Me.Label2.MaximumSize = New System.Drawing.Size(180, 0)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(139, 13)
@@ -170,6 +175,10 @@ Partial Class frmGenomeRunner
         'GroupBox1
         '
         Me.GroupBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.GroupBox1.Controls.Add(Me.lblOrganism)
+        Me.GroupBox1.Controls.Add(Me.cmbOrganism)
+        Me.GroupBox1.Controls.Add(Me.lblDatabase)
+        Me.GroupBox1.Controls.Add(Me.cmbDatabase)
         Me.GroupBox1.Controls.Add(Me.btnRemoveFeaturesToRun)
         Me.GroupBox1.Controls.Add(Me.btnRemoveFOI)
         Me.GroupBox1.Controls.Add(Me.lblLoadFile)
@@ -192,6 +201,44 @@ Partial Class frmGenomeRunner
         Me.GroupBox1.TabIndex = 36
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Add files with Features Of Interest and select Genomic Features to analyze"
+        '
+        'lblOrganism
+        '
+        Me.lblOrganism.AutoSize = True
+        Me.lblOrganism.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblOrganism.Location = New System.Drawing.Point(206, 32)
+        Me.lblOrganism.Name = "lblOrganism"
+        Me.lblOrganism.Size = New System.Drawing.Size(54, 13)
+        Me.lblOrganism.TabIndex = 76
+        Me.lblOrganism.Text = "Organism:"
+        '
+        'cmbOrganism
+        '
+        Me.cmbOrganism.FormattingEnabled = True
+        Me.cmbOrganism.Items.AddRange(New Object() {"Human", "Mouse"})
+        Me.cmbOrganism.Location = New System.Drawing.Point(209, 56)
+        Me.cmbOrganism.Name = "cmbOrganism"
+        Me.cmbOrganism.Size = New System.Drawing.Size(98, 23)
+        Me.cmbOrganism.TabIndex = 75
+        Me.cmbOrganism.Text = "Human"
+        '
+        'lblDatabase
+        '
+        Me.lblDatabase.AutoSize = True
+        Me.lblDatabase.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblDatabase.Location = New System.Drawing.Point(311, 32)
+        Me.lblDatabase.Name = "lblDatabase"
+        Me.lblDatabase.Size = New System.Drawing.Size(56, 13)
+        Me.lblDatabase.TabIndex = 74
+        Me.lblDatabase.Text = "Database:"
+        '
+        'cmbDatabase
+        '
+        Me.cmbDatabase.FormattingEnabled = True
+        Me.cmbDatabase.Location = New System.Drawing.Point(313, 56)
+        Me.cmbDatabase.Name = "cmbDatabase"
+        Me.cmbDatabase.Size = New System.Drawing.Size(98, 23)
+        Me.cmbDatabase.TabIndex = 73
         '
         'btnRemoveFeaturesToRun
         '
@@ -242,7 +289,7 @@ Partial Class frmGenomeRunner
         Me.cmbTier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbTier.FormattingEnabled = True
         Me.cmbTier.Items.AddRange(New Object() {"Tier1", "Tier2", "Tier3", "TFBS100"})
-        Me.cmbTier.Location = New System.Drawing.Point(215, 44)
+        Me.cmbTier.Location = New System.Drawing.Point(209, 102)
         Me.cmbTier.Name = "cmbTier"
         Me.cmbTier.Size = New System.Drawing.Size(161, 23)
         Me.cmbTier.TabIndex = 3
@@ -306,7 +353,7 @@ Partial Class frmGenomeRunner
         'ListFeaturesAvailable
         '
         Me.ListFeaturesAvailable.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.ListFeaturesAvailable.Location = New System.Drawing.Point(215, 73)
+        Me.ListFeaturesAvailable.Location = New System.Drawing.Point(209, 131)
         Me.ListFeaturesAvailable.Name = "ListFeaturesAvailable"
         Me.ListFeaturesAvailable.ShowItemToolTips = True
         Me.ListFeaturesAvailable.Size = New System.Drawing.Size(161, 331)
@@ -745,7 +792,7 @@ Partial Class frmGenomeRunner
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCoordinatesToSNPs, Me.mnuSNPsToCoordinates, Me.mnuGenerateListOfRandomCoordinates, Me.mnuGenerateListOfRandomSNPs, Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem, Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem, Me.SetDatabaseConnectionSettingsToolStripMenuItem, Me.CreateLocalGenomeRunnerTableToolStripMenuItem})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCoordinatesToSNPs, Me.mnuSNPsToCoordinates, Me.mnuGenerateListOfRandomCoordinates, Me.mnuGenerateListOfRandomSNPs, Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem, Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem, Me.SetDatabaseConnectionSettingsToolStripMenuItem, Me.CreateLocalGenomeRunnerTableToolStripMenuItem, Me.mnuMergeLogFiles})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(44, 20)
         Me.mnuTools.Text = "&Tools"
@@ -881,6 +928,12 @@ Partial Class frmGenomeRunner
         'BackgroundWorkerAnnotationAnalysis
         '
         '
+        'mnuMergeLogFiles
+        '
+        Me.mnuMergeLogFiles.Name = "mnuMergeLogFiles"
+        Me.mnuMergeLogFiles.Size = New System.Drawing.Size(291, 22)
+        Me.mnuMergeLogFiles.Text = "Merge log files"
+        '
         'frmGenomeRunner
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1008,5 +1061,10 @@ Partial Class frmGenomeRunner
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents rbTradMC As System.Windows.Forms.RadioButton
+    Friend WithEvents lblDatabase As System.Windows.Forms.Label
+    Friend WithEvents cmbDatabase As System.Windows.Forms.ComboBox
+    Friend WithEvents lblOrganism As System.Windows.Forms.Label
+    Friend WithEvents cmbOrganism As System.Windows.Forms.ComboBox
+    Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
 
 End Class

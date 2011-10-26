@@ -6346,29 +6346,29 @@ End Class
     '   -- ALGLIB --
     '      Copyright 20.03.2009 by Bochkanov Sergey
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    Public Sub minasaoptimize(ByVal state As minasastate, ByVal grad As ndimensional_grad, ByVal rep As ndimensional_rep, ByVal obj As Object)
-        Dim innerobj As alglib.minasa.minasastate = state.csobj.innerobj
-        If grad Is Nothing Then
-            Throw New AlglibException("ALGLIB: error in 'minasaoptimize()' (grad is null)")
-        End If
-        Try
-            While alglib.minasa.minasaiteration(innerobj)
-                If innerobj.needfg Then
-                    grad(innerobj.x, innerobj.f, innerobj.g, obj)
-                    Continue While
-                End If
-                If innerobj.xupdated Then
-                    If rep Isnot Nothing Then
-                        rep(innerobj.x, innerobj.f, obj)
-                    End If
-                    Continue While
-                End If
-                Throw New AlglibException("ALGLIB: error in 'minasaoptimize' (some derivatives were not provided?)")
-            End While
-        Catch E As alglib.alglibexception
-            Throw New AlglibException(E.Msg)
-        End Try
-    End Sub
+    'Public Sub minasaoptimize(ByVal state As minasastate, ByVal grad As ndimensional_grad, ByVal rep As ndimensional_rep, ByVal obj As Object)
+    '    Dim innerobj As alglib.minasa.minasastate = state.csobj.innerobj
+    '    If grad Is Nothing Then
+    '        Throw New AlglibException("ALGLIB: error in 'minasaoptimize()' (grad is null)")
+    '    End If
+    '    Try
+    '        While alglib.minasa.minasaiteration(innerobj)
+    '            If innerobj.needfg Then
+    '                grad(innerobj.x, innerobj.f, innerobj.g, obj)
+    '                Continue While
+    '            End If
+    '            If innerobj.xupdated Then
+    '                If rep Isnot Nothing Then
+    '                    rep(innerobj.x, innerobj.f, obj)
+    '                End If
+    '                Continue While
+    '            End If
+    '            Throw New AlglibException("ALGLIB: error in 'minasaoptimize' (some derivatives were not provided?)")
+    '        End While
+    '    Catch E As alglib.alglibexception
+    '        Throw New AlglibException(E.Msg)
+    '    End Try
+    'End Sub
 
 
 
