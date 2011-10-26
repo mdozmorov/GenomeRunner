@@ -434,13 +434,15 @@ Public Class frmGenomeRunner
     'gets the settings from the user interface and adds them to a EnrichmentSettings class which is passed on to the enrichment analyzer
     Private Function GetUserSettings() As EnrichmentSettings
         Dim JobName As String = " " & txtJobName.Text
-        Dim UseMonteCarlo As Boolean, UseAnalytical As Boolean, UseChiSquare As Boolean, UseBinomialDistrobution As Boolean
+        Dim UseMonteCarlo As Boolean, UseAnalytical As Boolean, UseTradMC As Boolean, UseChiSquare As Boolean, UseBinomialDistrobution As Boolean
         Dim OutputPearsonsCoefficientWeightedMatrix As Boolean
         Dim OutputPercentOverlapWeightedMatrix As Boolean
         If rbChiSquareTest.Checked = True Then
             UseChiSquare = True
         ElseIf rbBinomialDistrobution.Checked = True Then
             UseBinomialDistrobution = True
+        ElseIf rbTradMC.Checked = True Then
+            UseTradMC = True
         End If
         If rbUseMonteCarlo.Checked = True Then
             UseMonteCarlo = True
@@ -462,7 +464,7 @@ Public Class frmGenomeRunner
         Dim featureFile As ListItemFile = listFeatureFiles.Items(0)
         Dim PeasonsAudjustmentConst As Integer = txtPearsonAudjustmentConstant.Value
         Dim PValueOutputDir As String = featureFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & JobName & "\"  'sets what directory the results are to outputed to
-        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, UseAnalytical, UseChiSquare, UseBinomialDistrobution, OutputPercentOverlapWeightedMatrix, rbSquared.Checked, OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, PromoterDownstream, txtproximity.Value)
+        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, OutputPercentOverlapWeightedMatrix, rbSquared.Checked, OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, PromoterDownstream, txtproximity.Value)
         Return Settings
     End Function
 
@@ -621,13 +623,13 @@ Public Class frmGenomeRunner
 
     Private Sub rbUseMonteCarlo_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbUseMonteCarlo.CheckedChanged
         If rbUseMonteCarlo.Checked = True Then
-            txtNumMCtoRun.Enabled = True
+            txtNumMCtoRun.Enabled = True : txtNumMCtoRun.Value = 10 : rbChiSquareTest.Checked = True
         Else
-            txtNumMCtoRun.Enabled = False
+            txtNumMCtoRun.Enabled = False : rbBinomialDistrobution.Checked = True
         End If
         If rbUseMonteCarlo.Checked = True And rbBinomialDistrobution.Checked = True Then
             MessageBox.Show("Binomial distribution not available for Monte Carlo simulation")
-            rbChiSquareTest.Checked = True
+            rbChiSquareTest.Checked = True : txtNumMCtoRun.Value = 10
         End If
     End Sub
 
@@ -668,6 +670,11 @@ Public Class frmGenomeRunner
             MessageBox.Show("Pearson's Contingency Coefficient not available for the Chi Square Test")
             cmbMatrixWeighting.SelectedIndex = 0
         End If
+        If cmbMatrixWeighting.SelectedIndex = 2 And rbTradMC.Checked = True Then
+            MessageBox.Show("Pearson's Contingency Coefficient not available for the traditional Monte-Carlo Test")
+            cmbMatrixWeighting.SelectedIndex = 0
+        End If
+
     End Sub
 
     Private Sub rbBinomialDistrobution_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbBinomialDistrobution.CheckedChanged
@@ -735,6 +742,12 @@ Public Class frmGenomeRunner
 
     Private Sub AboutToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AboutToolStripMenuItem.Click
         frmAbout.ShowDialog()
+    End Sub
+
+    Private Sub rbTradMC_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbTradMC.CheckedChanged
+        If rbUseAnalytical.Checked = True And rbTradMC.Checked = True Then MessageBox.Show("Traditional Monte-Carlo test is not available for analytical method") : rbBinomialDistrobution.Checked = True
+        If rbUseMonteCarlo.Checked = True And rbTradMC.Checked = True Then txtNumMCtoRun.Value = 10000
+        If rbUseMonteCarlo.Checked = True And rbChiSquareTest.Checked = True Then txtNumMCtoRun.Value = 10
     End Sub
 End Class
 

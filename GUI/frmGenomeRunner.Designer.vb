@@ -45,15 +45,16 @@ Partial Class frmGenomeRunner
         Me.GroupBox7 = New System.Windows.Forms.GroupBox()
         Me.txtPvalueThreshold = New System.Windows.Forms.NumericUpDown()
         Me.txtNumMCtoRun = New System.Windows.Forms.NumericUpDown()
-        Me.GroupBoxPearsons = New System.Windows.Forms.GroupBox()
-        Me.txtPearsonAudjustmentConstant = New System.Windows.Forms.NumericUpDown()
-        Me.Label8 = New System.Windows.Forms.Label()
         Me.GroupBoxPercentAudjustment = New System.Windows.Forms.GroupBox()
         Me.rbLinear = New System.Windows.Forms.RadioButton()
         Me.rbSquared = New System.Windows.Forms.RadioButton()
+        Me.GroupBoxPearsons = New System.Windows.Forms.GroupBox()
+        Me.txtPearsonAudjustmentConstant = New System.Windows.Forms.NumericUpDown()
+        Me.Label8 = New System.Windows.Forms.Label()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.cmbMatrixWeighting = New System.Windows.Forms.ComboBox()
         Me.GroupBox5 = New System.Windows.Forms.GroupBox()
+        Me.rbTradMC = New System.Windows.Forms.RadioButton()
         Me.rbChiSquareTest = New System.Windows.Forms.RadioButton()
         Me.rbBinomialDistrobution = New System.Windows.Forms.RadioButton()
         Me.Label15 = New System.Windows.Forms.Label()
@@ -110,9 +111,9 @@ Partial Class frmGenomeRunner
         Me.GroupBox7.SuspendLayout()
         CType(Me.txtPvalueThreshold, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.txtNumMCtoRun, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.GroupBoxPercentAudjustment.SuspendLayout()
         Me.GroupBoxPearsons.SuspendLayout()
         CType(Me.txtPearsonAudjustmentConstant, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.GroupBoxPercentAudjustment.SuspendLayout()
         Me.GroupBox5.SuspendLayout()
         Me.GroupBox3.SuspendLayout()
         Me.GroupBox6.SuspendLayout()
@@ -339,8 +340,8 @@ Partial Class frmGenomeRunner
         'GroupBox7
         '
         Me.GroupBox7.Controls.Add(Me.txtPvalueThreshold)
-        Me.GroupBox7.Controls.Add(Me.txtNumMCtoRun)
         Me.GroupBox7.Controls.Add(Me.GroupBoxPearsons)
+        Me.GroupBox7.Controls.Add(Me.txtNumMCtoRun)
         Me.GroupBox7.Controls.Add(Me.GroupBoxPercentAudjustment)
         Me.GroupBox7.Controls.Add(Me.Label7)
         Me.GroupBox7.Controls.Add(Me.cmbMatrixWeighting)
@@ -350,7 +351,7 @@ Partial Class frmGenomeRunner
         Me.GroupBox7.Controls.Add(Me.Label5)
         Me.GroupBox7.Location = New System.Drawing.Point(5, 19)
         Me.GroupBox7.Name = "GroupBox7"
-        Me.GroupBox7.Size = New System.Drawing.Size(259, 258)
+        Me.GroupBox7.Size = New System.Drawing.Size(259, 307)
         Me.GroupBox7.TabIndex = 83
         Me.GroupBox7.TabStop = False
         Me.GroupBox7.Text = "Enrichment Analysis Settings"
@@ -359,7 +360,7 @@ Partial Class frmGenomeRunner
         '
         Me.txtPvalueThreshold.DecimalPlaces = 3
         Me.txtPvalueThreshold.Increment = New Decimal(New Integer() {1, 0, 0, 196608})
-        Me.txtPvalueThreshold.Location = New System.Drawing.Point(7, 141)
+        Me.txtPvalueThreshold.Location = New System.Drawing.Point(7, 164)
         Me.txtPvalueThreshold.Name = "txtPvalueThreshold"
         Me.txtPvalueThreshold.Size = New System.Drawing.Size(75, 20)
         Me.txtPvalueThreshold.TabIndex = 11
@@ -375,39 +376,11 @@ Partial Class frmGenomeRunner
         Me.txtNumMCtoRun.TabIndex = 8
         Me.txtNumMCtoRun.Value = New Decimal(New Integer() {10, 0, 0, 0})
         '
-        'GroupBoxPearsons
-        '
-        Me.GroupBoxPearsons.Controls.Add(Me.txtPearsonAudjustmentConstant)
-        Me.GroupBoxPearsons.Controls.Add(Me.Label8)
-        Me.GroupBoxPearsons.Location = New System.Drawing.Point(9, 206)
-        Me.GroupBoxPearsons.Name = "GroupBoxPearsons"
-        Me.GroupBoxPearsons.Size = New System.Drawing.Size(242, 42)
-        Me.GroupBoxPearsons.TabIndex = 91
-        Me.GroupBoxPearsons.TabStop = False
-        '
-        'txtPearsonAudjustmentConstant
-        '
-        Me.txtPearsonAudjustmentConstant.Location = New System.Drawing.Point(173, 16)
-        Me.txtPearsonAudjustmentConstant.Maximum = New Decimal(New Integer() {200000000, 0, 0, 0})
-        Me.txtPearsonAudjustmentConstant.Name = "txtPearsonAudjustmentConstant"
-        Me.txtPearsonAudjustmentConstant.Size = New System.Drawing.Size(62, 20)
-        Me.txtPearsonAudjustmentConstant.TabIndex = 13
-        Me.txtPearsonAudjustmentConstant.Value = New Decimal(New Integer() {100, 0, 0, 0})
-        '
-        'Label8
-        '
-        Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(6, 19)
-        Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(161, 13)
-        Me.Label8.TabIndex = 0
-        Me.Label8.Text = "Multiply Pearson's Coefficient by:"
-        '
         'GroupBoxPercentAudjustment
         '
         Me.GroupBoxPercentAudjustment.Controls.Add(Me.rbLinear)
         Me.GroupBoxPercentAudjustment.Controls.Add(Me.rbSquared)
-        Me.GroupBoxPercentAudjustment.Location = New System.Drawing.Point(8, 206)
+        Me.GroupBoxPercentAudjustment.Location = New System.Drawing.Point(7, 232)
         Me.GroupBoxPercentAudjustment.Name = "GroupBoxPercentAudjustment"
         Me.GroupBoxPercentAudjustment.Size = New System.Drawing.Size(242, 42)
         Me.GroupBoxPercentAudjustment.TabIndex = 90
@@ -437,11 +410,39 @@ Partial Class frmGenomeRunner
         Me.ToolTip2.SetToolTip(Me.rbSquared, "Use binomial distrobution to calculate the P-values")
         Me.rbSquared.UseVisualStyleBackColor = True
         '
+        'GroupBoxPearsons
+        '
+        Me.GroupBoxPearsons.Controls.Add(Me.txtPearsonAudjustmentConstant)
+        Me.GroupBoxPearsons.Controls.Add(Me.Label8)
+        Me.GroupBoxPearsons.Location = New System.Drawing.Point(5, 255)
+        Me.GroupBoxPearsons.Name = "GroupBoxPearsons"
+        Me.GroupBoxPearsons.Size = New System.Drawing.Size(242, 39)
+        Me.GroupBoxPearsons.TabIndex = 91
+        Me.GroupBoxPearsons.TabStop = False
+        '
+        'txtPearsonAudjustmentConstant
+        '
+        Me.txtPearsonAudjustmentConstant.Location = New System.Drawing.Point(173, 12)
+        Me.txtPearsonAudjustmentConstant.Maximum = New Decimal(New Integer() {200000000, 0, 0, 0})
+        Me.txtPearsonAudjustmentConstant.Name = "txtPearsonAudjustmentConstant"
+        Me.txtPearsonAudjustmentConstant.Size = New System.Drawing.Size(62, 20)
+        Me.txtPearsonAudjustmentConstant.TabIndex = 13
+        Me.txtPearsonAudjustmentConstant.Value = New Decimal(New Integer() {100, 0, 0, 0})
+        '
+        'Label8
+        '
+        Me.Label8.AutoSize = True
+        Me.Label8.Location = New System.Drawing.Point(6, 16)
+        Me.Label8.Name = "Label8"
+        Me.Label8.Size = New System.Drawing.Size(161, 13)
+        Me.Label8.TabIndex = 0
+        Me.Label8.Text = "Multiply Pearson's Coefficient by:"
+        '
         'Label7
         '
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(6, 163)
+        Me.Label7.Location = New System.Drawing.Point(6, 192)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(67, 13)
         Me.Label7.TabIndex = 86
@@ -452,26 +453,38 @@ Partial Class frmGenomeRunner
         Me.cmbMatrixWeighting.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbMatrixWeighting.FormattingEnabled = True
         Me.cmbMatrixWeighting.Items.AddRange(New Object() {"None", "Percent", "Pearson's contingency coefficient"})
-        Me.cmbMatrixWeighting.Location = New System.Drawing.Point(6, 179)
+        Me.cmbMatrixWeighting.Location = New System.Drawing.Point(6, 208)
         Me.cmbMatrixWeighting.Name = "cmbMatrixWeighting"
         Me.cmbMatrixWeighting.Size = New System.Drawing.Size(242, 21)
         Me.cmbMatrixWeighting.TabIndex = 12
         '
         'GroupBox5
         '
+        Me.GroupBox5.Controls.Add(Me.rbTradMC)
         Me.GroupBox5.Controls.Add(Me.rbChiSquareTest)
         Me.GroupBox5.Controls.Add(Me.rbBinomialDistrobution)
         Me.GroupBox5.Location = New System.Drawing.Point(6, 91)
         Me.GroupBox5.Name = "GroupBox5"
-        Me.GroupBox5.Size = New System.Drawing.Size(242, 42)
+        Me.GroupBox5.Size = New System.Drawing.Size(242, 67)
         Me.GroupBox5.TabIndex = 54
         Me.GroupBox5.TabStop = False
+        '
+        'rbTradMC
+        '
+        Me.rbTradMC.AutoSize = True
+        Me.rbTradMC.Location = New System.Drawing.Point(54, 16)
+        Me.rbTradMC.Name = "rbTradMC"
+        Me.rbTradMC.Size = New System.Drawing.Size(134, 17)
+        Me.rbTradMC.TabIndex = 11
+        Me.rbTradMC.TabStop = True
+        Me.rbTradMC.Text = "Traditional Monte-Carlo"
+        Me.rbTradMC.UseVisualStyleBackColor = True
         '
         'rbChiSquareTest
         '
         Me.rbChiSquareTest.AutoSize = True
         Me.rbChiSquareTest.Checked = True
-        Me.rbChiSquareTest.Location = New System.Drawing.Point(6, 19)
+        Me.rbChiSquareTest.Location = New System.Drawing.Point(6, 40)
         Me.rbChiSquareTest.Name = "rbChiSquareTest"
         Me.rbChiSquareTest.Size = New System.Drawing.Size(101, 17)
         Me.rbChiSquareTest.TabIndex = 9
@@ -483,7 +496,7 @@ Partial Class frmGenomeRunner
         'rbBinomialDistrobution
         '
         Me.rbBinomialDistrobution.AutoSize = True
-        Me.rbBinomialDistrobution.Location = New System.Drawing.Point(113, 19)
+        Me.rbBinomialDistrobution.Location = New System.Drawing.Point(113, 40)
         Me.rbBinomialDistrobution.Name = "rbBinomialDistrobution"
         Me.rbBinomialDistrobution.Size = New System.Drawing.Size(119, 17)
         Me.rbBinomialDistrobution.TabIndex = 10
@@ -539,7 +552,7 @@ Partial Class frmGenomeRunner
         'Label5
         '
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(88, 143)
+        Me.Label5.Location = New System.Drawing.Point(88, 166)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(73, 13)
         Me.Label5.TabIndex = 65
@@ -556,9 +569,9 @@ Partial Class frmGenomeRunner
         Me.GroupBox6.Controls.Add(Me.Label3)
         Me.GroupBox6.Controls.Add(Me.btnCustomizeFilters)
         Me.GroupBox6.Controls.Add(Me.btnLoadCustomGenomicFeatures)
-        Me.GroupBox6.Location = New System.Drawing.Point(6, 294)
+        Me.GroupBox6.Location = New System.Drawing.Point(10, 348)
         Me.GroupBox6.Name = "GroupBox6"
-        Me.GroupBox6.Size = New System.Drawing.Size(259, 254)
+        Me.GroupBox6.Size = New System.Drawing.Size(259, 194)
         Me.GroupBox6.TabIndex = 88
         Me.GroupBox6.TabStop = False
         Me.GroupBox6.Text = "Advanced Settings"
@@ -567,7 +580,7 @@ Partial Class frmGenomeRunner
         '
         Me.Label9.AutoSize = True
         Me.Label9.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label9.Location = New System.Drawing.Point(128, 111)
+        Me.Label9.Location = New System.Drawing.Point(128, 93)
         Me.Label9.Name = "Label9"
         Me.Label9.Size = New System.Drawing.Size(75, 13)
         Me.Label9.TabIndex = 87
@@ -576,7 +589,7 @@ Partial Class frmGenomeRunner
         'btnEnrichmentForAllNames
         '
         Me.btnEnrichmentForAllNames.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.btnEnrichmentForAllNames.Location = New System.Drawing.Point(6, 173)
+        Me.btnEnrichmentForAllNames.Location = New System.Drawing.Point(6, 135)
         Me.btnEnrichmentForAllNames.Name = "btnEnrichmentForAllNames"
         Me.btnEnrichmentForAllNames.Size = New System.Drawing.Size(247, 23)
         Me.btnEnrichmentForAllNames.TabIndex = 18
@@ -586,7 +599,7 @@ Partial Class frmGenomeRunner
         '
         'txtproximity
         '
-        Me.txtproximity.Location = New System.Drawing.Point(131, 127)
+        Me.txtproximity.Location = New System.Drawing.Point(131, 109)
         Me.txtproximity.Maximum = New Decimal(New Integer() {200000000, 0, 0, 0})
         Me.txtproximity.Name = "txtproximity"
         Me.txtproximity.Size = New System.Drawing.Size(119, 20)
@@ -599,7 +612,7 @@ Partial Class frmGenomeRunner
         '
         Me.Label4.AutoSize = True
         Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(5, 27)
+        Me.Label4.Location = New System.Drawing.Point(5, 19)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(89, 13)
         Me.Label4.TabIndex = 69
@@ -609,7 +622,7 @@ Partial Class frmGenomeRunner
         '
         Me.cmbStrandsToAnalyze.FormattingEnabled = True
         Me.cmbStrandsToAnalyze.Items.AddRange(New Object() {"Both", "+", "-"})
-        Me.cmbStrandsToAnalyze.Location = New System.Drawing.Point(4, 127)
+        Me.cmbStrandsToAnalyze.Location = New System.Drawing.Point(4, 109)
         Me.cmbStrandsToAnalyze.Name = "cmbStrandsToAnalyze"
         Me.cmbStrandsToAnalyze.Size = New System.Drawing.Size(119, 21)
         Me.cmbStrandsToAnalyze.TabIndex = 16
@@ -618,7 +631,7 @@ Partial Class frmGenomeRunner
         '
         Me.cmbFilterLevels.FormattingEnabled = True
         Me.cmbFilterLevels.Items.AddRange(New Object() {"Minimum", "Mean"})
-        Me.cmbFilterLevels.Location = New System.Drawing.Point(5, 43)
+        Me.cmbFilterLevels.Location = New System.Drawing.Point(5, 35)
         Me.cmbFilterLevels.Name = "cmbFilterLevels"
         Me.cmbFilterLevels.Size = New System.Drawing.Size(242, 21)
         Me.cmbFilterLevels.TabIndex = 14
@@ -627,7 +640,7 @@ Partial Class frmGenomeRunner
         '
         Me.Label3.AutoSize = True
         Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(1, 111)
+        Me.Label3.Location = New System.Drawing.Point(1, 93)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(103, 13)
         Me.Label3.TabIndex = 84
@@ -636,7 +649,7 @@ Partial Class frmGenomeRunner
         'btnCustomizeFilters
         '
         Me.btnCustomizeFilters.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.btnCustomizeFilters.Location = New System.Drawing.Point(5, 71)
+        Me.btnCustomizeFilters.Location = New System.Drawing.Point(5, 63)
         Me.btnCustomizeFilters.Name = "btnCustomizeFilters"
         Me.btnCustomizeFilters.Size = New System.Drawing.Size(247, 23)
         Me.btnCustomizeFilters.TabIndex = 15
@@ -647,7 +660,7 @@ Partial Class frmGenomeRunner
         'btnLoadCustomGenomicFeatures
         '
         Me.btnLoadCustomGenomicFeatures.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.btnLoadCustomGenomicFeatures.Location = New System.Drawing.Point(7, 211)
+        Me.btnLoadCustomGenomicFeatures.Location = New System.Drawing.Point(6, 164)
         Me.btnLoadCustomGenomicFeatures.Name = "btnLoadCustomGenomicFeatures"
         Me.btnLoadCustomGenomicFeatures.Size = New System.Drawing.Size(248, 23)
         Me.btnLoadCustomGenomicFeatures.TabIndex = 19
@@ -687,38 +700,38 @@ Partial Class frmGenomeRunner
         '
         Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem, Me.OpenBackgroundFileIntervalsToolStripMenuItem, Me.mnuOpenBackgroundFileToolStripMenuItem, Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem, Me.ExitToolStripMenuItem})
         Me.mnuFile.Name = "mnuFile"
-        Me.mnuFile.Size = New System.Drawing.Size(37, 20)
+        Me.mnuFile.Size = New System.Drawing.Size(35, 20)
         Me.mnuFile.Text = "&File"
         '
         'mnuFileOpen
         '
         Me.mnuFileOpen.Name = "mnuFileOpen"
         Me.mnuFileOpen.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.O), System.Windows.Forms.Keys)
-        Me.mnuFileOpen.Size = New System.Drawing.Size(283, 22)
+        Me.mnuFileOpen.Size = New System.Drawing.Size(260, 22)
         Me.mnuFileOpen.Text = "Open input file"
         '
         'UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem
         '
         Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Name = "UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem"
-        Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Size = New System.Drawing.Size(260, 22)
         Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Text = "Use NCBI36/hg18 genomic background"
         '
         'OpenBackgroundFileIntervalsToolStripMenuItem
         '
         Me.OpenBackgroundFileIntervalsToolStripMenuItem.Name = "OpenBackgroundFileIntervalsToolStripMenuItem"
-        Me.OpenBackgroundFileIntervalsToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.OpenBackgroundFileIntervalsToolStripMenuItem.Size = New System.Drawing.Size(260, 22)
         Me.OpenBackgroundFileIntervalsToolStripMenuItem.Text = "Open background file - Intervals"
         '
         'mnuOpenBackgroundFileToolStripMenuItem
         '
         Me.mnuOpenBackgroundFileToolStripMenuItem.Name = "mnuOpenBackgroundFileToolStripMenuItem"
-        Me.mnuOpenBackgroundFileToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.mnuOpenBackgroundFileToolStripMenuItem.Size = New System.Drawing.Size(260, 22)
         Me.mnuOpenBackgroundFileToolStripMenuItem.Text = "Open background file - Spot"
         '
         'mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem
         '
         Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Name = "mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem"
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Size = New System.Drawing.Size(260, 22)
         Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Text = "Load snp130 DB as a background"
         Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Visible = False
         '
@@ -726,7 +739,7 @@ Partial Class frmGenomeRunner
         '
         Me.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem"
         Me.ExitToolStripMenuItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Alt Or System.Windows.Forms.Keys.F4), System.Windows.Forms.Keys)
-        Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(260, 22)
         Me.ExitToolStripMenuItem.Text = "Exit"
         Me.ExitToolStripMenuItem.Visible = False
         '
@@ -734,85 +747,85 @@ Partial Class frmGenomeRunner
         '
         Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCoordinatesToSNPs, Me.mnuSNPsToCoordinates, Me.mnuGenerateListOfRandomCoordinates, Me.mnuGenerateListOfRandomSNPs, Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem, Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem, Me.SetDatabaseConnectionSettingsToolStripMenuItem, Me.CreateLocalGenomeRunnerTableToolStripMenuItem})
         Me.mnuTools.Name = "mnuTools"
-        Me.mnuTools.Size = New System.Drawing.Size(48, 20)
+        Me.mnuTools.Size = New System.Drawing.Size(44, 20)
         Me.mnuTools.Text = "&Tools"
         '
         'mnuCoordinatesToSNPs
         '
         Me.mnuCoordinatesToSNPs.Name = "mnuCoordinatesToSNPs"
-        Me.mnuCoordinatesToSNPs.Size = New System.Drawing.Size(314, 22)
+        Me.mnuCoordinatesToSNPs.Size = New System.Drawing.Size(291, 22)
         Me.mnuCoordinatesToSNPs.Text = "Convert coordinates to SNPs"
         Me.mnuCoordinatesToSNPs.Visible = False
         '
         'mnuSNPsToCoordinates
         '
         Me.mnuSNPsToCoordinates.Name = "mnuSNPsToCoordinates"
-        Me.mnuSNPsToCoordinates.Size = New System.Drawing.Size(314, 22)
+        Me.mnuSNPsToCoordinates.Size = New System.Drawing.Size(291, 22)
         Me.mnuSNPsToCoordinates.Text = "Convert SNP names to coordinates"
         Me.mnuSNPsToCoordinates.Visible = False
         '
         'mnuGenerateListOfRandomCoordinates
         '
         Me.mnuGenerateListOfRandomCoordinates.Name = "mnuGenerateListOfRandomCoordinates"
-        Me.mnuGenerateListOfRandomCoordinates.Size = New System.Drawing.Size(314, 22)
+        Me.mnuGenerateListOfRandomCoordinates.Size = New System.Drawing.Size(291, 22)
         Me.mnuGenerateListOfRandomCoordinates.Text = "Generate list of random genomic regions"
         '
         'mnuGenerateListOfRandomSNPs
         '
         Me.mnuGenerateListOfRandomSNPs.Name = "mnuGenerateListOfRandomSNPs"
-        Me.mnuGenerateListOfRandomSNPs.Size = New System.Drawing.Size(314, 22)
+        Me.mnuGenerateListOfRandomSNPs.Size = New System.Drawing.Size(291, 22)
         Me.mnuGenerateListOfRandomSNPs.Text = "Generate list of random SNPs from dbSNP130"
         '
         'ConvertGenBankIDsToGeneNamesToolStripMenuItem
         '
         Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem.Name = "ConvertGenBankIDsToGeneNamesToolStripMenuItem"
-        Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem.Size = New System.Drawing.Size(314, 22)
+        Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem.Size = New System.Drawing.Size(291, 22)
         Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem.Text = "Convert GenBank IDs to Gene Names"
         Me.ConvertGenBankIDsToGeneNamesToolStripMenuItem.Visible = False
         '
         'ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem
         '
         Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem.Name = "ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem"
-        Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem.Size = New System.Drawing.Size(314, 22)
+        Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem.Size = New System.Drawing.Size(291, 22)
         Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem.Text = "Convert UCSC Gene IDs to Gene Names"
         Me.ConvertUCSCGeneIDsToGeneNamesToolStripMenuItem.Visible = False
         '
         'SetDatabaseConnectionSettingsToolStripMenuItem
         '
         Me.SetDatabaseConnectionSettingsToolStripMenuItem.Name = "SetDatabaseConnectionSettingsToolStripMenuItem"
-        Me.SetDatabaseConnectionSettingsToolStripMenuItem.Size = New System.Drawing.Size(314, 22)
+        Me.SetDatabaseConnectionSettingsToolStripMenuItem.Size = New System.Drawing.Size(291, 22)
         Me.SetDatabaseConnectionSettingsToolStripMenuItem.Text = "Set Database Connection Settings"
         '
         'CreateLocalGenomeRunnerTableToolStripMenuItem
         '
         Me.CreateLocalGenomeRunnerTableToolStripMenuItem.Name = "CreateLocalGenomeRunnerTableToolStripMenuItem"
-        Me.CreateLocalGenomeRunnerTableToolStripMenuItem.Size = New System.Drawing.Size(314, 22)
+        Me.CreateLocalGenomeRunnerTableToolStripMenuItem.Size = New System.Drawing.Size(291, 22)
         Me.CreateLocalGenomeRunnerTableToolStripMenuItem.Text = "Create local GenomeRunner database"
         '
         'HelpToolStripMenuItem
         '
         Me.HelpToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuProgramInterface, Me.mnuGenomeFeatures, Me.AboutToolStripMenuItem})
         Me.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem"
-        Me.HelpToolStripMenuItem.Size = New System.Drawing.Size(44, 20)
+        Me.HelpToolStripMenuItem.Size = New System.Drawing.Size(40, 20)
         Me.HelpToolStripMenuItem.Text = "&Help"
         '
         'mnuProgramInterface
         '
         Me.mnuProgramInterface.Name = "mnuProgramInterface"
-        Me.mnuProgramInterface.Size = New System.Drawing.Size(169, 22)
+        Me.mnuProgramInterface.Size = New System.Drawing.Size(160, 22)
         Me.mnuProgramInterface.Text = "Program interface"
         '
         'mnuGenomeFeatures
         '
         Me.mnuGenomeFeatures.Name = "mnuGenomeFeatures"
-        Me.mnuGenomeFeatures.Size = New System.Drawing.Size(169, 22)
+        Me.mnuGenomeFeatures.Size = New System.Drawing.Size(160, 22)
         Me.mnuGenomeFeatures.Text = "Genome Features"
         '
         'AboutToolStripMenuItem
         '
         Me.AboutToolStripMenuItem.Name = "AboutToolStripMenuItem"
         Me.AboutToolStripMenuItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
-        Me.AboutToolStripMenuItem.Size = New System.Drawing.Size(169, 22)
+        Me.AboutToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
         Me.AboutToolStripMenuItem.Text = "About"
         '
         'OpenFD
@@ -894,11 +907,11 @@ Partial Class frmGenomeRunner
         Me.GroupBox7.PerformLayout()
         CType(Me.txtPvalueThreshold, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.txtNumMCtoRun, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.GroupBoxPercentAudjustment.ResumeLayout(False)
+        Me.GroupBoxPercentAudjustment.PerformLayout()
         Me.GroupBoxPearsons.ResumeLayout(False)
         Me.GroupBoxPearsons.PerformLayout()
         CType(Me.txtPearsonAudjustmentConstant, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.GroupBoxPercentAudjustment.ResumeLayout(False)
-        Me.GroupBoxPercentAudjustment.PerformLayout()
         Me.GroupBox5.ResumeLayout(False)
         Me.GroupBox5.PerformLayout()
         Me.GroupBox3.ResumeLayout(False)
@@ -994,5 +1007,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents BackgroundWorkerAnnotationAnalysis As System.ComponentModel.BackgroundWorker
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents rbTradMC As System.Windows.Forms.RadioButton
 
 End Class

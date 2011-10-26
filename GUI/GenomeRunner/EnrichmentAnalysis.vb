@@ -16,6 +16,7 @@ Namespace GenomeRunner
         Public UseSpotBackground As Boolean                                                         'whether a spotbackground should be used to calculate random associations
         Public UseMonteCarlo As Boolean                                                             'whether Monte Carlo simulations should be used to calculate the number of associations expected by random chance
         Public UseAnalytical As Boolean                                                             'whether the analytical method should be used to calculate the number of associations expected by random chance
+        Public UseTradMC As Boolean                                                                 'whether traditional Monte-Carlo calculations should be used
         Public UseChiSquare As Boolean                                                              'whether the Chi-Square test should be used to calculate the p-value
         Public UseBinomialDistribution As Boolean                                                   'whether binomial distrobution should be used to calculate the p-value
         Public OutputPercentOverlapPvalueMatrix As Boolean                                          'whether a matrix should be outputed where pvalues are weighted by percent overlap
@@ -28,11 +29,12 @@ Namespace GenomeRunner
         Public PromoterDownstream As UInteger = 0                                                  'stores how many base pairs the promoter regions covers downstream of the gene's startpoint
         Public Proximity As UInteger = 0                                                              'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
 
-        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
+        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
             Me.ConnectionString = ConnectionString
             Me.EnrichmentJobName = EnrichmentJobName
             Me.UseMonteCarlo = UseMonteCarlo
             Me.UseAnalytical = UseAnalytical
+            Me.UseTradMC = UseTradMC
             Me.OutputPercentOverlapPvalueMatrix = OutputPercentOverlapPvalueMatrix
             Me.SquarePercentOverlap = SquarePercentOverlap
             Me.OutputPCCweightedPvalueMatrix = OutputPCCweightedPvalueMatrix
@@ -101,12 +103,30 @@ Namespace GenomeRunner
             Directory.CreateDirectory(Settings.OutputDir)
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
+            Dim FeaturesOfInterestNames As New List(Of String)
+            Dim Outputer As Output
+            Dim AccumulatedGenomicFeatures As New Hashtable
+
+            'NOTE: AccumulatedGenomicFeatures is a Hashtable that stores GenomicFeatures specific to each FeatureOfInterest file.
+            '      So, given x genomic features & f features of interest files, there will be:
+            '          x * f genomic features in AccumulatedGenomicFeatures.
+            '      EXAMPLE:
+            '      Features of interest files: "CDBox", "HAcaBox"
+            '      Genomic features: "CpGIslands", "ORegAnno"
+            '      AccumulatedGenomicFeatures = ["CpGIslands"] => {CpGIslands Genomic Feature calculated with CDBox, CpGIslands Genomic Feature calculated with HAcaBox},
+            '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
+            For Each GF In GenomicFeatures
+                AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
+            Next
 
             'goes through each filepath and runs an enrichment analysis on the features in the file
             For Each FeatureFilePath In FeatureOfInterestFilePaths
+                FeaturesOfInterestNames.Add(Path.GetFileNameWithoutExtension(FeatureFilePath))
                 FeaturesOfInterest = LoadFeatureOfInterests(FeatureFilePath)
                 FeaturesOfInterest = OrganizeFeaturesByChrom(FeaturesOfInterest)
-                Dim Outputer As New Output(FeaturesOfInterest.Count)
+                'TODO is it ok that I moved this above the loop?
+                'Dim Outputer As New Output(FeaturesOfInterest.Count)
+                Outputer = New Output(FeaturesOfInterest.Count)
                 Dim isFirstPvalue As Boolean = True                                                                                    'Whether the general information for the feature file should be outputed
                 Dim currGF As Integer = 0
                 'runs the features of interest against the genomic features that were selected to be run
@@ -122,14 +142,17 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    Outputer.OutputPvalueLogFile(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
+                    AccumulatedGenomicFeatures(GF.Name).Add(GF.Clone)
+
+                    Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
+
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
                     currGF += 1
                 Next
 
-                Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
+                'TODO since this is transposed, it doesn't need to happen with each GenomicFeature. Do it after this loop, all at once.
+                'Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath)) 'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
 
                 'Uncomment to additionally output percent weighted matrix
                 'Settings.OutputPercentOverlapPvalueMatrix = True
@@ -143,6 +166,9 @@ Namespace GenomeRunner
 
                 OutputMatrixColumnHeaders = False
             Next
+            Outputer = New Output(FeatureOfInterestFilePaths.Count)
+            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+
             progDone.Invoke(Settings.OutputDir)
         End Sub
 
@@ -184,6 +210,7 @@ Namespace GenomeRunner
                 End If
             Next
             GFeature.ActualHits = ObservedWithin
+            Dim HitArray(NumOfFeatures - 1) As Integer 'Special array to hold number of hits during each MC simulation
             For i As Integer = 0 To Settings.NumMCtoRun - 1
                 Debug.Print("Running MC run# " & i + 1 & " of " & Settings.NumMCtoRun & " " & TimeOfDay)
                 Dim RandomFeatures As List(Of Feature) = createRandomRegions(FeaturesOfInterest, Background, Settings.UseSpotBackground) 'generates a random features of interest 
@@ -207,7 +234,7 @@ Namespace GenomeRunner
                         ExpectedOutside += 1
                     End If
                 Next
-
+                HitArray(ExpectedWithin) += 1    'How ofteh this number of ExpectedWithin was observed
                 randEventsCountMC(i) = ExpectedWithin                              'Store simulation results
             Next
 
@@ -219,17 +246,55 @@ Namespace GenomeRunner
             samplemoments(randEventsCountMC, mean, variance, skewness, kurtosis)
             GFeature.MCMean = mean : GFeature.MCvariance = variance : GFeature.MCskewness = skewness : GFeature.MCkurtosis = kurtosis
             If Settings.UseMonteCarlo = True Then
-                GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+                If Settings.UseChiSquare = True Then
+                    GFeature.PValueMonteCarloChisquare = pValueChiSquare(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pvalue using chisquare
+                    GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
+                ElseIf Settings.UseTradMC = True Then
+                    GFeature.PValueMonteCarloTradMC = pValueTradMC(ObservedWithin, randEventsCountMC.Average, NumOfFeatures, HitArray, Settings.NumMCtoRun)
+                End If
             End If
             If Settings.UseBinomialDistribution = True Then
                 ' GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
             End If
-            GFeature.PCCMonteCarloChiSquare = PearsonsContigencyCoeffcient(ObservedWithin, randEventsCountMC.Average, NumOfFeatures) 'calculates the pearson's congingency coefficient 
             GFeature.MCExpectedHits = randEventsCountMC.Average
             GFeature.ActualHits = ObservedWithin
             Return GFeature
         End Function
 
+        Private Function pValueTradMC(ByVal ObservedWithin As Double, ByVal ExpectedWithinMean As Double, ByVal NumOfFeatures As Integer, ByVal HitArray() As Integer, ByVal NumMCtoRun As Integer)
+            Dim under, over As Integer, t, u As Integer
+            Dim pUnder() As Double, pOver() As Double, Pval As Double = 1
+            ReDim pUnder(NumOfFeatures - 1) : ReDim pOver(NumOfFeatures - 1)
+            If (ObservedWithin = 0 And ExpectedWithinMean = 0) Or (ObservedWithin = System.Math.Round(ExpectedWithinMean, 0)) Then
+                Return Pval
+            End If
+            For t = 0 To NumOfFeatures - 1
+                under = 0 : over = 0
+                For u = 0 To t
+                    under += HitArray(u)
+                Next
+                pUnder(t) = under / NumMCtoRun
+                For u = t To NumOfFeatures - 1
+                    over += HitArray(u)
+                Next
+                pOver(t) = over / NumMCtoRun
+            Next
+            'For debugging only - dump everything into a file 
+            Using HitWriter As StreamWriter = New StreamWriter("F:\111 - " & Date.Now & ".txt")
+                HitWriter.WriteLine("# overlaps" & vbTab & "times observed" & vbTab & "p(over)" & vbTab & "p(under)")
+                For t = 0 To NumOfFeatures - 1
+                    HitWriter.WriteLine(t & vbTab & HitArray(t) & vbTab & pOver(t) & vbTab & pUnder(t))
+                Next
+            End Using
+            '/End for debugging
+            If ObservedWithin > System.Math.Round(ExpectedWithinMean, 0) Then
+                Return Pval = pOver(ObservedWithin)
+            ElseIf ObservedWithin < System.Math.Round(ExpectedWithinMean, 0) Then
+                Return Pval = pUnder(ObservedWithin)
+            Else
+                Return Pval = 1
+            End If
+        End Function
 
         Private Function calculatePValueUsingAnalyticalMethod(ByVal GFeature As GenomicFeature, ByVal Features As List(Of Feature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings) As GenomicFeature
             'runs a normal analysis on the feature
