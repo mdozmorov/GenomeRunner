@@ -38,6 +38,7 @@ Namespace GenomeRunner
         Public PValueMonteCarloChisquare As Double = Nothing 'stores the pvalue of the genomicfeature for the analystical method chi square
         Public PCCMonteCarloChiSquare As Double = Nothing 'stores the Pearson's Contingency Coefficient (C) for the Chi Square 
         Public PCCAnalyticalChiSquare As Double = Nothing 'stores the Pearson's Contingency Coefficient (C) for the analytical method
+        Public PValueMonteCarloTradMC As Double = Nothing ' Stores the p-value calculate via traditional Monte-Carlo simulation
 
         'Values for simple Monte-Carlo p-value calculations
         Public RandTie As UInteger 'store number of tied hits
@@ -87,11 +88,13 @@ Namespace GenomeRunner
             GF.PValueAnalyticalChisquare = PValueAnalyticalChisquare
             GF.PValueMonteCarloBinomialDistribution = PValueMonteCarloBinomialDistribution
             GF.PValueMonteCarloChisquare = PValueMonteCarloChisquare
+            GF.PValueMonteCarloTradMC = PValueMonteCarloTradMC
             GF.PCCMonteCarloChiSquare = PCCMonteCarloChiSquare
             GF.PCCAnalyticalChiSquare = PCCAnalyticalChiSquare
             GF.RandTie = RandTie
             GF.RandUnder = RandUnder
             GF.RandOver = RandOver
+
             Return GF
         End Function
 

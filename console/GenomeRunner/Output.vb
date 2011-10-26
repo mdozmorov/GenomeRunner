@@ -208,7 +208,7 @@ Namespace GenomeRunner
             If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
             '...header string that shows what method was used to calculate the number of random associations expected
             Dim strExpectedMethodUsed As String = "Expected associations calculated using: "
-            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= "Monte Carlo" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
+            If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= Settings.NumMCtoRun & " Monte Carlo runs" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
             '...header string showing how pvalue was calculated 
             Dim strPvalueCalcMethod As String = "P-value was calculated using: "
             If Settings.UseChiSquare = True Then : strPvalueCalcMethod &= "Chi-Square test" : ElseIf Settings.UseBinomialDistribution = True Then : strPvalueCalcMethod &= "Binomial Distribution" : End If
@@ -418,7 +418,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)
                         If GF.ActualHits < GF.AnalyticalExpectedWithin Then
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
@@ -467,7 +467,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)     'Take antilog10 of the max value of Double type, since we can't use 0
                         If GF.ActualHits < GF.MCExpectedHits Then
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
@@ -518,7 +518,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)     'Take antilog10 of the max value of Double type, since we can't use 0
                         If GF.ActualHits < GF.MCExpectedHits Then
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
@@ -586,7 +586,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)     'Take antilog10 of the max value of Double type, since we can't use 0
                         If GF.ActualHits > GF.MCExpectedHits Then
                             If Settings.SquarePercentOverlap = True Then
                                 Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.MCExpectedHits / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
@@ -634,7 +634,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)
                         If GF.ActualHits < GF.MCExpectedHits Then
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
@@ -703,7 +703,7 @@ Namespace GenomeRunner
                         End If
 
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)     'Take antilog10 of the max value of Double type, since we can't use 0
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)     'Take antilog10 of the max value of Double type, since we can't use 0
                         If GF.ActualHits > GF.AnalyticalExpectedWithin Then
                             If Settings.SquarePercentOverlap = True Then
                                 Log10Pvalue = System.Math.Sqrt((GF.ActualHits / NumOfFeatures) * (1 - (GF.AnalyticalExpectedWithin / NumOfFeatures))) * Log10Pvalue          'takes the square root of the ratio
@@ -719,7 +719,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue  'Add - for underrepresentation
                         End If
                     End If
-                        sw.Write(vbTab & Log10Pvalue)
+                    sw.Write(vbTab & Log10Pvalue)
                 Next
                 sw.WriteLine()
             End Using
@@ -827,7 +827,7 @@ Namespace GenomeRunner
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
                     Else
-                        Log10Pvalue = -1 * System.Math.Log10(Double.MinValue)    'If p-value is 0 then set it to max of Double type
+                        Log10Pvalue = System.Math.Log10(Double.MaxValue)    'If p-value is 0 then set it to max of Double type
                         If GF.ActualHits < GF.AnalyticalExpectedWithin Then 'Add - if the p-value related to under representation
                             Log10Pvalue = -1 * Log10Pvalue
                         End If
