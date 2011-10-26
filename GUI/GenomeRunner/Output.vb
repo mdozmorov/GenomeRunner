@@ -14,27 +14,43 @@ Namespace GenomeRunner
         'Outputs combined log file of all files passed
         Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String))
             Dim AccumulatedRows As New Hashtable
+            Dim OrderedAccumulatedRowKeys As New List(Of String) 'This is only needed because Hashtable does not preserver order
+            Dim FileNames As New List(Of String)
+
             For Each filePath In FilePaths
+                FileNames.Add(Path.GetFileName(filePath))
                 Using SR As New StreamReader(filePath)
                     While SR.EndOfStream = False
                         Dim Line = SR.ReadLine().Split(vbTab)
                         If Not AccumulatedRows.ContainsKey(Line(0)) Then
-                            AccumulatedRows.Add(Line(0), New List(Of String))
+                            AccumulatedRows.Add(Line(0), New Hashtable)
+                            OrderedAccumulatedRowKeys.Add(Line(0))
                         End If
-                        AccumulatedRows(Line(0)).Add(Line(1))
+                        AccumulatedRows(Line(0)).Add(Path.GetFileName(filePath), Line(1))
                     End While
                     'TODO raise error if # of keys != # of lines in file
                 End Using
-
-                Using writer As New StreamWriter(Path.GetDirectoryName(FilePaths(0)) & "\combined.gr", False)
-                    For Each key In AccumulatedRows.Keys
-                        'writer.WriteLine(key & vbTab & AccumulatedRows(key).toArray(0))
-                        'TODO Join isn't working for some reason.
-                        writer.WriteLine(key & vbTab & String.Join(vbTab, AccumulatedRows(key).toArray))
-                    Next
-                End Using
-
             Next
+
+            'Write combined file
+            Using writer As New StreamWriter(Path.GetDirectoryName(FilePaths(0)) & "\combined.gr", False)
+                Dim isHeaderRow = True
+                For Each key In OrderedAccumulatedRowKeys
+                    If isHeaderRow Then
+                        writer.WriteLine(vbTab & Join(FileNames.ToArray, vbTab))
+                        isHeaderRow = False
+                    Else
+                        Dim stringsToJoin As New List(Of String)
+                        For Each fileName In FileNames
+                            If Not AccumulatedRows(key).ContainsKey(fileName) Then
+                                AccumulatedRows(key).Add(fileName, "NA")
+                            End If
+                            stringsToJoin.Add(AccumulatedRows(key)(fileName))
+                        Next
+                        writer.WriteLine(key & vbTab & Join(stringsToJoin.ToArray, vbTab))
+                    End If
+                Next
+            End Using
         End Sub
 
         'Outputs the results of the annotation analysis

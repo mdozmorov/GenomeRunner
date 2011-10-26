@@ -824,6 +824,8 @@ Public Class frmGenomeRunner
                 End If
             Next
             output.OutputMergedLogFiles(filePaths)
+            MessageBox.Show("Combined log file outputted to: " & Path.GetDirectoryName(filePaths(0)) & "\combined.gr")
+            Me.Close()
         End If
     End Sub
 

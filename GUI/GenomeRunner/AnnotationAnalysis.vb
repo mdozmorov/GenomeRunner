@@ -467,6 +467,7 @@ Namespace GenomeRunner
                             AmountOverlapEnd = FOIstart - GFEnd + 1
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = -AmountOverlapEnd
                         Else
+                            'TODO find info about nearest GF.
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapTypeData(currHit) = "NA"
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = 0
                         End If
