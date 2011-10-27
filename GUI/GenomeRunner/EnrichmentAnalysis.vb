@@ -304,20 +304,21 @@ Namespace GenomeRunner
                 Next
                 pOver(t) = over / NumMCtoRun
             Next
-            'For debugging only - dump everything into a file 
-            Using HitWriter As StreamWriter = New StreamWriter("F:\111 - " & Date.Now & ".txt")
-                HitWriter.WriteLine("# overlaps" & vbTab & "times observed" & vbTab & "p(over)" & vbTab & "p(under)")
-                For t = 0 To NumOfFeatures - 1
-                    HitWriter.WriteLine(t & vbTab & HitArray(t) & vbTab & pOver(t) & vbTab & pUnder(t))
-                Next
-            End Using
-            '/End for debugging
+            ''For debugging only - dump everything into a file 
+            'Using HitWriter As StreamWriter = New StreamWriter("F:\111 -.txt", True)
+            '    HitWriter.WriteLine(Date.Now)
+            '    HitWriter.WriteLine("# overlaps" & vbTab & "times observed" & vbTab & "p(over)" & vbTab & "p(under)")
+            '    For t = 0 To NumOfFeatures - 1
+            '        HitWriter.WriteLine(t & vbTab & HitArray(t) & vbTab & pOver(t) & vbTab & pUnder(t))
+            '    Next
+            'End Using
+            ''/End for debugging
             If ObservedWithin > System.Math.Round(ExpectedWithinMean, 0) Then
-                Return Pval = pOver(ObservedWithin)
+                Return pOver(ObservedWithin)
             ElseIf ObservedWithin < System.Math.Round(ExpectedWithinMean, 0) Then
-                Return Pval = pUnder(ObservedWithin)
+                Return pUnder(ObservedWithin)
             Else
-                Return Pval = 1
+                Return 1
             End If
         End Function
 
