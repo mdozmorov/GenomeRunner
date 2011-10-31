@@ -88,7 +88,7 @@ Namespace GenomeRunner
                 Progstart.Invoke(GenomicFeatures.Count)
                 Dim CurrGF As Integer = 0
                 For Each GF In GenomicFeatures
-                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name)
+                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
                     GF = Feature_Analysis(GF, FeaturesOfInterestproximity, FeaturesOfInterest, AnnotationSettings)
                     CurrGF += 1
                 Next
@@ -467,6 +467,7 @@ Namespace GenomeRunner
                             AmountOverlapEnd = FOIstart - GFEnd + 1
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = -AmountOverlapEnd
                         Else
+                            'TODO find info about nearest GF.
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapTypeData(currHit) = "NA"
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = 0
                         End If

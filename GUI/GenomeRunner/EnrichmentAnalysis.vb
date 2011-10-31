@@ -3,7 +3,7 @@ Imports alglib
 Imports System.IO
 Namespace GenomeRunner
     Public Delegate Sub ProgressStart(ByVal Total As Integer)
-    Public Delegate Sub ProgressUpdate(ByVal CurrItem As Integer, ByVal CurrFeaturesOfInterestName As String, ByVal GenomicFeatureName As String)
+    Public Delegate Sub ProgressUpdate(ByVal CurrItem As Integer, ByVal CurrFeaturesOfInterestName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRunDone As Integer)
     Public Delegate Sub ProgressDone(ByVal outputDir As String)
 
     'stores the settings that will be used when running the enrichment analysis
@@ -53,6 +53,17 @@ Namespace GenomeRunner
         End Sub
     End Class
 
+    'this class is passed on to the Monte Carlo simulator so that it can return progress updates to the user interface
+    Public Class EnrichmentAnalysisProgress
+        Public featureFileName As String
+        Public overallRunProgress As Integer
+        Public genomicFeatureName As String
+        Public Sub New(ByVal FeatureFileName As String, ByVal OveralRunProgress As Integer, ByVal GenomicFeatureName As String)
+            Me.featureFileName = FeatureFileName
+            Me.overallRunProgress = OveralRunProgress
+            Me.genomicFeatureName = GenomicFeatureName
+        End Sub
+    End Class
 
     Public Class EnrichmentAnalysis
         Dim ConnectionString As String
@@ -134,11 +145,12 @@ Namespace GenomeRunner
                 progStart.Invoke(GenomicFeatures.Count)
                 For Each GF In GenomicFeatures
 
-                    progUpdate.Invoke(currGF, Path.GetFileName(FeatureFilePath), GF.Name)
+                    progUpdate.Invoke(currGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
                     'uses either monte carlo or the analytical method for the enrichment analysis
                     If Settings.UseMonteCarlo = True Then
                         Debug.Print("Running initial analysis MonteCarlo for " & GF.Name)
-                        GF = Calculate_PValue_MonteCarlo(GF, FeaturesOfInterest, Background, Settings)
+                        Dim enrichmentProgress As New EnrichmentAnalysisProgress(Path.GetFileName(FeatureFilePath), currGF, GF.Name)    'stores the progress settings so that they can be passed on to the monte carlo method
+						GF = Calculate_PValue_MonteCarlo(GF, FeaturesOfInterest, Background, Settings, enrichmentProgress)
                     End If
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
@@ -189,7 +201,7 @@ Namespace GenomeRunner
 
 
         'calculates the pvalue using monte carlo
-        Private Function Calculate_PValue_MonteCarlo(ByRef GFeature As GenomicFeature, ByRef FeaturesOfInterest As List(Of Feature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings)
+        Private Function Calculate_PValue_MonteCarlo(ByRef GFeature As GenomicFeature, ByRef FeaturesOfInterest As List(Of Feature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings, ByVal analysisProgress As EnrichmentAnalysisProgress)
             Dim NumOfFeatures As Integer = FeaturesOfInterest.Count
             Dim mean As Double, variance As Double, skewness As Double, kurtosis As Double 't2 As Double, lt As Double, rt As Double
             Dim currentTime As System.DateTime = System.DateTime.Now  'used in the header of the output
@@ -214,6 +226,7 @@ Namespace GenomeRunner
             Dim HitArray(NumOfFeatures - 1) As Integer 'Special array to hold number of hits during each MC simulation
             For i As Integer = 0 To Settings.NumMCtoRun - 1
                 Debug.Print("Running MC run# " & i + 1 & " of " & Settings.NumMCtoRun & " " & TimeOfDay)
+				progUpdate.Invoke(analysisProgress.overallRunProgress, analysisProgress.featureFileName, analysisProgress.genomicFeatureName, i + 1)
                 Dim RandomFeatures As List(Of Feature) = createRandomRegions(FeaturesOfInterest, Background, Settings.UseSpotBackground) 'generates a random features of interest 
                 Dim RandomFeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(RandomFeatures, Settings.Proximity)
 
