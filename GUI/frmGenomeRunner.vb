@@ -145,13 +145,18 @@ Public Class frmGenomeRunner
         SetProgress_ThreadSafe(ProgressBar1, 0)
     End Sub
 
-    Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String)
+    Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRun As Integer)
         SetProgress_ThreadSafe(Me.ProgressBar1, currProgress)
-        SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName)
+        If rbUseAnalytical.Checked = True Then
+            SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName)
+        ElseIf rbUseMonteCarlo.Checked = True Then
+            SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName & ". Monte Carlo run " & NumMonteCarloRun & " of " & txtNumMCtoRun.Value)
+        End If
     End Sub
 
     Private Sub HandleProgressDone(ByVal OuputDir As String)
         SetProgress_ThreadSafe(Me.ProgressBar1, 0)
+		SetProgressLabel_ThreadSafe(lblProgress, "Ready")
         MessageBox.Show(AnalysisType & " Analysis complete.  Results outputed to: " & OuputDir)
     End Sub
 

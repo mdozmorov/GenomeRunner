@@ -88,7 +88,7 @@ Namespace GenomeRunner
                 Progstart.Invoke(GenomicFeatures.Count)
                 Dim CurrGF As Integer = 0
                 For Each GF In GenomicFeatures
-                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name)
+                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
                     GF = Feature_Analysis(GF, FeaturesOfInterestproximity, FeaturesOfInterest, AnnotationSettings)
                     CurrGF += 1
                 Next
