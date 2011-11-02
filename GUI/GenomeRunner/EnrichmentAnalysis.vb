@@ -116,7 +116,7 @@ Namespace GenomeRunner
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
             Dim FeaturesOfInterestNames As New List(Of String)
-            Dim Outputer As Output
+            Dim Outputer As Output = New Output(FeatureOfInterestFilePaths.Count)
             Dim AccumulatedGenomicFeatures As New Hashtable
 
             'NOTE: AccumulatedGenomicFeatures is a Hashtable that stores GenomicFeatures specific to each FeatureOfInterest file.
@@ -130,7 +130,8 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
             Next
-
+            'Prints the legend into the log file
+            Outputer.OutputLogFileHeader(Settings)
             'goes through each filepath and runs an enrichment analysis on the features in the file
             For Each FeatureFilePath In FeatureOfInterestFilePaths
                 FeaturesOfInterestNames.Add(Path.GetFileNameWithoutExtension(FeatureFilePath))
@@ -179,9 +180,8 @@ Namespace GenomeRunner
 
                 OutputMatrixColumnHeaders = False
             Next
-            Outputer = New Output(FeatureOfInterestFilePaths.Count)
-            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
 
+            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
             progDone.Invoke(Settings.OutputDir)
         End Sub
 
@@ -559,7 +559,8 @@ Namespace GenomeRunner
             Next
 
             'Randomly select number between 0 & 1.0; find which chrom this number would be part of.
-            Dim randomIndex As Double = RandomClass.NextDouble()
+            'Dim randomIndex As Double = RandomClass.NextDouble()
+            Dim randomIndex As Double = hqrnduniformr(state)
             Dim randChrom As Integer = -1
             Dim counter As Integer = 0
             While randChrom = -1
