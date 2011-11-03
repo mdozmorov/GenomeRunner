@@ -137,6 +137,7 @@ Public Class frmGenomeRunner
         SetGenomeRunnerDefaults()
         Me.Location = New Point(10, 10)     'Manually set window location    
         cmbMatrixWeighting.SelectedIndex = 0
+        cmbTier.SelectedIndex = 0
         cmbStrandsToAnalyze.SelectedIndex = 0
     End Sub
 

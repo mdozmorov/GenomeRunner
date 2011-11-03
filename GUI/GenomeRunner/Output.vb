@@ -406,6 +406,19 @@ Namespace GenomeRunner
             End Using
         End Sub
 
+        'Prints the legend in the log file
+        Public Sub OutputLogFileHeader(ByVal Settings As EnrichmentSettings)
+            Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
+                writer.WriteLine("Legend:" & vbCrLf & _
+                                 "Observed - Count of FOIs that overlap with GFs" & vbCrLf & _
+                                 "Expected - expected by random chance count of random FOI overlap with GFs" & vbCrLf & _
+                                 "Diff - whether calculated enrichment/depletion is significant" & vbCrLf & _
+                                 "p-val - p-value itself" & vbCrLf & _
+                                 "PCC - Pearson's Contingency Coefficient" & vbCrLf & _
+                                 "Obs/Tot - fraction of FOIs that overlap with GFs")
+            End Using
+        End Sub
+
         'outputs the results of the enrichement analysis into a log file
         Public Sub OutputPvalueLogFileShort(ByRef outputHeader As Boolean, ByRef GFeature As GenomicFeature, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
             Dim mean As Double, variance As Double, skewness As Double, kurtosis As Double

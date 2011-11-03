@@ -116,7 +116,7 @@ Namespace GenomeRunner
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
             Dim FeaturesOfInterestNames As New List(Of String)
-            Dim Outputer As Output
+            Dim Outputer As Output = New Output(FeatureOfInterestFilePaths.Count)
             Dim AccumulatedGenomicFeatures As New Hashtable
 
             'NOTE: AccumulatedGenomicFeatures is a Hashtable that stores GenomicFeatures specific to each FeatureOfInterest file.
@@ -130,7 +130,8 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
             Next
-
+            'Prints the legend into the log file
+            Outputer.OutputLogFileHeader(Settings)
             'goes through each filepath and runs an enrichment analysis on the features in the file
             For Each FeatureFilePath In FeatureOfInterestFilePaths
                 FeaturesOfInterestNames.Add(Path.GetFileNameWithoutExtension(FeatureFilePath))
@@ -179,9 +180,8 @@ Namespace GenomeRunner
 
                 OutputMatrixColumnHeaders = False
             Next
-            Outputer = New Output(FeatureOfInterestFilePaths.Count)
-            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
 
+            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
             progDone.Invoke(Settings.OutputDir)
         End Sub
 
@@ -317,20 +317,21 @@ Namespace GenomeRunner
                 Next
                 pOver(t) = over / NumMCtoRun
             Next
-            'For debugging only - dump everything into a file 
-            Using HitWriter As StreamWriter = New StreamWriter("F:\111 - " & Date.Now & ".txt")
-                HitWriter.WriteLine("# overlaps" & vbTab & "times observed" & vbTab & "p(over)" & vbTab & "p(under)")
-                For t = 0 To NumOfFeatures - 1
-                    HitWriter.WriteLine(t & vbTab & HitArray(t) & vbTab & pOver(t) & vbTab & pUnder(t))
-                Next
-            End Using
-            '/End for debugging
+            ''For debugging only - dump everything into a file 
+            'Using HitWriter As StreamWriter = New StreamWriter("F:\111 -.txt", True)
+            '    HitWriter.WriteLine(Date.Now)
+            '    HitWriter.WriteLine("# overlaps" & vbTab & "times observed" & vbTab & "p(over)" & vbTab & "p(under)")
+            '    For t = 0 To NumOfFeatures - 1
+            '        HitWriter.WriteLine(t & vbTab & HitArray(t) & vbTab & pOver(t) & vbTab & pUnder(t))
+            '    Next
+            'End Using
+            ''/End for debugging
             If ObservedWithin > System.Math.Round(ExpectedWithinMean, 0) Then
-                Return Pval = pOver(ObservedWithin)
+                Return pOver(ObservedWithin)
             ElseIf ObservedWithin < System.Math.Round(ExpectedWithinMean, 0) Then
-                Return Pval = pUnder(ObservedWithin)
+                Return pUnder(ObservedWithin)
             Else
-                Return Pval = 1
+                Return 1
             End If
         End Function
 
@@ -558,7 +559,8 @@ Namespace GenomeRunner
             Next
 
             'Randomly select number between 0 & 1.0; find which chrom this number would be part of.
-            Dim randomIndex As Double = RandomClass.NextDouble()
+            'Dim randomIndex As Double = RandomClass.NextDouble()
+            Dim randomIndex As Double = hqrnduniformr(state)
             Dim randChrom As Integer = -1
             Dim counter As Integer = 0
             While randChrom = -1
