@@ -184,7 +184,8 @@ Namespace GenomeRunner
                     '...appends the returned strand data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If
@@ -195,7 +196,9 @@ Namespace GenomeRunner
                     '...appends the returned name data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.Select(Function(x) x.ToString()).ToArray(), "|")
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.Select(Function(x) x.ToString()).ToArray(), "|")
+                            Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.ToArray(), "|")
                             If stName IsNot Nothing Then : stName.Replace(vbCrLf, "").Replace(Chr(13), "") : End If 'replaces instances of vbCrLf with blanks to prevent new lines from being created
                             writer.Write(vbTab & stName)
                         Else
@@ -208,7 +211,9 @@ Namespace GenomeRunner
                     '...appends the returned threshold data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If
@@ -219,7 +224,9 @@ Namespace GenomeRunner
                     '...appends the overlaptype of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If

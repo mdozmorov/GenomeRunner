@@ -190,18 +190,7 @@ Namespace GenomeRunner
                             If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
                                 Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
                                  Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
-                                'Dim matchesName As Boolean = True
-                                'If genomicFeature.FilteredByName = True And genomicFeature.NamesToInclude.Count <> 0 Then 'if the GR feature is supposed to filtered by name, then the hit is further checked to see if its name matches that of one of the names to be included
-                                '    matchesName = False
-                                '    For Each nameToInclude In genomicFeature.NamesToInclude
-                                '        If featureRow.Name = nameToInclude Then
-                                '            matchesName = True 'if a match is found than the GR featurerow metadata is stored as a returned hit
-                                '        End If
-                                '    Next
-                                'End If
-
-
-                                'If matchesName = True Then
+                                
                                 featureHit.CountData += 1
                                 featureHit.fStartData.Add(featureRow.ChromStart)
                                 featureHit.fEndData.Add(featureRow.ChromEnd)
@@ -214,6 +203,15 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+
+                        'Now if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+
+                            'NOTE: Now when OutputAnnotationAnalysis comes along & sees CountData is 0,
+                            '      it will know this is a special case.
+                        End If
                     Next
 
                 Case Is = "OutputScore"
@@ -468,6 +466,8 @@ Namespace GenomeRunner
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = -AmountOverlapEnd
                         Else
                             'TODO find info about nearest GF.
+                            '     Mikhail's idea: if it gets to this point, put the current FOI into list of GF's then sort them.
+                            '                     look at the GF's before & after this one to find which is closer.
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapTypeData(currHit) = "NA"
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = 0
                         End If
@@ -921,6 +921,50 @@ FeatureLoadStart:
                 'MessageBox.Show("There was an error retrieving the genomic feature data from the server." & vbCrLf & "Retrying to load data" & vbCrLf & e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 GoTo FeatureLoadStart
             End Try
+        End Function
+
+        Function FindNearestRegion(ByVal FOI As Feature, ByVal SQLData As List(Of FeatureSQLData)) As FeaturesReturnedHits
+            'put FOI into list of rows, keep track of where it is
+            Dim FOIasFeatureSQLDataType As New FeatureSQLData
+            FOIasFeatureSQLDataType.Chrom = FOI.Chrom
+            FOIasFeatureSQLDataType.ChromEnd = FOI.ChromEnd
+            FOIasFeatureSQLDataType.ChromStart = FOI.ChromStart
+            FOIasFeatureSQLDataType.Name = FOI.Name
+            SQLData.Add(FOIasFeatureSQLDataType)
+            'sort rows by start point
+            SQLData.Sort(Function(r1, r2) r1.ChromStart.CompareTo(r2.ChromStart))
+
+            'look at rows before & after
+            Dim foiIndex As Integer = SQLData.IndexOf(FOIasFeatureSQLDataType)
+            'TODO SQLData might be completely blank; thus causing an error below.
+            '     for example do mm9test & CDBox
+            'NOTE: if looking at first row, fioIndex - 1 is out of range.
+            '      if looking at last row, foiIndex + 1 is out of range.
+            Dim leftDistance As Integer = -1
+            If (foiIndex - 1) >= 0 Then leftDistance = (FOIasFeatureSQLDataType.ChromStart + SQLData(foiIndex - 1).ChromEnd)
+            Dim rightDistance As Integer = -1
+            If (foiIndex + 1) < (SQLData.Count - 1) Then rightDistance = (SQLData(foiIndex + 1).ChromStart - FOIasFeatureSQLDataType.ChromEnd)
+            Dim featureHit As New FeaturesReturnedHits
+            Dim closestRegion As New FeatureSQLData
+            If leftDistance = -1 Then
+                closestRegion = SQLData(foiIndex + 1)
+                featureHit.OverLapAmountData.Add(rightDistance)
+            ElseIf rightDistance = -1 Or leftDistance < rightDistance Then
+                closestRegion = SQLData(foiIndex - 1)
+                featureHit.OverLapAmountData.Add(leftDistance)
+            Else
+                closestRegion = SQLData(foiIndex + 1)
+                featureHit.OverLapAmountData.Add(rightDistance)
+            End If
+            'remove FOI from list of rows
+            SQLData.Remove(FOIasFeatureSQLDataType)
+            featureHit.fEndData.Add(closestRegion.ChromEnd)
+            featureHit.fStartData.Add(closestRegion.ChromStart)
+            featureHit.NameData.Add(closestRegion.Name)
+            featureHit.OverLapTypeData.Add("No overlap")
+            featureHit.StrandData.Add(closestRegion.Strand)
+            featureHit.ThresholdData.Add(closestRegion.Threshold)
+            Return featureHit
         End Function
 
     End Class
