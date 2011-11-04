@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishUrlHistory>F:\111\|F:\222\|C:\Users\wrenlab\Desktop\genomerunner\|publish\</PublishUrlHistory>
+    <PublishUrlHistory>F:\222\|F:\111\|C:\Users\wrenlab\Desktop\genomerunner\|publish\</PublishUrlHistory>
     <InstallUrlHistory />
     <SupportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</SupportUrlHistory>
     <UpdateUrlHistory />
