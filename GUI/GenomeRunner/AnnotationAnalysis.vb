@@ -936,34 +936,41 @@ FeatureLoadStart:
 
             'look at rows before & after
             Dim foiIndex As Integer = SQLData.IndexOf(FOIasFeatureSQLDataType)
-            'TODO SQLData might be completely blank; thus causing an error below.
-            '     for example do mm9test & CDBox
-            'NOTE: if looking at first row, fioIndex - 1 is out of range.
-            '      if looking at last row, foiIndex + 1 is out of range.
-            Dim leftDistance As Integer = -1
-            If (foiIndex - 1) >= 0 Then leftDistance = (FOIasFeatureSQLDataType.ChromStart + SQLData(foiIndex - 1).ChromEnd)
-            Dim rightDistance As Integer = -1
-            If (foiIndex + 1) < (SQLData.Count - 1) Then rightDistance = (SQLData(foiIndex + 1).ChromStart - FOIasFeatureSQLDataType.ChromEnd)
+
+            'add info for closest left & right regions
             Dim featureHit As New FeaturesReturnedHits
-            Dim closestRegion As New FeatureSQLData
-            If leftDistance = -1 Then
-                closestRegion = SQLData(foiIndex + 1)
-                featureHit.OverLapAmountData.Add(rightDistance)
-            ElseIf rightDistance = -1 Or leftDistance < rightDistance Then
-                closestRegion = SQLData(foiIndex - 1)
-                featureHit.OverLapAmountData.Add(leftDistance)
-            Else
-                closestRegion = SQLData(foiIndex + 1)
-                featureHit.OverLapAmountData.Add(rightDistance)
+            Dim leftRegions As New List(Of FeatureSQLData) 'need to sort these by end point rather than start point like the rest.
+            Dim leftRegion As New FeatureSQLData
+            Dim rightRegion As New FeatureSQLData
+            If (foiIndex - 1) >= 0 Then
+                leftRegions.Clear()
+                For i As Integer = 0 To foiIndex - 1 Step +1
+                    leftRegions.Add(SQLData(i))
+                Next
+                'sort rows by end point since we're on left side; want to find end pt closest to FOI.
+                leftRegions.Sort(Function(r1, r2) r1.ChromEnd.CompareTo(r2.ChromEnd))
+                leftRegion = leftRegions.Last
+                featureHit.fEndData.Add(leftRegion.ChromEnd)
+                featureHit.fStartData.Add(leftRegion.ChromStart)
+                featureHit.NameData.Add(leftRegion.Name)
+                featureHit.OverLapTypeData.Add("Left-No overlap")
+                featureHit.OverLapAmountData.Add(FOIasFeatureSQLDataType.ChromStart - leftRegion.ChromEnd)
+                featureHit.StrandData.Add(leftRegion.Strand)
+                featureHit.ThresholdData.Add(leftRegion.Threshold)
+            End If
+            If (foiIndex + 1) < (SQLData.Count - 1) Then
+                'RIGHT region
+                rightRegion = SQLData(foiIndex + 1)
+                featureHit.fEndData.Add(rightRegion.ChromEnd)
+                featureHit.fStartData.Add(rightRegion.ChromStart)
+                featureHit.NameData.Add(rightRegion.Name)
+                featureHit.OverLapTypeData.Add("Right-No overlap")
+                featureHit.OverLapAmountData.Add(rightRegion.ChromStart - FOIasFeatureSQLDataType.ChromEnd)
+                featureHit.StrandData.Add(rightRegion.Strand)
+                featureHit.ThresholdData.Add(rightRegion.Threshold)
             End If
             'remove FOI from list of rows
             SQLData.Remove(FOIasFeatureSQLDataType)
-            featureHit.fEndData.Add(closestRegion.ChromEnd)
-            featureHit.fStartData.Add(closestRegion.ChromStart)
-            featureHit.NameData.Add(closestRegion.Name)
-            featureHit.OverLapTypeData.Add("No overlap")
-            featureHit.StrandData.Add(closestRegion.Strand)
-            featureHit.ThresholdData.Add(closestRegion.Threshold)
             Return featureHit
         End Function
 

@@ -11,7 +11,7 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>"F:\222\cdbox.bed" "F:\222\tier1sub.txt" e -m mc2</StartArguments>
+    <StartArguments>-h vm-wren-01 -u root -p VentuK78A- -db hg18test "F:\222\cdbox.bed" "F:\222\tier1sub.txt" e -m mc2</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
