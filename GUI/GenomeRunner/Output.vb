@@ -592,7 +592,7 @@ Namespace GenomeRunner
 
         Private Function getPvalueFilename(ByVal Settings As EnrichmentSettings) As String
             Dim name As String = ""
-            'MonteCarlo or Analytical
+            'MonteCarlo, Analytical
             If Settings.UseMonteCarlo Then
                 name &= "_MonteCarlo"
             ElseIf Settings.UseAnalytical Then
@@ -619,62 +619,6 @@ Namespace GenomeRunner
 
             name &= "_Matrix.gr"
             Return Settings.OutputDir & Settings.EnrichmentJobName & name
-
-            '''''''''''''''''''''''''''''''''''''''''''
-            'If Settings.UseMonteCarlo = True Then
-            '    If Settings.UseChiSquare = True Then
-            '        If Settings.OutputPCCweightedPvalueMatrix = True Then
-            '            name = "_MonteCarlo_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
-            '        ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-            '            If Settings.SquarePercentOverlap = True Then
-            '                name = "_MonteCarlo_ChiSquare_WeightedSquarePercentOverlap_Matrix.gr"
-            '            Else
-            '                name = "_MonteCarlo_ChiSquare_WeightedPercentOverlap_Matrix.gr"
-            '            End If
-            '        Else
-            '            name = "_Pvalue_MonteCarlo_ChiSquare_Matrix.gr"
-            '        End If
-            '    ElseIf Settings.UseTradMC = True Then
-            '        If Settings.OutputPCCweightedPvalueMatrix = True Then
-            '            name = "_MonteCarlo_TradMC_WeightedPearsonsCoefficient_Matrix.gr"
-            '        ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-            '            If Settings.SquarePercentOverlap = True Then
-            '                name = "_MonteCarlo_TradMC_WeightedTruePercentOverlap_Matrix.gr"
-            '            Else
-            '                name = "_MonteCarlo_TradMC_WeightedPercentOverlap_Matrix.gr"
-            '            End If
-            '        Else
-            '            name = "_Pvalue_MonteCarlo_TradMC_Matrix.gr"
-            '        End If
-            '    End If
-            'ElseIf Settings.UseAnalytical = True Then
-            '    If Settings.UseChiSquare = True Then
-            '        If Settings.OutputPCCweightedPvalueMatrix = True Then
-            '            name = "_Analytical_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
-            '        ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-            '            If Settings.SquarePercentOverlap = True Then
-            '                name = "_Analytical_ChiSquare_WeightedSquarePercentOverlap_Matrix.gr"
-            '            Else
-            '                name = "_Analytical_ChiSquare_WeightedPercentOverlap_Matrix.gr"
-            '            End If
-            '        Else
-            '            name = "_Pvalue_Analytical_ChiSquare_Matrix.gr"
-            '        End If
-            '    End If
-            '    If Settings.UseBinomialDistribution = True Then
-            '        If Settings.OutputPercentOverlapPvalueMatrix = True Then
-            '            If Settings.SquarePercentOverlap = False Then
-            '                name = "_Analytical_BD_WeightedPercentOverlap_Matrix.gr"
-            '            End If
-            '            If Settings.SquarePercentOverlap = True Then
-            '                name = "_Analytical_BD_WeightedSquarePercentOverlap_Matrix.gr"
-            '            End If
-            '        Else
-            '            name = "_Pvalue_Analytical_BD_Matrix.gr"
-            '        End If
-            '    End If
-            'End If
-            'Return Settings.OutputDir & Settings.EnrichmentJobName & name
         End Function
 
         Private Function getLog10Pvalue(ByVal GF As GenomicFeature, ByVal Settings As EnrichmentSettings) As Double
