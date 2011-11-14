@@ -29,6 +29,7 @@ Partial Class frmGenomeRunner
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.chkbxAllAdjustments = New System.Windows.Forms.CheckBox()
         Me.chkbxShortOnly = New System.Windows.Forms.CheckBox()
         Me.lblOrganism = New System.Windows.Forms.Label()
         Me.cmbOrganism = New System.Windows.Forms.ComboBox()
@@ -176,6 +177,7 @@ Partial Class frmGenomeRunner
         'GroupBox1
         '
         Me.GroupBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.GroupBox1.Controls.Add(Me.chkbxAllAdjustments)
         Me.GroupBox1.Controls.Add(Me.chkbxShortOnly)
         Me.GroupBox1.Controls.Add(Me.lblOrganism)
         Me.GroupBox1.Controls.Add(Me.cmbOrganism)
@@ -204,11 +206,22 @@ Partial Class frmGenomeRunner
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Add files with Features Of Interest and select Genomic Features to analyze"
         '
+        'chkbxAllAdjustments
+        '
+        Me.chkbxAllAdjustments.AutoSize = True
+        Me.chkbxAllAdjustments.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.chkbxAllAdjustments.Location = New System.Drawing.Point(379, 449)
+        Me.chkbxAllAdjustments.Name = "chkbxAllAdjustments"
+        Me.chkbxAllAdjustments.Size = New System.Drawing.Size(77, 14)
+        Me.chkbxAllAdjustments.TabIndex = 78
+        Me.chkbxAllAdjustments.Text = "All Adjustments"
+        Me.chkbxAllAdjustments.UseVisualStyleBackColor = True
+        '
         'chkbxShortOnly
         '
         Me.chkbxShortOnly.AutoSize = True
         Me.chkbxShortOnly.Font = New System.Drawing.Font("Microsoft Sans Serif", 6.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.chkbxShortOnly.Location = New System.Drawing.Point(396, 413)
+        Me.chkbxShortOnly.Location = New System.Drawing.Point(379, 420)
         Me.chkbxShortOnly.Name = "chkbxShortOnly"
         Me.chkbxShortOnly.Size = New System.Drawing.Size(60, 14)
         Me.chkbxShortOnly.TabIndex = 77
@@ -1081,5 +1094,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents cmbOrganism As System.Windows.Forms.ComboBox
     Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkbxShortOnly As System.Windows.Forms.CheckBox
+    Friend WithEvents chkbxAllAdjustments As System.Windows.Forms.CheckBox
 
 End Class

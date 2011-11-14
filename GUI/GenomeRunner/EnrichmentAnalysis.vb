@@ -8,6 +8,8 @@ Namespace GenomeRunner
 
     'stores the settings that will be used when running the enrichment analysis
     Public Class EnrichmentSettings
+        Implements ICloneable
+
         Public ConnectionString As String                                                           'the connection string that is used to connect to the database containing the genomic feature data
         Public NumMCtoRun As Integer                                                                'the number of Monte Carlo simulations to run
         Public PvalueThreshold As Double                                                            'the threshold at which pvalues are considered significant
@@ -51,6 +53,11 @@ Namespace GenomeRunner
             Me.PromoterUpstream = PromoterUpstream
             Me.PromoterDownstream = PromoterDownstream
         End Sub
+
+        Public Function Clone() As Object Implements System.ICloneable.Clone
+            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity)
+            Return eSettings
+        End Function
     End Class
 
     'this class is passed on to the Monte Carlo simulator so that it can return progress updates to the user interface
@@ -181,7 +188,26 @@ Namespace GenomeRunner
                 OutputMatrixColumnHeaders = False
             Next
 
-            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+            If frmGenomeRunner.allAdjustmentsChecked Then
+                'create matrix file for each adjustment set
+                'create different settings then run output for each group of settings
+                '1. no adjustments
+                '2. percent linear
+                '3. percent squared
+                '4. pcc (default 100 I think??)
+                Dim none As EnrichmentSettings = Settings.Clone, percentLinear As EnrichmentSettings = Settings.Clone, percentSquared As EnrichmentSettings = Settings.Clone, pcc As EnrichmentSettings = Settings.Clone
+
+                none.OutputPercentOverlapPvalueMatrix = False : none.OutputPCCweightedPvalueMatrix = False
+                percentLinear.OutputPercentOverlapPvalueMatrix = True : percentLinear.SquarePercentOverlap = False : percentLinear.OutputPCCweightedPvalueMatrix = False
+                percentSquared.OutputPercentOverlapPvalueMatrix = True : percentSquared.SquarePercentOverlap = True : percentSquared.OutputPCCweightedPvalueMatrix = False
+                pcc.OutputPercentOverlapPvalueMatrix = False : pcc.OutputPCCweightedPvalueMatrix = True
+
+                For Each setting In {none, percentLinear, percentSquared, pcc}
+                    Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, setting, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+                Next
+            Else
+                Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+            End If
             progDone.Invoke(Settings.OutputDir)
         End Sub
 

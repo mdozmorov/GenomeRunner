@@ -839,6 +839,11 @@ Public Class frmGenomeRunner
     Private Sub chkbxShortOnly_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkbxShortOnly.CheckedChanged
         shortOnlyChecked = chkbxShortOnly.Checked
     End Sub
+
+    Public Shared allAdjustmentsChecked As Boolean = False
+    Private Sub chkbxAllAdjustments_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkbxAllAdjustments.CheckedChanged
+        allAdjustmentsChecked = chkbxAllAdjustments.Checked
+    End Sub
 End Class
 
 'these settings are passed onto the background worker as arguments
