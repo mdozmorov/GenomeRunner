@@ -939,6 +939,8 @@ FeatureLoadStart:
             Dim leftRegions As New List(Of FeatureSQLData) 'need to sort these by end point rather than start point like the rest.
             Dim leftRegion As New FeatureSQLData
             Dim rightRegion As New FeatureSQLData
+            Dim leftOverlap As Integer = -1
+            Dim rightOverlap As Integer = -1
             If (foiIndex - 1) >= 0 Then
                 leftRegions.Clear()
                 For i As Integer = 0 To foiIndex - 1 Step +1
@@ -947,24 +949,43 @@ FeatureLoadStart:
                 'sort rows by end point since we're on left side; want to find end pt closest to FOI.
                 leftRegions.Sort(Function(r1, r2) r1.ChromEnd.CompareTo(r2.ChromEnd))
                 leftRegion = leftRegions.Last
+                leftOverlap = FOIasFeatureSQLDataType.ChromStart - leftRegion.ChromEnd
                 featureHit.fEndData.Add(leftRegion.ChromEnd)
                 featureHit.fStartData.Add(leftRegion.ChromStart)
                 featureHit.NameData.Add(leftRegion.Name)
                 featureHit.OverLapTypeData.Add("Left-No overlap")
-                featureHit.OverLapAmountData.Add(FOIasFeatureSQLDataType.ChromStart - leftRegion.ChromEnd)
+                featureHit.OverLapAmountData.Add(leftOverlap)
                 featureHit.StrandData.Add(leftRegion.Strand)
                 featureHit.ThresholdData.Add(leftRegion.Threshold)
             End If
             If (foiIndex + 1) < (SQLData.Count - 1) Then
                 'RIGHT region
                 rightRegion = SQLData(foiIndex + 1)
+                rightOverlap = rightRegion.ChromStart - FOIasFeatureSQLDataType.ChromEnd
                 featureHit.fEndData.Add(rightRegion.ChromEnd)
                 featureHit.fStartData.Add(rightRegion.ChromStart)
                 featureHit.NameData.Add(rightRegion.Name)
                 featureHit.OverLapTypeData.Add("Right-No overlap")
-                featureHit.OverLapAmountData.Add(rightRegion.ChromStart - FOIasFeatureSQLDataType.ChromEnd)
+                featureHit.OverLapAmountData.Add(rightOverlap)
                 featureHit.StrandData.Add(rightRegion.Strand)
                 featureHit.ThresholdData.Add(rightRegion.Threshold)
+            End If
+
+            'get rid of longer region if "Short Only" checkbox is checked.
+            If frmGenomeRunner.shortOnlyChecked = True And featureHit.fStartData.Count = 2 Then
+                Dim indexToRemove As New Integer
+                If leftOverlap < rightOverlap Then
+                    indexToRemove = 1
+                Else
+                    indexToRemove = 0
+                End If
+                featureHit.fEndData.Remove(featureHit.fEndData(indexToRemove))
+                featureHit.fStartData.Remove(featureHit.fStartData(indexToRemove))
+                featureHit.NameData.Remove(featureHit.NameData(indexToRemove))
+                featureHit.OverLapTypeData.Remove(featureHit.OverLapTypeData(indexToRemove))
+                featureHit.OverLapAmountData.Remove(featureHit.OverLapAmountData(indexToRemove))
+                featureHit.StrandData.Remove(featureHit.StrandData(indexToRemove))
+                featureHit.ThresholdData.Remove(featureHit.ThresholdData(indexToRemove))
             End If
             'remove FOI from list of rows
             SQLData.Remove(FOIasFeatureSQLDataType)
