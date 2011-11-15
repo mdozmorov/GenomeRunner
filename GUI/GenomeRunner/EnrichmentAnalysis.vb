@@ -118,7 +118,7 @@ Namespace GenomeRunner
 
         'runs an enrichment analysis for a set of feature of interest files.  The paths of the files are passed on and this method reads the contents of the files into memory and runs an enrichment analysis for the genomic features that are passed on
         'as a list
-        Public Sub RunEnrichmentAnlysis(ByVal FeatureOfInterestFilePaths As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings)
+        Public Sub RunEnrichmentAnlysis(ByVal FeatureOfInterestFilePaths As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings, ByVal allAdjustmentsChecked As Boolean)
             Directory.CreateDirectory(Settings.OutputDir)
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
@@ -158,7 +158,7 @@ Namespace GenomeRunner
                     If Settings.UseMonteCarlo = True Then
                         Debug.Print("Running initial analysis MonteCarlo for " & GF.Name)
                         Dim enrichmentProgress As New EnrichmentAnalysisProgress(Path.GetFileName(FeatureFilePath), currGF, GF.Name)    'stores the progress settings so that they can be passed on to the monte carlo method
-						GF = Calculate_PValue_MonteCarlo(GF, FeaturesOfInterest, Background, Settings, enrichmentProgress)
+                        GF = Calculate_PValue_MonteCarlo(GF, FeaturesOfInterest, Background, Settings, enrichmentProgress)
                     End If
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
@@ -188,7 +188,7 @@ Namespace GenomeRunner
                 OutputMatrixColumnHeaders = False
             Next
 
-            If frmGenomeRunner.allAdjustmentsChecked Then
+            If allAdjustmentsChecked Then
                 'create matrix file for each adjustment set
                 'create different settings then run output for each group of settings
                 '1. no adjustments
@@ -238,7 +238,7 @@ Namespace GenomeRunner
             Dim FeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(FeaturesOfInterest, Settings.Proximity)
 
             GFeature.FeatureReturnedData.Clear()
-            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, FeaturesOfInterest, AnnoSettings) 'runs an initial analysis so that the observed within can be determined
+            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, FeaturesOfInterest, AnnoSettings, False) 'runs an initial analysis so that the observed within can be determined
 
             'cycles through each of the features run and gets the number of hits for the FOI
             For x As Integer = 0 To NumOfFeatures - 1 Step +1                                  'Now calculate number of true observations
@@ -265,7 +265,7 @@ Namespace GenomeRunner
                 'For Each rFOI In RandomFeaturesOfInterestproximity
                 '    Debug.Print(rFOI.Chrom & vbTab & rFOI.ChromStart & vbTab & rFOI.ChromEnd)
                 'Next
-                GFeature = fAnalysis.Feature_Analysis(GFeature, RandomFeaturesOfInterestproximity, RandomFeatures, AnnoSettings)     'analizes the randomfeatures. 
+                GFeature = fAnalysis.Feature_Analysis(GFeature, RandomFeaturesOfInterestproximity, RandomFeatures, AnnoSettings, False)     'analizes the randomfeatures. 
                 Dim ExpectedWithin As Integer = 0, ExpectedOutside As Integer = 0                               'Zero out counters for each Monte-Carlo run
                 For x = 0 To NumOfFeatures - 1                                'Calculate statistics for them
                     If GFeature.FeatureReturnedData(x).CountData <> 0 Then                     'If random alternative event observed
@@ -367,7 +367,7 @@ Namespace GenomeRunner
             Dim AnoSettings As New AnnotationSettings(Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity)
             Dim fAnalysis As New AnnotationAnalysis(ConnectionString)
             Dim FeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(Features, Settings.Proximity)
-            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, Features, AnoSettings)
+            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, Features, AnoSettings, False)
             Dim wA(GFeature.FeatureReturnedData.Count - 1) As Integer 'width of each FOI
             Dim hA(GFeature.FeatureReturnedData.Count - 1) As Integer 'stores whether the FOI was a hit or miss 
             For currFOI As Integer = 0 To GFeature.FeatureReturnedData.Count - 1

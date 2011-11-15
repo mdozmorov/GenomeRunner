@@ -385,7 +385,7 @@ Public Class frmGenomeRunner
         Dim args As AnnotationArguments = e.Argument
         'starts the enrichment analysis
         Dim Analyzer As New AnnotationAnalysis(ConnectionString)
-        Analyzer.RunAnnotationAnalysis(args.FeatureFilePaths, args.GenomicFeatures, args.OutputDir, args.AnnotationSettings, progStart, progUpdate, progDone)
+        Analyzer.RunAnnotationAnalysis(args.FeatureFilePaths, args.GenomicFeatures, args.OutputDir, args.AnnotationSettings, progStart, progUpdate, progDone, chkbxShortOnly.Checked)
     End Sub
 
     Private Sub BackgroundWorkerAnnotationAnalysis_RunWorkerCompleted(ByVal sender As System.Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles BackgroundWorkerAnnotationAnalysis.RunWorkerCompleted
@@ -466,7 +466,7 @@ Public Class frmGenomeRunner
         Dim args As EnrichmentArgument = e.Argument
         'starts the enrichment analysis
         Dim Analyzer As New EnrichmentAnalysis(args.Settings.ConnectionString, progStart, progUpdate, progDone)
-        Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings)
+        Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings, chkbxAllAdjustments.Checked)
     End Sub
 
     Private Sub BackgroundWorkerEnrichmentAnalysis_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles BackgroundWorkerEnrichmentAnalysis.RunWorkerCompleted
@@ -835,15 +835,6 @@ Public Class frmGenomeRunner
         End If
     End Sub
 
-    Public Shared shortOnlyChecked As Boolean = False
-    Private Sub chkbxShortOnly_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkbxShortOnly.CheckedChanged
-        shortOnlyChecked = chkbxShortOnly.Checked
-    End Sub
-
-    Public Shared allAdjustmentsChecked As Boolean = False
-    Private Sub chkbxAllAdjustments_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkbxAllAdjustments.CheckedChanged
-        allAdjustmentsChecked = chkbxAllAdjustments.Checked
-    End Sub
 End Class
 
 'these settings are passed onto the background worker as arguments

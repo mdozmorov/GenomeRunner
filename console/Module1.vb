@@ -59,7 +59,9 @@ Module Module1
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun)
                 Dim Analyzer As New EnrichmentAnalysis(Settings.ConnectionString, progStart, progUpdate, progDone)
                 Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(ConnectionString)
-                Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
+                Dim allAdjustments As Boolean = False
+                If params.Any(Function(p) p.Name = "-all") Then allAdjustments = True
+                Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings, allAdjustments)
 
             ElseIf args(2) = "a" Then
                 Dim FeaturesOfInterest As New List(Of String)
@@ -81,7 +83,9 @@ Module Module1
                 Dim analyzer As New AnnotationAnalysis(ConnectionString)
                 Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\"
                 Dim AnoSettings As New AnnotationSettings(5000, 1000, 0)
-                analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
+                Dim shortOnly As Boolean = False
+                If params.Any(Function(p) p.Name = "-short") Then shortOnly = True
+                analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone, shortOnly)
             End If
         End If
     End Sub
@@ -125,7 +129,7 @@ Module Module1
 
     End Sub
 
-    Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String)
+    Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRunDone As Integer)
         ' SetProgress_ThreadSafe(Me.ProgressBar1, currProgress)
         Console.WriteLine("Doing " & AnalysisType & " analysis for " & FeatureFileName & ": " & GenomicFeatureName)
         ' SetProgressLabel_ThreadSafe(lblProgress, "Doing enrichment analysis for " & FeatureFileName & ": " & GenomicFeatureName)
@@ -224,8 +228,9 @@ Module Module1
     Function GetEnrichmentSettings(ByVal outputDirectory As String, ByVal Parameters As List(Of Parameters)) As EnrichmentSettings
         Dim Settings As EnrichmentSettings
         Dim UseMonteCarlo As Boolean = True, UseAnalytical As Boolean = False, NumOfMCToRun As Integer = 10, _
-        UseChiSquareTest As Boolean = True, UseBinomialDistribution As Boolean = False, _
-PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boolean = False, OutputPercentOverlapWeightedMatrix As Boolean = False
+        UseChiSquareTest As Boolean = True, UseTradMC As Boolean = False, UseBinomialDistribution As Boolean = False, _
+PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boolean = False, _
+OutputPercentOverlapWeightedMatrix As Boolean = False, SquarePercentOverlap As Boolean = False
 
         'sets which method should be used to calculate the number of random associations
         For Each param In Parameters
@@ -245,31 +250,38 @@ PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boo
                         End If
                     Next
                     '...sets the method to use for the calculation of the p-value
-                Case Is = "-p"
+                Case Is = "-pval"
                     For Each arg In param.arguments
                         If arg = "ct" Then
                             UseChiSquareTest = True
-                            If IsNumeric(param.arguments(param.arguments.IndexOf(arg) + 1)) Then
-                                NumOfMCToRun = param.arguments(param.arguments.IndexOf(arg) + 1)
-                            End If
-                        End If
-                        If arg = "bd" Then
+                            'If IsNumeric(param.arguments(param.arguments.IndexOf(arg) + 1)) Then
+                            '    NumOfMCToRun = param.arguments(param.arguments.IndexOf(arg) + 1)
+                            'End If
+                        ElseIf arg = "tmc" Then
+                            UseTradMC = True
+                            UseChiSquareTest = False
+                            'If IsNumeric(param.arguments(param.arguments.IndexOf(arg) + 1)) Then
+                            '    NumOfMCToRun = param.arguments(param.arguments.IndexOf(arg) + 1)
+                            'End If
+                        ElseIf arg = "bd" Then
                             UseBinomialDistribution = True
                             UseChiSquareTest = False
                         End If
                     Next
-                Case Is = "-a"
+                Case Is = "-a" 'Adjustments
                     For Each arg In param.arguments
                         If arg = "pc" Then
                             OutputPearsonsCoefficientWeightedMatrix = True
-                        End If
-                        If arg = "po" Then
+                        ElseIf arg = "po" Then
                             OutputPercentOverlapWeightedMatrix = True
+                        End If
+                        If arg = "sq" Then
+                            SquarePercentOverlap = True
                         End If
                     Next
             End Select
         Next
-        Settings = New EnrichmentSettings(GetConnectionString(), "", outputDirectory, UseMonteCarlo, UseAnalytical, UseChiSquareTest, UseBinomialDistribution, OutputPercentOverlapWeightedMatrix, True, OutputPearsonsCoefficientWeightedMatrix, 0, connectSettings.database, False, NumOfMCToRun, PvalueThreshold, "none", 2000, 0, 0)
+        Settings = New EnrichmentSettings(GetConnectionString(), "", outputDirectory, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquareTest, UseBinomialDistribution, OutputPercentOverlapWeightedMatrix, SquarePercentOverlap, OutputPearsonsCoefficientWeightedMatrix, 0, connectSettings.database, False, NumOfMCToRun, PvalueThreshold, "none", 2000, 0, 0)
         Return Settings
     End Function
 
