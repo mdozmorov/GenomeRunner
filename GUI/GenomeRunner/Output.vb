@@ -458,7 +458,8 @@ Namespace GenomeRunner
                     & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
                     & vbCrLf & "Proximity (bp): " & Settings.Proximity _
                     & vbCrLf & strExpectedMethodUsed _
-                    & vbCrLf & strPvalueCalcMethod
+                    & vbCrLf & strPvalueCalcMethod _
+                    & vbCrLf & "Connection String: " & Settings.ConnectionString
                 'writes the header to the log file
                 Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
                     writer.WriteLine(header)
