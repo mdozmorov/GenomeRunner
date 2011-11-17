@@ -11,7 +11,7 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" e -m mc2 -pval tmc -h vm-wren-01 -u root -p VentuK78A- -db hg18test</StartArguments>
+    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" "C:\Ryan Projects\console_config_file.txt" -e</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
