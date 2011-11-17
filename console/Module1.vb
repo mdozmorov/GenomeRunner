@@ -38,50 +38,46 @@ Module Module1
         connectSettings = GetConnectionSettings(params)
         Dim ConnectionString As String = GetConnectionString()
         If args.Length >= 4 Then
+
+            'Read genomic features file from args(1) into GenomicFeatureIDsToRun
+            Dim GenomicFeatureIDsToRun As List(Of Integer) = GetIdsFromFile(args(1))
+
+            'strand is needed for enrichment & annotation
+            Dim strand As String = "both"
+            If params.Any(Function(p) p.Name = "-st") Then
+                strand = params.Find(Function(p) p.Name = "-st").arguments.First
+            End If
+
             If args(3) = "-e" Then
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                'ENRICHMENT
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 AnalysisType = "Enrichment" 'Used to determine what to write for progress updates
-                Dim GenomicFeatureIDsToRun As New List(Of Integer)
+
                 Dim featureOfInterestPath As New List(Of String)
-                'Read genomic features file from args(1) into GenomicFeatureIDsToRun
-                Try
-                    Using sr As New StreamReader(args(1))
-                        While sr.EndOfStream = False
-                            GenomicFeatureIDsToRun.Add(Split(sr.ReadLine(), vbTab)(0))
-                        End While
-                    End Using
-                Catch
-                    Console.WriteLine("Please ensure that the file at '" & args(1) & "' only integers and valid genomic feature ids")
-                End Try
+
                 featureOfInterestPath.Add(args(0))
                 'Parameters = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
                 Dim OutputDir As String = Path.GetDirectoryName(args(0)) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
                 Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
-                Dim strand As String = "both"
-                If params.Any(Function(p) p.Name = "-st") Then
-                    strand = params.Find(Function(p) p.Name = "-st").arguments.First
-                End If
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, strand)
                 Dim Analyzer As New EnrichmentAnalysis(Settings.ConnectionString, progStart, progUpdate, progDone)
                 Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(ConnectionString)
                 Dim allAdjustments As Boolean = False
                 If params.Any(Function(p) p.Name = "-all") Then allAdjustments = True
-                Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings, allAdjustments)
+                Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
             ElseIf args(3) = "-a" Then
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                'ANNOTATION
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 Dim FeaturesOfInterest As New List(Of String)
                 FeaturesOfInterest.Add(args(0))
-                Dim GenomicFeatureIDsToRun As New List(Of Integer)
                 AnalysisType = "Annotation"                                                                                 'Used to determine what to write for progress updates
-                Try
-                    Using sr As New StreamReader(args(1))
-                        While sr.EndOfStream = False
-                            GenomicFeatureIDsToRun.Add(sr.ReadLine())
-                        End While
-                    End Using
-                Catch
-                    Console.WriteLine("Please ensure that the file at '" & args(1) & "' only integers and valid genomic feature ids")
-                End Try
-                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, "both")
+                
+                'TODO need strand arg (currently hard coded below as "both"), but comes from config file. Will Annotation use config 
+                '     file or just params?
+                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, strand)
                 'TODO get this above the loop now
                 'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis(ConnectionString)
@@ -127,6 +123,20 @@ Module Module1
         Console.WriteLine("")
        
     End Sub
+
+    Private Function GetIdsFromFile(ByRef filePath As String) As List(Of Integer)
+        Dim GenomicFeatureIDsToRun As New List(Of Integer)
+        Try
+            Using sr As New StreamReader(filePath)
+                While sr.EndOfStream = False
+                    GenomicFeatureIDsToRun.Add(Split(sr.ReadLine(), vbTab)(0))
+                End While
+            End Using
+        Catch
+            Console.WriteLine("Please ensure that the file at '" & filePath & "' only integers and valid genomic feature ids")
+        End Try
+        Return GenomicFeatureIDsToRun
+    End Function
 
     '####used to update progress of the analysis
     Private Sub HandleProgressStart(ByVal progressMaximum As Integer)
@@ -272,6 +282,7 @@ OutputPercentOverlapWeightedMatrix As Boolean = False, SquarePercentOverlap As B
         Dim FilterLevel As String = "none"
         Dim PearsonsAdjustment As Integer = 0
         Dim proximity As UInteger = 0
+        Dim AllAdjustments = False
 
         'sets which method should be used to calculate the number of random associations
         For Each param In Parameters
@@ -316,6 +327,8 @@ OutputPercentOverlapWeightedMatrix As Boolean = False, SquarePercentOverlap As B
                             PearsonsAdjustment = arg.Remove(0, 2)
                         ElseIf arg = "po" Then
                             OutputPercentOverlapWeightedMatrix = True
+                        ElseIf arg = "all" Then
+                            AllAdjustments = True
                         End If
                         If arg = "sq" Then
                             SquarePercentOverlap = True
@@ -347,7 +360,7 @@ OutputPercentOverlapWeightedMatrix As Boolean = False, SquarePercentOverlap As B
                                           UseTradMC, UseChiSquareTest, UseBinomialDistribution, _
                                           OutputPercentOverlapWeightedMatrix, SquarePercentOverlap, _
                                           OutputPearsonsCoefficientWeightedMatrix, PearsonsAdjustment, _
-                                          connectSettings.database, False, NumOfMCToRun, PvalueThreshold, _
+                                          AllAdjustments, connectSettings.database, False, NumOfMCToRun, PvalueThreshold, _
                                           FilterLevel, 2000, 0, proximity)
         Return Settings
     End Function

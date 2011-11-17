@@ -466,7 +466,7 @@ Public Class frmGenomeRunner
         Dim args As EnrichmentArgument = e.Argument
         'starts the enrichment analysis
         Dim Analyzer As New EnrichmentAnalysis(args.Settings.ConnectionString, progStart, progUpdate, progDone)
-        Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings, chkbxAllAdjustments.Checked)
+        Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings)
     End Sub
 
     Private Sub BackgroundWorkerEnrichmentAnalysis_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles BackgroundWorkerEnrichmentAnalysis.RunWorkerCompleted
@@ -480,6 +480,7 @@ Public Class frmGenomeRunner
         Dim UseMonteCarlo As Boolean, UseAnalytical As Boolean, UseTradMC As Boolean, UseChiSquare As Boolean, UseBinomialDistrobution As Boolean
         Dim OutputPearsonsCoefficientWeightedMatrix As Boolean
         Dim OutputPercentOverlapWeightedMatrix As Boolean
+        Dim AllAdjustments As Boolean = False
         If rbChiSquareTest.Checked = True Then
             UseChiSquare = True
         ElseIf rbBinomialDistrobution.Checked = True Then
@@ -503,11 +504,19 @@ Public Class frmGenomeRunner
             Case Is = 2
                 OutputPercentOverlapWeightedMatrix = False
                 OutputPearsonsCoefficientWeightedMatrix = True
+            Case Is = 3
+                AllAdjustments = True
         End Select
         Dim featureFile As ListItemFile = listFeatureFiles.Items(0)
         Dim PeasonsAudjustmentConst As Integer = txtPearsonAudjustmentConstant.Value
         Dim PValueOutputDir As String = featureFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & JobName & "\"  'sets what directory the results are to outputed to
-        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, OutputPercentOverlapWeightedMatrix, rbSquared.Checked, OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, PromoterDownstream, txtproximity.Value)
+        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, _
+                                               UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, _
+                                               OutputPercentOverlapWeightedMatrix, rbSquared.Checked, _
+                                               OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, _
+                                               AllAdjustments, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, _
+                                               txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, _
+                                               PromoterDownstream, txtproximity.Value)
         Return Settings
     End Function
 
@@ -707,6 +716,9 @@ Public Class frmGenomeRunner
             GroupBoxPercentAudjustment.Visible = True
         ElseIf cmbMatrixWeighting.SelectedIndex = 2 Then
             GroupBoxPearsons.Visible = True
+            GroupBoxPercentAudjustment.Visible = False
+        ElseIf cmbMatrixWeighting.SelectedIndex = 3 Then
+            GroupBoxPearsons.Visible = False
             GroupBoxPercentAudjustment.Visible = False
         End If
         If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistrobution.Checked = True Then

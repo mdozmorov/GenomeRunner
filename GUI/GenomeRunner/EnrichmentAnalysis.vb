@@ -25,13 +25,14 @@ Namespace GenomeRunner
         Public SquarePercentOverlap As Boolean                                                      'whether the percent overlap weight should be sqaured before being applyed 
         Public OutputPCCweightedPvalueMatrix As Boolean                                             'whether a matrix should be outputed where pvalues are weighted by the pearson's contingency coefficient 
         Public PearsonsAudjustment As UInteger                                                       'this number is used to audjust the pearson's contingency coefficient for the matrix output
+        Public AllAdjustments As Boolean
         Public OutputDir As String                                                                  'the directory to which the results of the enrichment analysis should be outputed to
         Public FilterLevel As String                                                                'used to store what level the filters were at so it can be recorded in the log file
         Public PromoterUpstream As UInteger = 0                                                       'stores how many base pairs the promoter region begins upstream of the gene start point 
         Public PromoterDownstream As UInteger = 0                                                  'stores how many base pairs the promoter regions covers downstream of the gene's startpoint
         Public Proximity As UInteger = 0                                                              'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
 
-        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
+        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
             Me.ConnectionString = ConnectionString
             Me.EnrichmentJobName = EnrichmentJobName
             Me.UseMonteCarlo = UseMonteCarlo
@@ -41,6 +42,7 @@ Namespace GenomeRunner
             Me.SquarePercentOverlap = SquarePercentOverlap
             Me.OutputPCCweightedPvalueMatrix = OutputPCCweightedPvalueMatrix
             Me.PearsonsAudjustment = PearsonsAudjustment
+            Me.AllAdjustments = AllAdjustments
             Me.UseChiSquare = UseChiSquare
             Me.UseBinomialDistribution = UseBinomialDistribution
             Me.UseSpotBackground = UseSpotBackground
@@ -55,7 +57,7 @@ Namespace GenomeRunner
         End Sub
 
         Public Function Clone() As Object Implements System.ICloneable.Clone
-            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity)
+            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity)
             Return eSettings
         End Function
     End Class
@@ -118,7 +120,7 @@ Namespace GenomeRunner
 
         'runs an enrichment analysis for a set of feature of interest files.  The paths of the files are passed on and this method reads the contents of the files into memory and runs an enrichment analysis for the genomic features that are passed on
         'as a list
-        Public Sub RunEnrichmentAnlysis(ByVal FeatureOfInterestFilePaths As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings, ByVal allAdjustmentsChecked As Boolean)
+        Public Sub RunEnrichmentAnlysis(ByVal FeatureOfInterestFilePaths As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings)
             Directory.CreateDirectory(Settings.OutputDir)
             Dim FeaturesOfInterest As List(Of Feature)
             Dim OutputMatrixColumnHeaders As Boolean = True
@@ -188,7 +190,7 @@ Namespace GenomeRunner
                 OutputMatrixColumnHeaders = False
             Next
 
-            If allAdjustmentsChecked Then
+            If Settings.AllAdjustments Then
                 'create matrix file for each adjustment set
                 'create different settings then run output for each group of settings
                 '1. no adjustments
