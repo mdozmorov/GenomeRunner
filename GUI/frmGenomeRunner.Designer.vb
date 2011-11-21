@@ -111,6 +111,7 @@ Partial Class frmGenomeRunner
         Me.txtJobName = New System.Windows.Forms.TextBox()
         Me.BackgroundWorkerEnrichmentAnalysis = New System.ComponentModel.BackgroundWorker()
         Me.BackgroundWorkerAnnotationAnalysis = New System.ComponentModel.BackgroundWorker()
+        Me.lnklblHost = New System.Windows.Forms.LinkLabel()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
@@ -176,6 +177,7 @@ Partial Class frmGenomeRunner
         'GroupBox1
         '
         Me.GroupBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.GroupBox1.Controls.Add(Me.lnklblHost)
         Me.GroupBox1.Controls.Add(Me.chkbxShortOnly)
         Me.GroupBox1.Controls.Add(Me.lblOrganism)
         Me.GroupBox1.Controls.Add(Me.cmbOrganism)
@@ -219,7 +221,7 @@ Partial Class frmGenomeRunner
         '
         Me.lblOrganism.AutoSize = True
         Me.lblOrganism.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblOrganism.Location = New System.Drawing.Point(206, 32)
+        Me.lblOrganism.Location = New System.Drawing.Point(205, 40)
         Me.lblOrganism.Name = "lblOrganism"
         Me.lblOrganism.Size = New System.Drawing.Size(54, 13)
         Me.lblOrganism.TabIndex = 76
@@ -239,7 +241,7 @@ Partial Class frmGenomeRunner
         '
         Me.lblDatabase.AutoSize = True
         Me.lblDatabase.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblDatabase.Location = New System.Drawing.Point(311, 32)
+        Me.lblDatabase.Location = New System.Drawing.Point(310, 40)
         Me.lblDatabase.Name = "lblDatabase"
         Me.lblDatabase.Size = New System.Drawing.Size(56, 13)
         Me.lblDatabase.TabIndex = 74
@@ -948,6 +950,16 @@ Partial Class frmGenomeRunner
         'BackgroundWorkerAnnotationAnalysis
         '
         '
+        'lnklblHost
+        '
+        Me.lnklblHost.AutoSize = True
+        Me.lnklblHost.Location = New System.Drawing.Point(205, 22)
+        Me.lnklblHost.Name = "lnklblHost"
+        Me.lnklblHost.Size = New System.Drawing.Size(32, 15)
+        Me.lnklblHost.TabIndex = 78
+        Me.lnklblHost.TabStop = True
+        Me.lnklblHost.Text = "Host"
+        '
         'frmGenomeRunner
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1081,5 +1093,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents cmbOrganism As System.Windows.Forms.ComboBox
     Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkbxShortOnly As System.Windows.Forms.CheckBox
+    Friend WithEvents lnklblHost As System.Windows.Forms.LinkLabel
 
 End Class

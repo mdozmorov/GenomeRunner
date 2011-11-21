@@ -253,14 +253,7 @@ Namespace GenomeRunner
                 Dim RandomFeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(RandomFeatures, Settings.Proximity)
 
                 GFeature.FeatureReturnedData.Clear() 'clears the returned data of the previous run
-                'For Each rFOI In RandomFeaturesOfInterestproximity
-                '    Debug.Print(rFOI.Chrom & vbTab & rFOI.ChromStart & vbTab & rFOI.ChromEnd)
-                'Next
                 OrganizeFeaturesByChrom(RandomFeaturesOfInterestproximity)
-                ' Debug.Print("Organized by chrom: ")
-                'For Each rFOI In RandomFeaturesOfInterestproximity
-                '    Debug.Print(rFOI.Chrom & vbTab & rFOI.ChromStart & vbTab & rFOI.ChromEnd)
-                'Next
                 GFeature = fAnalysis.Feature_Analysis(GFeature, RandomFeaturesOfInterestproximity, RandomFeatures, AnnoSettings)     'analizes the randomfeatures. 
                 Dim ExpectedWithin As Integer = 0, ExpectedOutside As Integer = 0                               'Zero out counters for each Monte-Carlo run
                 For x = 0 To NumOfFeatures - 1                                'Calculate statistics for them
@@ -270,7 +263,8 @@ Namespace GenomeRunner
                         ExpectedOutside += 1
                     End If
                 Next
-                HitArray(ExpectedWithin) += 1    'How ofteh this number of ExpectedWithin was observed
+                If ExpectedWithin > (NumOfFeatures - 1) Then ExpectedWithin = NumOfFeatures - 1
+                HitArray(ExpectedWithin) += 1    'How often this number of ExpectedWithin was observed
                 randEventsCountMC(i) = ExpectedWithin                              'Store simulation results
             Next
 

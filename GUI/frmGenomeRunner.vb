@@ -47,7 +47,6 @@ Public Class frmGenomeRunner
     End Class
 
     Public Function DatabaseConnection() As MySqlConnection
-        'OpenDatabase()
         Return cn
     End Function
 
@@ -78,6 +77,8 @@ Public Class frmGenomeRunner
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
             End Try
         End While
+
+        lnklblHost.Text = uServer
         'TODO This shouldn't be necessary because it's already called in Form1_Load. But for some reason everything breaks when it's not called here as well.
         GREngine = New GenomeRunnerEngine
         If cmbDatabase.SelectedIndex = -1 Then
@@ -135,7 +136,7 @@ Public Class frmGenomeRunner
         OpenDatabase()
         GREngine = New GenomeRunnerEngine()
         SetGenomeRunnerDefaults()
-        Me.Location = New Point(10, 10)     'Manually set window location    
+        Me.Location = New Point(10, 10)     'Manually set window location
         cmbMatrixWeighting.SelectedIndex = 0
         cmbTier.SelectedIndex = 0
         cmbStrandsToAnalyze.SelectedIndex = 0
@@ -148,7 +149,7 @@ Public Class frmGenomeRunner
 
     Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRun As Integer)
         SetProgress_ThreadSafe(Me.ProgressBar1, currProgress)
-        If rbUseAnalytical.Checked = True Then
+        If rbUseAnalytical.Checked = True Or NumMonteCarloRun = 0 Then
             SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName)
         ElseIf rbUseMonteCarlo.Checked = True Then
             SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName & ". Monte Carlo run " & NumMonteCarloRun & " of " & txtNumMCtoRun.Value)
@@ -274,8 +275,6 @@ Public Class frmGenomeRunner
     End Sub
 
     Public Sub LoadAvailableGenomicFeatures()
-        'TODO the following call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
-        'GREngine = New GenomeRunnerEngine()
         Dim GenomicFeatures As List(Of GenomicFeature) = GREngine.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features and adds them to a list
         Dim strCurrCate As String = ""
         Dim CurrCateIndex As Integer = -1
@@ -290,11 +289,13 @@ Public Class frmGenomeRunner
                     category.Name = GRfeature.UICategory : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
                     Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
                     ListFeaturesAvailable.Groups.Add(category)
-                    feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    'feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    feature.Name = GRfeature.TableName : feature.Group = category : feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
                     strCurrCate = GRfeature.UICategory
                 Else
-                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
                 End If
             End If
