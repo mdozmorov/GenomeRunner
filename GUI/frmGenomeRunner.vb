@@ -352,8 +352,8 @@ Public Class frmGenomeRunner
     Private Sub btnRun_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRun.Click
         Dim GRFeaturesToAnalyze As New List(Of GenomicFeature)
         Dim FeatureOfInterestFilePaths As New List(Of String)
-        Dim AnoSettings As New AnnotationSettings(PromoterUpstream, PromoterDownstream, txtproximity.Value)
-        Dim Analyzer As New AnnotationAnalysis(ConnectionString)
+        Dim AnoSettings As New AnnotationSettings(ConnectionString, PromoterUpstream, PromoterDownstream, txtproximity.Value, cmbFilterLevels.Text, cmbStrandsToAnalyze.Text, chkbxShortOnly.Checked)
+        Dim Analyzer As New AnnotationAnalysis()
         AnalysisType = "Annotation"
         If listFeaturesToRun.Items.Count = 0 Then
             MessageBox.Show("Please select genomic features to analyze")
@@ -384,8 +384,8 @@ Public Class frmGenomeRunner
         'Get the argument
         Dim args As AnnotationArguments = e.Argument
         'starts the enrichment analysis
-        Dim Analyzer As New AnnotationAnalysis(ConnectionString)
-        Analyzer.RunAnnotationAnalysis(args.FeatureFilePaths, args.GenomicFeatures, args.OutputDir, args.AnnotationSettings, progStart, progUpdate, progDone, chkbxShortOnly.Checked)
+        Dim Analyzer As New AnnotationAnalysis()
+        Analyzer.RunAnnotationAnalysis(args.FeatureFilePaths, args.GenomicFeatures, args.OutputDir, args.AnnotationSettings, progStart, progUpdate, progDone)
     End Sub
 
     Private Sub BackgroundWorkerAnnotationAnalysis_RunWorkerCompleted(ByVal sender As System.Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles BackgroundWorkerAnnotationAnalysis.RunWorkerCompleted
@@ -432,7 +432,7 @@ Public Class frmGenomeRunner
     Private Sub btnPValue_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPValue.Click
         Dim GenomicFeaturesToAnalyze As New List(Of GenomicFeature)
         Dim FeatureFilePaths As New List(Of String) 'stores the filepaths of the files containing the FOIs to do an enrichment analysis on
-        Dim Analyzer As New EnrichmentAnalysis(ConnectionString, progStart, progUpdate, progDone)
+        Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
         AnalysisType = "Enrichment"
         If listFeatureFiles.Items.Count <> 0 Then
             btnRun.Enabled = False
@@ -465,7 +465,7 @@ Public Class frmGenomeRunner
         'Get the argument
         Dim args As EnrichmentArgument = e.Argument
         'starts the enrichment analysis
-        Dim Analyzer As New EnrichmentAnalysis(args.Settings.ConnectionString, progStart, progUpdate, progDone)
+        Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
         Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings)
     End Sub
 
@@ -516,7 +516,7 @@ Public Class frmGenomeRunner
                                                OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, _
                                                AllAdjustments, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, _
                                                txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, _
-                                               PromoterDownstream, txtproximity.Value)
+                                               PromoterDownstream, txtproximity.Value, cmbStrandsToAnalyze.Text)
         Return Settings
     End Function
 

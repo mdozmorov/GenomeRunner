@@ -11,7 +11,7 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" "C:\Ryan Projects\console_config_file_ENRICHMENT.txt" -e</StartArguments>
+    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" "C:\Ryan Projects\AnnotationSettings.xml" -a</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>

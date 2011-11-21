@@ -24,15 +24,16 @@ Namespace GenomeRunner
         Public OutputPercentOverlapPvalueMatrix As Boolean                                          'whether a matrix should be outputed where pvalues are weighted by percent overlap
         Public SquarePercentOverlap As Boolean                                                      'whether the percent overlap weight should be sqaured before being applyed 
         Public OutputPCCweightedPvalueMatrix As Boolean                                             'whether a matrix should be outputed where pvalues are weighted by the pearson's contingency coefficient 
-        Public PearsonsAudjustment As UInteger                                                       'this number is used to audjust the pearson's contingency coefficient for the matrix output
-        Public AllAdjustments As Boolean
+        Public PearsonsAudjustment As UInteger                                                      'this number is used to audjust the pearson's contingency coefficient for the matrix output
+        Public AllAdjustments As Boolean                                                            'if true, multiple log files will be created; one for each type of adjustment
         Public OutputDir As String                                                                  'the directory to which the results of the enrichment analysis should be outputed to
         Public FilterLevel As String                                                                'used to store what level the filters were at so it can be recorded in the log file
-        Public PromoterUpstream As UInteger = 0                                                       'stores how many base pairs the promoter region begins upstream of the gene start point 
-        Public PromoterDownstream As UInteger = 0                                                  'stores how many base pairs the promoter regions covers downstream of the gene's startpoint
-        Public Proximity As UInteger = 0                                                              'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
+        Public PromoterUpstream As UInteger = 0                                                     'stores how many base pairs the promoter region begins upstream of the gene start point 
+        Public PromoterDownstream As UInteger = 0                                                   'stores how many base pairs the promoter regions covers downstream of the gene's startpoint
+        Public Proximity As UInteger = 0                                                            'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
+        Public Strand As String
 
-        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
+        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String)
             Me.ConnectionString = ConnectionString
             Me.EnrichmentJobName = EnrichmentJobName
             Me.UseMonteCarlo = UseMonteCarlo
@@ -54,10 +55,15 @@ Namespace GenomeRunner
             Me.Proximity = proximity
             Me.PromoterUpstream = PromoterUpstream
             Me.PromoterDownstream = PromoterDownstream
+            Me.Strand = Strand
+        End Sub
+
+        Public Sub New()
+            'Constructor with no parameters is used for XML serialization
         End Sub
 
         Public Function Clone() As Object Implements System.ICloneable.Clone
-            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity)
+            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity, Strand)
             Return eSettings
         End Function
     End Class
@@ -75,14 +81,13 @@ Namespace GenomeRunner
     End Class
 
     Public Class EnrichmentAnalysis
-        Dim ConnectionString As String
+        Public ConnectionString As String
         Dim progStart As ProgressStart                                                                      'used to set initial progress
         Dim progUpdate As ProgressUpdate                                                                    'used to update progress
         Dim progDone As ProgressDone                                                                    'used return progress complete
         Dim RandomClass As New Random()
 
-        Public Sub New(ByVal ConnectionString As String, ByVal progStart As ProgressStart, ByVal progUpdate As ProgressUpdate, ByVal progDone As ProgressDone)
-            Me.ConnectionString = ConnectionString
+        Public Sub New(ByVal progStart As ProgressStart, ByVal progUpdate As ProgressUpdate, ByVal progDone As ProgressDone)
             Me.progStart = progStart
             Me.progUpdate = progUpdate
             Me.progDone = progDone
@@ -127,7 +132,8 @@ Namespace GenomeRunner
             Dim FeaturesOfInterestNames As New List(Of String)
             Dim Outputer As Output = New Output(FeatureOfInterestFilePaths.Count)
             Dim AccumulatedGenomicFeatures As New Hashtable
-
+            ConnectionString = Settings.ConnectionString
+            '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             'NOTE: AccumulatedGenomicFeatures is a Hashtable that stores GenomicFeatures specific to each FeatureOfInterest file.
             '      So, given x genomic features & f features of interest files, there will be:
             '          x * f genomic features in AccumulatedGenomicFeatures.
@@ -136,6 +142,7 @@ Namespace GenomeRunner
             '      Genomic features: "CpGIslands", "ORegAnno"
             '      AccumulatedGenomicFeatures = ["CpGIslands"] => {CpGIslands Genomic Feature calculated with CDBox, CpGIslands Genomic Feature calculated with HAcaBox},
             '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
+            '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
             Next
@@ -173,19 +180,6 @@ Namespace GenomeRunner
                     isFirstPvalue = False
                     currGF += 1
                 Next
-
-                'TODO since this is transposed, it doesn't need to happen with each GenomicFeature. Do it after this loop, all at once.
-                'Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath)) 'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-
-                'Uncomment to additionally output percent weighted matrix
-                'Settings.OutputPercentOverlapPvalueMatrix = True
-                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                '            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
-                'Settings.OutputPercentOverlapPvalueMatrix = False
-
-                'Settings.SquarePercentOverlap = True
-                'Outputer.OutputPValueMatrix(Settings.OutputDir, GenomicFeatures, Settings, _
-                '                            OutputMatrixColumnHeaders, Path.GetFileNameWithoutExtension(FeatureFilePath))                  'the matrix is is outputed, the matrix is ouputed after all of the genomic features have been analyzed
 
                 OutputMatrixColumnHeaders = False
             Next
@@ -235,12 +229,12 @@ Namespace GenomeRunner
             Dim currentTime As System.DateTime = System.DateTime.Now  'used in the header of the output
             Dim ObservedWithin As Integer = 0, ObservedOutside As Integer = 0
             Dim randEventsCountMC(Settings.NumMCtoRun - 1) As Double                                    'Counters for features within one/within all simulations
-            Dim AnnoSettings As New AnnotationSettings(Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity)
-            Dim fAnalysis As New GenomeRunner.AnnotationAnalysis(Settings.ConnectionString)
+            Dim AnnoSettings As New AnnotationSettings(Settings.ConnectionString, Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity, Settings.FilterLevel, Settings.Strand, False)
+            Dim fAnalysis As New GenomeRunner.AnnotationAnalysis()
             Dim FeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(FeaturesOfInterest, Settings.Proximity)
 
             GFeature.FeatureReturnedData.Clear()
-            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, FeaturesOfInterest, AnnoSettings, False) 'runs an initial analysis so that the observed within can be determined
+            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, FeaturesOfInterest, AnnoSettings) 'runs an initial analysis so that the observed within can be determined
 
             'cycles through each of the features run and gets the number of hits for the FOI
             For x As Integer = 0 To NumOfFeatures - 1 Step +1                                  'Now calculate number of true observations
@@ -267,7 +261,7 @@ Namespace GenomeRunner
                 'For Each rFOI In RandomFeaturesOfInterestproximity
                 '    Debug.Print(rFOI.Chrom & vbTab & rFOI.ChromStart & vbTab & rFOI.ChromEnd)
                 'Next
-                GFeature = fAnalysis.Feature_Analysis(GFeature, RandomFeaturesOfInterestproximity, RandomFeatures, AnnoSettings, False)     'analizes the randomfeatures. 
+                GFeature = fAnalysis.Feature_Analysis(GFeature, RandomFeaturesOfInterestproximity, RandomFeatures, AnnoSettings)     'analizes the randomfeatures. 
                 Dim ExpectedWithin As Integer = 0, ExpectedOutside As Integer = 0                               'Zero out counters for each Monte-Carlo run
                 For x = 0 To NumOfFeatures - 1                                'Calculate statistics for them
                     If GFeature.FeatureReturnedData(x).CountData <> 0 Then                     'If random alternative event observed
@@ -366,10 +360,10 @@ Namespace GenomeRunner
         Private Function calculatePValueUsingAnalyticalMethod(ByVal GFeature As GenomicFeature, ByVal Features As List(Of Feature), ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings) As GenomicFeature
             'runs a normal analysis on the feature
             Debug.Print("Running initial analysis the Analytical Method for " & GFeature.Name & " " & TimeOfDay)
-            Dim AnoSettings As New AnnotationSettings(Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity)
-            Dim fAnalysis As New AnnotationAnalysis(ConnectionString)
+            Dim AnoSettings As New AnnotationSettings(Settings.ConnectionString, Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity, Settings.FilterLevel, Settings.Strand, False)
+            Dim fAnalysis As New AnnotationAnalysis()
             Dim FeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(Features, Settings.Proximity)
-            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, Features, AnoSettings, False)
+            GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, Features, AnoSettings)
             Dim wA(GFeature.FeatureReturnedData.Count - 1) As Integer 'width of each FOI
             Dim hA(GFeature.FeatureReturnedData.Count - 1) As Integer 'stores whether the FOI was a hit or miss 
             For currFOI As Integer = 0 To GFeature.FeatureReturnedData.Count - 1
@@ -422,8 +416,8 @@ Namespace GenomeRunner
         Private Sub Calculate_Base_Region_Count(ByVal GenomicFeature As GenomicFeature, ByVal Background As List(Of Feature), ByVal Settings As EnrichmentSettings, ByRef TotalBasePairs As Double, ByRef NumGenomicFeatureBasePairs As Double, ByRef NumGenomicFeatureRegion As Double)
             Dim TableNames As New List(Of String)
             Dim TotalNumberofBasePairs As Long = 0
-            Dim AnoSettings As New AnnotationSettings(Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity)
-            Dim Analyzer As New AnnotationAnalysis(ConnectionString)                                                         'used to get the genomic feature data from the mysql database
+            Dim AnoSettings As New AnnotationSettings(Settings.ConnectionString, Settings.PromoterUpstream, Settings.PromoterDownstream, Settings.Proximity, Settings.FilterLevel, Settings.Strand, False)
+            Dim Analyzer As New AnnotationAnalysis()                                                         'used to get the genomic feature data from the mysql database
             'gets the total number of base pairs of the background
             For Each interval In Background
                 TotalNumberofBasePairs += interval.ChromEnd - interval.ChromStart + 1                                        'adds one to the interval length so that number of bases in the interval is counted rather than the length of the interval

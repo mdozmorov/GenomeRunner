@@ -2,6 +2,7 @@
 Imports GenomeRunnerConsole.GenomeRunner
 Imports System.IO
 Imports MySql.Data.MySqlClient
+Imports System.Xml.Serialization
 
 Module Module1
     Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader
@@ -26,7 +27,7 @@ Module Module1
         'Dim args As String() = ConvertArrayToLowerCase(Argument)
         Dim args As String() = Argument
         Dim params As List(Of Parameters)
-        Dim Settings As EnrichmentSettings
+        Dim Settings As New EnrichmentSettings
         Dim flags As New List(Of String)
         Dim progStart As ProgressStart : progStart = AddressOf HandleProgressStart
         Dim progUpdate As ProgressUpdate : progUpdate = AddressOf HandleProgressUpdate
@@ -35,18 +36,10 @@ Module Module1
         PrintHelp()
         'TODO raise error if args(2) is out of range!
         params = GetParametersFromConfigFile(args(2))
-        connectSettings = GetConnectionSettings(params)
-        Dim ConnectionString As String = GetConnectionString()
         If args.Length >= 4 Then
 
             'Read genomic features file from args(1) into GenomicFeatureIDsToRun
             Dim GenomicFeatureIDsToRun As List(Of Integer) = GetIdsFromFile(args(1))
-
-            'strand is needed for enrichment & annotation
-            Dim strand As String = "both"
-            If params.Any(Function(p) p.Name = "-st") Then
-                strand = params.Find(Function(p) p.Name = "-st").arguments.First
-            End If
 
             If args(3) = "-e" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -59,14 +52,28 @@ Module Module1
                 featureOfInterestPath.Add(args(0))
                 'Parameters = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
                 Dim OutputDir As String = Path.GetDirectoryName(args(0)) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
-                Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
-                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, strand)
-                Dim Analyzer As New EnrichmentAnalysis(Settings.ConnectionString, progStart, progUpdate, progDone)
-                Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(ConnectionString)
+                'Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
+
+                'Deserialize XML file to a new object.
+                Dim sr As New StreamReader(args(2))
+                Dim x As New XmlSerializer(Settings.GetType)
+                Settings = x.Deserialize(sr)
+                sr.Close()
+
+                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, Settings.ConnectionString, Settings.Strand)
+                Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
+                Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(Settings.ConnectionString)
                 Dim allAdjustments As Boolean = False
                 If params.Any(Function(p) p.Name = "-all") Then allAdjustments = True
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
+                'Serialize EnrichmentSettings!
+                'Dim objStreamWriter As New StreamWriter("C:\Ryan Projects\EnrichmentSettings.xml")
+                'Dim x As New XmlSerializer(Settings.GetType)
+                'x.Serialize(objStreamWriter, Settings)
+                'objStreamWriter.Close()
+
+                
             ElseIf args(3) = "-a" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 'ANNOTATION
@@ -74,18 +81,22 @@ Module Module1
                 Dim FeaturesOfInterest As New List(Of String)
                 FeaturesOfInterest.Add(args(0))
                 AnalysisType = "Annotation"                                                                                 'Used to determine what to write for progress updates
-                
-                'TODO need strand arg (currently hard coded below as "both"), but comes from config file. Will Annotation use config 
-                '     file or just params?
-                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, strand)
+                Dim AnoSettings As New AnnotationSettings()
+
+                'Deserialize XML file to a new object.
+                Dim sr As New StreamReader(args(2))
+                Dim x As New XmlSerializer(AnoSettings.GetType)
+                AnoSettings = x.Deserialize(sr)
+                sr.Close()
+
+                Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, AnoSettings.ConnectionString, AnoSettings.Strand)
                 'TODO get this above the loop now
                 'Dim ConnectionString As String = GetConnectionString()
-                Dim analyzer As New AnnotationAnalysis(ConnectionString)
+                Dim analyzer As New AnnotationAnalysis()
                 Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\"
-                Dim AnoSettings As New AnnotationSettings(5000, 1000, 0)
                 Dim shortOnly As Boolean = False
                 If params.Any(Function(p) p.Name = "-short") Then shortOnly = True
-                analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone, shortOnly)
+                analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
             End If
         End If
     End Sub
@@ -202,26 +213,8 @@ Module Module1
         Return params
     End Function
 
-    Function GetConnectionSettings(ByVal params As List(Of Parameters)) As ConnectionSettings
-        Dim connectSettings As New ConnectionSettings
-        For Each param In params
-            Select Case param.Name
-                Case "-h"
-                    connectSettings.host = param.arguments(0)
-                Case "-u"
-                    connectSettings.user = param.arguments(0)
-                Case "-p"
-                    connectSettings.password = param.arguments(0)
-                Case "-db"
-                    connectSettings.database = param.arguments(0)
-            End Select
-        Next
-        Return connectSettings
-    End Function
-
-    Function GetGenomicFeaturesFromIDsInputed(ByVal listIDs As List(Of Integer), ByVal strand As String) As List(Of GenomicFeature)
+    Function GetGenomicFeaturesFromIDsInputed(ByVal listIDs As List(Of Integer), ByVal ConnectionString As String, ByVal strand As String) As List(Of GenomicFeature)
         Dim GenomicFeaturesToRemove As New List(Of Integer)
-        Dim ConnectionString As String = GetConnectionString()
         Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GREngin.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features available from the GenomeRunner Table
         'adds all of the genomic features ids in the GenomicFeaturesToRun list that are not included in the 
         'list genomic features to run for removal
@@ -271,142 +264,6 @@ Module Module1
             ConvertedArray(i) = arrayToConvert(i).ToLower()
         Next
         Return ConvertedArray
-    End Function
-
-    Function GetEnrichmentSettings(ByVal outputDirectory As String, ByVal Parameters As List(Of Parameters)) As EnrichmentSettings
-        Dim Settings As EnrichmentSettings
-        Dim UseMonteCarlo As Boolean = True, UseAnalytical As Boolean = False, NumOfMCToRun As Integer = 10, _
-        UseChiSquareTest As Boolean = True, UseTradMC As Boolean = False, UseBinomialDistribution As Boolean = False, _
-PvalueThreshold As Double = 0.01, OutputPearsonsCoefficientWeightedMatrix As Boolean = False, _
-OutputPercentOverlapWeightedMatrix As Boolean = False, SquarePercentOverlap As Boolean = False
-        Dim FilterLevel As String = "none"
-        Dim PearsonsAdjustment As Integer = 0
-        Dim proximity As UInteger = 0
-        Dim AllAdjustments = False
-
-        'sets which method should be used to calculate the number of random associations
-        For Each param In Parameters
-            Select Case param.Name
-                '...sets which method should be used to calculate the number of random associations
-                Case Is = "-s"
-                    For Each arg In param.arguments
-                        If arg = "an" Then
-                            UseAnalytical = True
-                            UseChiSquareTest = False
-                        End If
-                        If arg.Substring(0, 2) = "mc" Then
-                            UseMonteCarlo = True
-                            UseAnalytical = False
-                            Dim numMonteCarloArg As Integer = arg.Remove(0, 2)
-                            NumOfMCToRun = numMonteCarloArg
-                        End If
-                    Next
-                    '...sets the method to use for the calculation of the p-value
-                Case Is = "-pval"
-                    For Each arg In param.arguments
-                        If arg = "ct" Then
-                            UseChiSquareTest = True
-                            'If IsNumeric(param.arguments(param.arguments.IndexOf(arg) + 1)) Then
-                            '    NumOfMCToRun = param.arguments(param.arguments.IndexOf(arg) + 1)
-                            'End If
-                        ElseIf arg = "tmc" Then
-                            UseTradMC = True
-                            UseChiSquareTest = False
-                            'If IsNumeric(param.arguments(param.arguments.IndexOf(arg) + 1)) Then
-                            '    NumOfMCToRun = param.arguments(param.arguments.IndexOf(arg) + 1)
-                            'End If
-                        ElseIf arg = "bd" Then
-                            UseBinomialDistribution = True
-                            UseChiSquareTest = False
-                        End If
-                    Next
-                Case Is = "-a" 'Adjustments
-                    For Each arg In param.arguments
-                        If arg = "pc" Then
-                            OutputPearsonsCoefficientWeightedMatrix = True
-                            PearsonsAdjustment = arg.Remove(0, 2)
-                        ElseIf arg = "po" Then
-                            OutputPercentOverlapWeightedMatrix = True
-                        ElseIf arg = "all" Then
-                            AllAdjustments = True
-                        End If
-                        If arg = "sq" Then
-                            SquarePercentOverlap = True
-                        End If
-                    Next
-                Case Is = "-t" 'Threshold
-                    For Each arg In param.arguments
-                        If arg = "min" Then
-                            FilterLevel = "Minimum"
-                        ElseIf arg = "mean" Then
-                            FilterLevel = "Mean"
-                        End If
-                    Next
-                Case Is = "-st" 'Strand
-                    For Each arg In param.arguments
-                        If arg = "pos" Then
-                            'TODO what changes for strand?
-                            'Use GenerateGenomicFeaturesByStrand
-
-                        End If
-                    Next
-                Case Is = "-pr" 'Proximity
-                    For Each arg In param.arguments
-                        proximity = arg
-                    Next
-            End Select
-        Next
-        Settings = New EnrichmentSettings(GetConnectionString(), "", outputDirectory, UseMonteCarlo, UseAnalytical, _
-                                          UseTradMC, UseChiSquareTest, UseBinomialDistribution, _
-                                          OutputPercentOverlapWeightedMatrix, SquarePercentOverlap, _
-                                          OutputPearsonsCoefficientWeightedMatrix, PearsonsAdjustment, _
-                                          AllAdjustments, connectSettings.database, False, NumOfMCToRun, PvalueThreshold, _
-                                          FilterLevel, 2000, 0, proximity)
-        Return Settings
-    End Function
-
-
-    Function GetConnectionString() As String
-        Dim uName As String
-        Dim uPassword As String
-        Dim uServer As String
-        Dim uDatabase As String
-        Dim ConnectionString As String
-ConnectionSettingsRetry:
-        'TODO this is just finding db info from what's saved in the registry
-        Try
-            'gets the connection settings from the registry and builds a connection string
-            uName = GetSetting("GenomeRunner", "Database", "uName")
-            uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
-            uServer = GetSetting("GenomeRunner", "Database", "uServer")
-            uDatabase = GetSetting("GenomeRunner", "Database", "uDatabase")
-
-            'ConnectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";password=" & uPassword
-            ConnectionString = "Server=" & connectSettings.host & ";Database=" & connectSettings.database & ";User ID=" & connectSettings.user & ";password=" & connectSettings.password
-
-            cn = New MySqlConnection(ConnectionString)
-            cn.Open()
-            cmd = New MySqlCommand("SELECT * from GenomeRunner limit 1", cn)
-            dr = cmd.ExecuteReader()
-            dr.Close() : cn.Close()
-        Catch
-            '...if the connection fails
-            Console.WriteLine("Database connection settings were not valid.  Please re-enter the database settings:")
-            Console.WriteLine("Enter the user name:")
-            uName = Console.ReadLine()
-            SaveSetting("GenomeRunner", "Database", "uName", uName)
-            Console.WriteLine("Enter the password:")
-            uPassword = Console.ReadLine()
-            SaveSetting("GenomeRunner", "Database", "uPassword", uPassword)
-            Console.WriteLine("Enter the database:")
-            uDatabase = Console.ReadLine()
-            SaveSetting("GenomeRunner", "Database", "uDatabase", uDatabase)
-            Console.WriteLine("Enter the server ('localhost' for local databases)")
-            uServer = Console.ReadLine()
-            SaveSetting("GenomeRunner", "Database", "uServer", uServer)
-            GoTo ConnectionSettingsRetry
-        End Try
-        Return ConnectionString
     End Function
 
 End Module

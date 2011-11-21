@@ -6,14 +6,26 @@ Imports alglib
 Namespace GenomeRunner
 
     Public Class AnnotationSettings
+        Public ConnectionString As String
         Public PromoterUpstream As UInteger = 0                                          'the numbr of base pairs that the promoters are defined to start upstream of the gene start site
         Public PromoterDownstream As UInteger = 0                                        'the number of base pairs that the promoters are defined to go past the gene start site
         Public proximity As UInteger = 0                                                 'the number of base pairs that a feature of interest can be from a genomic feature and still be considered a hit
+        Public FilterLevel As String
+        Public Strand As String
+        Public ShortOnly As Boolean
 
-        Public Sub New(ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
+        Public Sub New(ByVal ConnectionString As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal FilterLevel As String, ByVal Strand As String, ByVal ShortOnly As Boolean)
+            Me.ConnectionString = ConnectionString
             Me.PromoterUpstream = PromoterUpstream
             Me.PromoterDownstream = PromoterDownstream
             Me.proximity = proximity
+            Me.FilterLevel = FilterLevel
+            Me.Strand = Strand
+            Me.ShortOnly = ShortOnly
+        End Sub
+
+        Public Sub New()
+            'Constructor with no parameters is used for XML serialization
         End Sub
     End Class
 
@@ -22,9 +34,9 @@ Namespace GenomeRunner
         Dim kgIDToGeneSymbolDict As New Dictionary(Of String, String)                   'is a dictionary that is loaded with the values from the kgxref (kgID, geneSymbol) to convert the gene name into standard form
         Dim Background As List(Of Feature)                                              'the background from which random features of interest are generated for the Monte Carlo simulation
         Dim ConnectionString As String                                                  'stores settings which are used by the annotation analysis
+        
+        Public Sub New()
 
-        Public Sub New(ByVal ConnectionString As String)
-            Me.ConnectionString = ConnectionString
         End Sub
 
         'opens a connection to the database
@@ -75,8 +87,9 @@ Namespace GenomeRunner
         End Function
 
         'runs annotation anlysis on all of the files passed as paths
-        Public Sub RunAnnotationAnalysis(ByVal FeatureOfInterestPath As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal OutputDir As String, ByVal AnnotationSettings As AnnotationSettings, ByVal Progstart As ProgressStart, ByVal ProgUpdate As ProgressUpdate, ByVal ProgDone As ProgressDone, ByVal shortOnlyChecked As Boolean)
+        Public Sub RunAnnotationAnalysis(ByVal FeatureOfInterestPath As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal OutputDir As String, ByVal AnnotationSettings As AnnotationSettings, ByVal Progstart As ProgressStart, ByVal ProgUpdate As ProgressUpdate, ByVal ProgDone As ProgressDone)
             Directory.CreateDirectory(OutputDir)
+            ConnectionString = AnnotationSettings.ConnectionString
 
             For Each FeatureFilePath In FeatureOfInterestPath
                 Dim FeaturesOfInterest As List(Of Feature) = LoadFeatureOfInterests(FeatureFilePath)
@@ -89,7 +102,7 @@ Namespace GenomeRunner
                 Dim CurrGF As Integer = 0
                 For Each GF In GenomicFeatures
                     ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
-                    GF = Feature_Analysis(GF, FeaturesOfInterestproximity, FeaturesOfInterest, AnnotationSettings, shortOnlyChecked)
+                    GF = Feature_Analysis(GF, FeaturesOfInterestproximity, FeaturesOfInterest, AnnotationSettings)
                     CurrGF += 1
                 Next
                 output.OutputAnnotationAnalysis(OutputPath, GenomicFeatures, FeaturesOfInterest)
@@ -118,7 +131,8 @@ Namespace GenomeRunner
         End Function
 
         'Checks which Features overlap with the GF and returns the meta data for the genomic feature
-        Function Feature_Analysis(ByVal GenomicFeature As GenomicFeature, ByVal proximityFeaturesOfInterest As List(Of Feature), ByVal FeaturesOfInterest As List(Of Feature), ByVal Settings As AnnotationSettings, ByVal shortOnlyChecked As Boolean) As GenomicFeature
+        Function Feature_Analysis(ByVal GenomicFeature As GenomicFeature, ByVal proximityFeaturesOfInterest As List(Of Feature), ByVal FeaturesOfInterest As List(Of Feature), ByVal Settings As AnnotationSettings) As GenomicFeature
+            ConnectionString = Settings.ConnectionString
             Dim NumOfFeatures As Integer = proximityFeaturesOfInterest.Count - 1
             Dim listFeatureSQLData As List(Of FeatureSQLData)
             GenomicFeature.FeatureReturnedData.Clear() 'clears the feature class of any past metadata (returned GF information)
@@ -165,7 +179,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -201,7 +215,7 @@ Namespace GenomeRunner
 
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -237,7 +251,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -275,7 +289,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -321,7 +335,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -366,7 +380,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
@@ -398,7 +412,7 @@ Namespace GenomeRunner
                         Next
                         'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
                         If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
-                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, shortOnlyChecked)
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
                             GenomicFeature.FeatureReturnedData(x) = featureHit
                         End If
                     Next
