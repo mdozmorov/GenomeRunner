@@ -173,37 +173,38 @@ Namespace GenomeRunner
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
                     AccumulatedGenomicFeatures(GF.Name).Add(GF.Clone)
-
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
                     currGF += 1
                 Next
+                If Settings.AllAdjustments Then
+                    'create matrix file for each adjustment set
+                    'create different settings then run output for each group of settings
+                    '1. no adjustments
+                    '2. percent linear
+                    '3. percent squared
+                    '4. pcc (default 100)
+                    Dim none As EnrichmentSettings = Settings.Clone, percentLinear As EnrichmentSettings = Settings.Clone, percentSquared As EnrichmentSettings = Settings.Clone, pcc As EnrichmentSettings = Settings.Clone
 
+                    none.OutputPercentOverlapPvalueMatrix = False : none.OutputPCCweightedPvalueMatrix = False
+                    percentLinear.OutputPercentOverlapPvalueMatrix = True : percentLinear.SquarePercentOverlap = False : percentLinear.OutputPCCweightedPvalueMatrix = False
+                    percentSquared.OutputPercentOverlapPvalueMatrix = True : percentSquared.SquarePercentOverlap = True : percentSquared.OutputPCCweightedPvalueMatrix = False
+                    pcc.OutputPercentOverlapPvalueMatrix = False : pcc.OutputPCCweightedPvalueMatrix = True
+
+                    For Each setting In {none, percentLinear, percentSquared, pcc}
+                        Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, setting, Path.GetFileNameWithoutExtension(FeatureFilePath))
+                    Next
+                Else
+                    'Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+                    For Each featureOfInterestName In FeaturesOfInterestNames
+                        Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))
+                    Next
+                End If
                 OutputMatrixColumnHeaders = False
             Next
 
-            If Settings.AllAdjustments Then
-                'create matrix file for each adjustment set
-                'create different settings then run output for each group of settings
-                '1. no adjustments
-                '2. percent linear
-                '3. percent squared
-                '4. pcc (default 100 I think??)
-                Dim none As EnrichmentSettings = Settings.Clone, percentLinear As EnrichmentSettings = Settings.Clone, percentSquared As EnrichmentSettings = Settings.Clone, pcc As EnrichmentSettings = Settings.Clone
-
-                none.OutputPercentOverlapPvalueMatrix = False : none.OutputPCCweightedPvalueMatrix = False
-                percentLinear.OutputPercentOverlapPvalueMatrix = True : percentLinear.SquarePercentOverlap = False : percentLinear.OutputPCCweightedPvalueMatrix = False
-                percentSquared.OutputPercentOverlapPvalueMatrix = True : percentSquared.SquarePercentOverlap = True : percentSquared.OutputPCCweightedPvalueMatrix = False
-                pcc.OutputPercentOverlapPvalueMatrix = False : pcc.OutputPCCweightedPvalueMatrix = True
-
-                For Each setting In {none, percentLinear, percentSquared, pcc}
-                    Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, setting, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
-                Next
-            Else
-                Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
-            End If
             progDone.Invoke(Settings.OutputDir)
         End Sub
 
