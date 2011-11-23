@@ -287,15 +287,19 @@ Public Class frmGenomeRunner
                     Dim arrayCat = Split(GRfeature.UICategory, "|")                                         'splits the catagory results in order to take off the numerical indexegory()
                     category = New ListViewGroup
                     category.Name = GRfeature.UICategory : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
-                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
+                    'TODO FeatureName vs FeatureTable
+                    'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
+                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Group = category : feature.GenomicFeature = GRfeature
                     ListFeaturesAvailable.Groups.Add(category)
+                    'TODO FeatureName vs FeatureTable
                     'feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
                     feature.Name = GRfeature.TableName : feature.Group = category : feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
                     strCurrCate = GRfeature.UICategory
                 Else
+                    'TODO FeatureName vs FeatureTable
                     'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
-                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.Name
+                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Name = GRfeature.TableName : feature.Group = category : feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
                 End If
             End If
@@ -307,17 +311,23 @@ Public Class frmGenomeRunner
         'adds all of the features available to the list of features to run
         For Each lvGF As ListItemGenomicFeature In ListFeaturesAvailable.SelectedItems
             Dim nGF As New ListItemGenomicFeature(lvGF.GenomicFeature)
-            nGF.Text = lvGF.GenomicFeature.Name
+            'TODO FeatureName vs FeatureTable
+            'nGF.Text = lvGF.GenomicFeature.Name
+            nGF.Text = lvGF.GenomicFeature.TableName
             listFeaturesToRun.Items.Add(nGF)
             'checks if the GenomicFeature is a gene, if so a promotter and exon genomic feature are generated as well
             If lvGF.GenomicFeature.QueryType = "Gene" Then
                 Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName, "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
                 Dim nlvGFPromoter As New ListItemGenomicFeature(nGFPromoter)
-                nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
+                'TODO FeatureName vs FeatureTable
+                'nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
+                nlvGFPromoter.Text = lvGF.GenomicFeature.TableName & "Promoter"
                 listFeaturesToRun.Items.Add(nlvGFPromoter)
                 Dim nGFExon As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Exon", lvGF.GenomicFeature.TableName & "Exons", "Exon", "NA", 0, 0, 0, 0, "", 0, Nothing, "", 1)
                 Dim nlvGFExon As New ListItemGenomicFeature(nGFExon)
-                nlvGFExon.Text = lvGF.GenomicFeature.Name & "Exon"
+                'TODO FeatureName vs FeatureTable
+                'nlvGFExon.Text = lvGF.GenomicFeature.Name & "Exon"
+                nlvGFExon.Text = lvGF.GenomicFeature.TableName & "Exon"
                 listFeaturesToRun.Items.Add(nlvGFExon)
             End If
         Next

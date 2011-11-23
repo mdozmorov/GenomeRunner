@@ -107,7 +107,9 @@ Namespace GenomeRunner
                 Next
                 writer.WriteLine()
                 For Each gFeature In GRFeaturesToAnalyze
-                    writer.Write(gFeature.Name)
+                    'TODO FeatureName vs FeatureTable
+                    'writer.Write(gFeature.Name)
+                    writer.Write(gFeature.TableName)
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then
                             writer.Write(vbTab & gFeature.FeatureReturnedData(currFeature).CountData)
@@ -156,7 +158,9 @@ Namespace GenomeRunner
                 writer.WriteLine()
                 'outputs the returned hits for the genomic features for each of the features of interest
                 For Each gFeature In GRFeaturesToAnalyze
-                    Dim strStartOutput As String = gFeature.Name & "ChromStart", strEndOutput As String = gFeature.Name & "ChromEnd", strStrandOutput As String = gFeature.Name & "Strand", strNameOutput As String = gFeature.Name & "Name", strThresholdOutput As String = gFeature.Name & "Threshold", strOverLapTypeOutput As String = gFeature.Name & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.Name & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
+                    'TODO FeatureName vs FeatureTable
+                    'Dim strStartOutput As String = gFeature.Name & "ChromStart", strEndOutput As String = gFeature.Name & "ChromEnd", strStrandOutput As String = gFeature.Name & "Strand", strNameOutput As String = gFeature.Name & "Name", strThresholdOutput As String = gFeature.Name & "Threshold", strOverLapTypeOutput As String = gFeature.Name & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.Name & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
+                    Dim strStartOutput As String = gFeature.TableName & "ChromStart", strEndOutput As String = gFeature.TableName & "ChromEnd", strStrandOutput As String = gFeature.TableName & "Strand", strNameOutput As String = gFeature.TableName & "Name", strThresholdOutput As String = gFeature.TableName & "Threshold", strOverLapTypeOutput As String = gFeature.TableName & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.TableName & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
                     writer.Write(strStartOutput)
 
                     '...appends the returned start points of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
@@ -307,8 +311,11 @@ Namespace GenomeRunner
             Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
 
                 '...this is always outputed as the number of observed and the genomic feature name are indepent of what tests are run
-                body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.Name & " association statistics" & vbCrLf
-                body &= strNamesToInclude & "Observed number of " & GFeature.Name & " associations : " & vbTab & GFeature.ActualHits
+                'TODO FeatureName vs FeatureTable
+                'body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.Name & " association statistics" & vbCrLf
+                body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.TableName & " association statistics" & vbCrLf
+                'body &= strNamesToInclude & "Observed number of " & GFeature.TableName & " associations : " & vbTab & GFeature.ActualHits
+                body &= strNamesToInclude & "Observed number of " & GFeature.TableName & " associations : " & vbTab & GFeature.ActualHits
                 writer.WriteLine(body)
 
                 If Settings.UseMonteCarlo = True Then
@@ -342,8 +349,10 @@ Namespace GenomeRunner
                         If Settings.UseTradMC = True Then body &= "P-value under =" & vbTab & GFeature.PValueMonteCarloChisquare & vbCrLf
                     End If
 
-                    '...always outputted when using monte carlo 
-                    body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    '...always outputted when using monte carlo
+                    'TODO FeatureName vs FeatureTable
+                    'body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    body &= "Observed number of " & GFeature.TableName & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
                     writer.Write(body)
                 End If
 
@@ -399,7 +408,9 @@ Namespace GenomeRunner
                     End If
 
                     '...always outputted when using the analytical method
-                    body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    'TODO FeatureName vs FeatureTable
+                    'body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    body &= "Observed number of " & GFeature.TableName & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
                     'body &= "Analytical ratio of obsWithin/randWithin = " & vbTab & AnalObsRandRatio
                     writer.Write(body)
                 End If
@@ -516,7 +527,9 @@ Namespace GenomeRunner
 
                 'header row for FOI
                 'body &= FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot" & vbCrLf
-                body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                'TODO FeatureName vs FeatureTable
+                'body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                body &= GFeature.TableName & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
                 writer.WriteLine(body)
 
             End Using
@@ -614,7 +627,9 @@ Namespace GenomeRunner
                     'TODO how does one loop this through features of interest?
                     'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
                     'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
-                    sw.Write(GF.Name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
+                    'TODO FeatureName vs FeatureTable
+                    'sw.Write(GF.Name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
+                    sw.Write(GF.TableName & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
                 Next
             End Using
 
