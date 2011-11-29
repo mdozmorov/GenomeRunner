@@ -26,7 +26,6 @@ Module Module1
         'TODO why is lower casing everything necessary? Should be input correctly do begin with. Also this is messing up db password input.
         'Dim args As String() = ConvertArrayToLowerCase(Argument)
         Dim args As String() = Argument
-        Dim params As List(Of Parameters)
         Dim Settings As New EnrichmentSettings
         Dim flags As New List(Of String)
         Dim progStart As ProgressStart : progStart = AddressOf HandleProgressStart
@@ -35,56 +34,54 @@ Module Module1
         Console.WriteLine("Welcome to GenomeRunner")
         PrintHelp()
         'TODO raise error if args(2) is out of range!
-        params = GetParametersFromConfigFile(args(2))
-        If args.Length >= 4 Then
+        'TODO shouldn't need to use this params stuff any more. Plus it's sketchy because it uses args outside of the Main method.
+        If args.Length = 4 Then
 
-            'Read genomic features file from args(1) into GenomicFeatureIDsToRun
-            Dim GenomicFeatureIDsToRun As List(Of Integer) = GetIdsFromFile(args(1))
+            Dim analysisType As String = args(0)
+            Dim FOIFilePath As String = args(1)
+            Dim GenomicFeatureIDsPath As String = args(2)
+            Dim SettingsPath As String = args(3)
 
-            If args(3) = "-e" Then
+            'Read genomic features file into GenomicFeatureIDsToRun
+            Dim GenomicFeatureIDsToRun As List(Of Integer) = GetIdsFromFile(GenomicFeatureIDsPath)
+
+            If analysisType = "-e" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 'ENRICHMENT
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                AnalysisType = "Enrichment" 'Used to determine what to write for progress updates
+                analysisType = "Enrichment" 'Used to determine what to write for progress updates
 
                 Dim featureOfInterestPath As New List(Of String)
 
-                featureOfInterestPath.Add(args(0))
+                featureOfInterestPath.Add(FOIFilePath)
                 'Parameters = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
-                Dim OutputDir As String = Path.GetDirectoryName(args(0)) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
+                Dim OutputDir As String = Path.GetDirectoryName(FOIFilePath) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
                 'Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
 
                 'Deserialize XML file to a new object.
-                Dim sr As New StreamReader(args(2))
+                Dim sr As New StreamReader(SettingsPath)
                 Dim x As New XmlSerializer(Settings.GetType)
                 Settings = x.Deserialize(sr)
+                Settings.OutputDir = OutputDir 'Uses current time; so this should ignore what's in the settings file.
                 sr.Close()
 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, Settings.ConnectionString, Settings.Strand)
                 Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
                 Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(Settings.ConnectionString)
-                Dim allAdjustments As Boolean = False
-                If params.Any(Function(p) p.Name = "-all") Then allAdjustments = True
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
-                'Serialize EnrichmentSettings!
-                'Dim objStreamWriter As New StreamWriter("C:\Ryan Projects\EnrichmentSettings.xml")
-                'Dim x As New XmlSerializer(Settings.GetType)
-                'x.Serialize(objStreamWriter, Settings)
-                'objStreamWriter.Close()
-
-                
-            ElseIf args(3) = "-a" Then
+                'Copy original settings file to new directory.
+                File.Copy(SettingsPath, OutputDir & "EnrichmentSettingsCopy.xml")
+            ElseIf analysisType = "-a" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 'ANNOTATION
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 Dim FeaturesOfInterest As New List(Of String)
-                FeaturesOfInterest.Add(args(0))
-                AnalysisType = "Annotation"                                                                                 'Used to determine what to write for progress updates
+                FeaturesOfInterest.Add(FOIFilePath)
+                analysisType = "Annotation"                                                                                 'Used to determine what to write for progress updates
                 Dim AnoSettings As New AnnotationSettings()
-
                 'Deserialize XML file to a new object.
-                Dim sr As New StreamReader(args(2))
+                Dim sr As New StreamReader(SettingsPath)
                 Dim x As New XmlSerializer(AnoSettings.GetType)
                 AnoSettings = x.Deserialize(sr)
                 sr.Close()
@@ -94,9 +91,29 @@ Module Module1
                 'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis()
                 Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\"
-                Dim shortOnly As Boolean = False
-                If params.Any(Function(p) p.Name = "-short") Then shortOnly = True
                 analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
+
+                'Copy original settings file to new directory.
+                File.Copy(SettingsPath, OutputDir & "AnnotationSettingsCopy.xml")
+            
+            End If
+        ElseIf args.Length = 2 Then
+            Dim AnalysisType = args(0)
+            If AnalysisType = "-m" Then
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                'MERGE LOG FILES
+                '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                Dim DirectoryToUse As String = args(1)
+                Dim outputter As New Output(0)
+                Dim dirInfo As New DirectoryInfo(DirectoryToUse)
+                Dim Files As FileInfo() = dirInfo.GetFiles("*.gr")
+                Dim filePaths As New List(Of String)
+
+                For Each logFile In Files
+                    filePaths.Add(logFile.FullName)
+                Next
+                Console.WriteLine("Merging files: " & Join(filePaths.ToArray, " "))
+                outputter.OutputMergedLogFiles(filePaths)
             End If
         End If
     End Sub
