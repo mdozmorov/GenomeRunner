@@ -212,6 +212,23 @@ Namespace GenomeRunner
             Return Background
         End Function
 
+        Public Function GetChromInfo(ByVal ConnectionString As String) As List(Of Feature)
+            Dim ChromInfo As New List(Of Feature)
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT * FROM chromInfo;", cn)
+            dr = cmd.ExecuteReader()
+            While dr.Read()
+                'chromInfo table format:
+                'chrom (string), size (int), filename (string)
+                Dim feature As New Feature
+                feature.Chrom = dr(0)
+                feature.ChromStart = 0
+                feature.ChromEnd = dr(1)
+                ChromInfo.Add(feature)
+            End While
+            Return ChromInfo
+        End Function
+
         'returns a list of features that can be used as a background, can be spot or interval
         Public Function GenerateCustomGenomeBackground(ByVal BackgroundFilePath As String) As List(Of Feature)
             Dim Background As New List(Of Feature)

@@ -27,7 +27,7 @@ Public Class frmGenerateRandomFeatures
             MsgBox("Filename required!") : Exit Sub
         End If
 
-        Dim Background As List(Of Feature) = GREngine.GetGenomeBackground(frmGenomeRunner.DatabaseConnection.ConnectionString) 'gets the entire genome as a background
+        Dim Background As List(Of Feature) = GREngine.GetChromInfo(frmGenomeRunner.DatabaseConnection.ConnectionString) 'gets the entire genome as a background
         RandomFeatures = GenerateRandomFeatures(Background)
         Using writer As New StreamWriter(SaveFD.FileName)
             For Each ranFeature In RandomFeatures

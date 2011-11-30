@@ -166,7 +166,7 @@ Public Class frmGenomeRunner
     Private Sub SetGenomeRunnerDefaults()
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
-        Background = GREngine.GetGenomeBackground(ConnectionString)
+        Background = GREngine.GetChromInfo(ConnectionString)
         BackgroundName = cmbDatabase.SelectedItem
     End Sub
 
@@ -799,7 +799,7 @@ Public Class frmGenomeRunner
     End Sub
 
     Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetGenomeBackground(ConnectionString)
+        Background = GREngine.GetChromInfo(ConnectionString)
         lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
         rbUseMonteCarlo.Enabled = True
         UseSpotBackground = False
@@ -826,7 +826,7 @@ Public Class frmGenomeRunner
                 listFeaturesToRun.Clear()
                 UpdateListFeaturesAvailable()
             End If
-            Background = GREngine.GetGenomeBackground(ConnectionString)
+            Background = GREngine.GetChromInfo(ConnectionString)
             BackgroundName = cmbDatabase.SelectedItem
         End If
     End Sub
