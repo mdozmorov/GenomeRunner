@@ -627,9 +627,12 @@ Namespace GenomeRunner
                     'TODO how does one loop this through features of interest?
                     'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
                     'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
+
                     'TODO FeatureName vs FeatureTable
                     'sw.Write(GF.Name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
-                    sw.Write(GF.TableName & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
+                    Dim name As String = GF.TableName
+                    If GF.QueryType = "Promoter" Then name = GF.TableName & "Promoter"
+                    sw.Write(name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
                 Next
             End Using
 
