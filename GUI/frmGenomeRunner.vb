@@ -756,7 +756,8 @@ Public Class frmGenomeRunner
 
     Private Sub SetDatabaseConnectionSettingsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SetDatabaseConnectionSettingsToolStripMenuItem.Click
         frmLogin.ShowDialog()
-        'OpenDatabase()
+        cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
+        OpenDatabase()
     End Sub
 
     Private Sub CreateLocalGenomeRunnerTableToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CreateLocalGenomeRunnerTableToolStripMenuItem.Click
@@ -846,7 +847,7 @@ Public Class frmGenomeRunner
         Dim filePaths As New List(Of String)
         Dim output As New Output(0)
 
-        If dlgResult = Windows.Forms.DialogResult.OK Then
+        If dlgResult = DialogResult.OK Then
             For Each filePath In Directory.GetFiles(FolderBrowser.SelectedPath)
                 If filePath.Contains(".gr") Then
                     filePaths.Add(filePath)
@@ -854,10 +855,43 @@ Public Class frmGenomeRunner
             Next
             output.OutputMergedLogFiles(filePaths)
             MessageBox.Show("Combined log file outputted to: " & Path.GetDirectoryName(filePaths(0)) & "\combined.gr")
-            Me.Close()
         End If
     End Sub
 
+    Private Sub btnMerge_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMerge.Click
+        If listFeatureFiles.Items.Count >= 2 Then
+            'Get outfile path from user
+            Dim saveFileDialog As New SaveFileDialog
+            saveFileDialog.Filter = "gr files (*.gr)|*.gr|All files (*.*)|*.*"
+            saveFileDialog.InitialDirectory = listFeatureFiles.Items.Item(0).ToString
+            saveFileDialog.FileName = "combined.gr"
+            Dim dlgResult As DialogResult = saveFileDialog.ShowDialog()
+
+            If dlgResult = Windows.Forms.DialogResult.OK Then
+                Dim FeatureOfInterestFilePaths As New List(Of String)
+                For Each FeatureFile As ListItemFile In listFeatureFiles.Items                                                          'goes through each of the files to annotate
+                    FeatureOfInterestFilePaths.Add(FeatureFile.filPath)
+                Next
+
+                Dim output As New Output(0)
+                Dim OutfilePath As String = saveFileDialog.ToString
+                Try
+                    output.OutputMergedLogFiles(FeatureOfInterestFilePaths)
+                    MessageBox.Show("Combined log file outputted to: " & Path.GetDirectoryName(FeatureOfInterestFilePaths(0)) & "\combined.gr")
+                Catch
+                    MessageBox.Show("Files could not be merged. Please ensure they are all correctly formatted log files & try again.")
+                End Try
+            End If
+        Else
+            MessageBox.Show("2 or more files for merging must be selected.")
+        End If
+    End Sub
+
+    Private Sub lnklblHost_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lnklblHost.LinkClicked
+        frmLogin.ShowDialog()
+        cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
+        OpenDatabase()
+    End Sub
 End Class
 
 'these settings are passed onto the background worker as arguments

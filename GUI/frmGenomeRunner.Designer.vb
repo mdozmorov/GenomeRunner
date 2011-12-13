@@ -29,6 +29,8 @@ Partial Class frmGenomeRunner
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.btnMerge = New System.Windows.Forms.Button()
+        Me.lnklblHost = New System.Windows.Forms.LinkLabel()
         Me.chkbxShortOnly = New System.Windows.Forms.CheckBox()
         Me.lblOrganism = New System.Windows.Forms.Label()
         Me.cmbOrganism = New System.Windows.Forms.ComboBox()
@@ -111,7 +113,6 @@ Partial Class frmGenomeRunner
         Me.txtJobName = New System.Windows.Forms.TextBox()
         Me.BackgroundWorkerEnrichmentAnalysis = New System.ComponentModel.BackgroundWorker()
         Me.BackgroundWorkerAnnotationAnalysis = New System.ComponentModel.BackgroundWorker()
-        Me.lnklblHost = New System.Windows.Forms.LinkLabel()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox4.SuspendLayout()
@@ -177,6 +178,7 @@ Partial Class frmGenomeRunner
         'GroupBox1
         '
         Me.GroupBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.GroupBox1.Controls.Add(Me.btnMerge)
         Me.GroupBox1.Controls.Add(Me.lnklblHost)
         Me.GroupBox1.Controls.Add(Me.chkbxShortOnly)
         Me.GroupBox1.Controls.Add(Me.lblOrganism)
@@ -205,6 +207,25 @@ Partial Class frmGenomeRunner
         Me.GroupBox1.TabIndex = 36
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Add files with Features Of Interest and select Genomic Features to analyze"
+        '
+        'btnMerge
+        '
+        Me.btnMerge.Location = New System.Drawing.Point(6, 439)
+        Me.btnMerge.Name = "btnMerge"
+        Me.btnMerge.Size = New System.Drawing.Size(161, 23)
+        Me.btnMerge.TabIndex = 79
+        Me.btnMerge.Text = "Merge"
+        Me.btnMerge.UseVisualStyleBackColor = True
+        '
+        'lnklblHost
+        '
+        Me.lnklblHost.AutoSize = True
+        Me.lnklblHost.Location = New System.Drawing.Point(205, 22)
+        Me.lnklblHost.Name = "lnklblHost"
+        Me.lnklblHost.Size = New System.Drawing.Size(32, 15)
+        Me.lnklblHost.TabIndex = 78
+        Me.lnklblHost.TabStop = True
+        Me.lnklblHost.Text = "Host"
         '
         'chkbxShortOnly
         '
@@ -269,7 +290,7 @@ Partial Class frmGenomeRunner
         'btnRemoveFOI
         '
         Me.btnRemoveFOI.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.btnRemoveFOI.Location = New System.Drawing.Point(6, 439)
+        Me.btnRemoveFOI.Location = New System.Drawing.Point(6, 410)
         Me.btnRemoveFOI.Name = "btnRemoveFOI"
         Me.btnRemoveFOI.Size = New System.Drawing.Size(161, 23)
         Me.btnRemoveFOI.TabIndex = 32
@@ -294,7 +315,7 @@ Partial Class frmGenomeRunner
         Me.listFeatureFiles.AllowDrop = True
         Me.listFeatureFiles.Location = New System.Drawing.Point(6, 48)
         Me.listFeatureFiles.Name = "listFeatureFiles"
-        Me.listFeatureFiles.Size = New System.Drawing.Size(161, 356)
+        Me.listFeatureFiles.Size = New System.Drawing.Size(161, 327)
         Me.listFeatureFiles.TabIndex = 44
         Me.listFeatureFiles.UseCompatibleStateImageBehavior = False
         Me.listFeatureFiles.View = System.Windows.Forms.View.List
@@ -348,7 +369,7 @@ Partial Class frmGenomeRunner
         '
         Me.btnLoadPOIs.BackColor = System.Drawing.SystemColors.ButtonFace
         Me.btnLoadPOIs.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnLoadPOIs.Location = New System.Drawing.Point(6, 411)
+        Me.btnLoadPOIs.Location = New System.Drawing.Point(6, 381)
         Me.btnLoadPOIs.Name = "btnLoadPOIs"
         Me.btnLoadPOIs.Size = New System.Drawing.Size(161, 23)
         Me.btnLoadPOIs.TabIndex = 2
@@ -950,16 +971,6 @@ Partial Class frmGenomeRunner
         'BackgroundWorkerAnnotationAnalysis
         '
         '
-        'lnklblHost
-        '
-        Me.lnklblHost.AutoSize = True
-        Me.lnklblHost.Location = New System.Drawing.Point(205, 22)
-        Me.lnklblHost.Name = "lnklblHost"
-        Me.lnklblHost.Size = New System.Drawing.Size(32, 15)
-        Me.lnklblHost.TabIndex = 78
-        Me.lnklblHost.TabStop = True
-        Me.lnklblHost.Text = "Host"
-        '
         'frmGenomeRunner
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -1094,5 +1105,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkbxShortOnly As System.Windows.Forms.CheckBox
     Friend WithEvents lnklblHost As System.Windows.Forms.LinkLabel
+    Friend WithEvents btnMerge As System.Windows.Forms.Button
 
 End Class
