@@ -286,7 +286,8 @@ Public Class frmGenomeRunner
                     CurrCateIndex += 1                                                                      'moves the current group index to the index of the newly created cat
                     Dim arrayCat = Split(GRfeature.UICategory, "|")                                         'splits the catagory results in order to take off the numerical indexegory()
                     category = New ListViewGroup
-                    category.Name = GRfeature.UICategory : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
+                    'category.Name = CInt(GRfeature.UICategory) : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
+                    category.Name = CInt(arrayCat(0)) : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
                     'TODO FeatureName vs FeatureTable
                     'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
                     Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Group = category : feature.GenomicFeature = GRfeature
@@ -863,21 +864,27 @@ Public Class frmGenomeRunner
             'Get outfile path from user
             Dim saveFileDialog As New SaveFileDialog
             saveFileDialog.Filter = "gr files (*.gr)|*.gr|All files (*.*)|*.*"
-            saveFileDialog.InitialDirectory = listFeatureFiles.Items.Item(0).ToString
-            saveFileDialog.FileName = "combined.gr"
+            Dim MatrixFile As ListItemFile = listFeatureFiles.Items.Item(0)
+            saveFileDialog.InitialDirectory = MatrixFile.filPath
+            saveFileDialog.FileName = "combined"
             Dim dlgResult As DialogResult = saveFileDialog.ShowDialog()
 
             If dlgResult = Windows.Forms.DialogResult.OK Then
+                If My.Computer.FileSystem.FileExists(saveFileDialog.FileName) = True Then
+                    My.Computer.FileSystem.DeleteFile(saveFileDialog.FileName) 'If file with user-provided name already exist, delete that file, as it'll be replaced
+                End If
                 Dim FeatureOfInterestFilePaths As New List(Of String)
-                For Each FeatureFile As ListItemFile In listFeatureFiles.Items                                                          'goes through each of the files to annotate
+                For Each FeatureFile As ListItemFile In listFeatureFiles.Items      'goes through each of the files to annotate
                     FeatureOfInterestFilePaths.Add(FeatureFile.filPath)
                 Next
 
                 Dim output As New Output(0)
                 Dim OutfilePath As String = saveFileDialog.ToString
                 Try
-                    output.OutputMergedLogFiles(FeatureOfInterestFilePaths)
-                    MessageBox.Show("Combined log file outputted to: " & Path.GetDirectoryName(FeatureOfInterestFilePaths(0)) & "\combined.gr")
+                    output.OutputMergedLogFiles(FeatureOfInterestFilePaths)         'Output goes to "combined.gr" by definition
+                    Dim sp() As String = saveFileDialog.FileName.Split("\")         'But we need to rename it to the name provided by user. Split the filename string to get the last element
+                    If sp(sp.Length - 1) <> "combined.gr" Then My.Computer.FileSystem.RenameFile(Path.GetDirectoryName(saveFileDialog.FileName) & "\combined.gr", sp(sp.Length - 1)) 'Rename "combined.gr" to the user provided name
+                    MessageBox.Show("Combined log file outputted to: " & saveFileDialog.FileName)
                 Catch
                     MessageBox.Show("Files could not be merged. Please ensure they are all correctly formatted log files & try again.")
                 End Try
@@ -892,6 +899,7 @@ Public Class frmGenomeRunner
         cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
         OpenDatabase()
     End Sub
+
 End Class
 
 'these settings are passed onto the background worker as arguments
