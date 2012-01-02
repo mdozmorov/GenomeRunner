@@ -42,6 +42,7 @@ Partial Class frmLogin
         Me.Label1 = New System.Windows.Forms.Label()
         Me.txtServer = New System.Windows.Forms.TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.btnDefaultDB = New System.Windows.Forms.Button()
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -50,7 +51,7 @@ Partial Class frmLogin
         Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"), System.Drawing.Image)
         Me.LogoPictureBox.Location = New System.Drawing.Point(1, 6)
         Me.LogoPictureBox.Name = "LogoPictureBox"
-        Me.LogoPictureBox.Size = New System.Drawing.Size(165, 193)
+        Me.LogoPictureBox.Size = New System.Drawing.Size(165, 171)
         Me.LogoPictureBox.TabIndex = 0
         Me.LogoPictureBox.TabStop = False
         '
@@ -89,7 +90,7 @@ Partial Class frmLogin
         '
         'OK
         '
-        Me.OK.Location = New System.Drawing.Point(179, 183)
+        Me.OK.Location = New System.Drawing.Point(304, 183)
         Me.OK.Name = "OK"
         Me.OK.Size = New System.Drawing.Size(94, 23)
         Me.OK.TabIndex = 6
@@ -98,7 +99,7 @@ Partial Class frmLogin
         'Cancel
         '
         Me.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.Cancel.Location = New System.Drawing.Point(279, 183)
+        Me.Cancel.Location = New System.Drawing.Point(204, 183)
         Me.Cancel.Name = "Cancel"
         Me.Cancel.Size = New System.Drawing.Size(94, 23)
         Me.Cancel.TabIndex = 7
@@ -136,6 +137,15 @@ Partial Class frmLogin
         Me.Label2.Text = "&Server"
         Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'btnDefaultDB
+        '
+        Me.btnDefaultDB.Location = New System.Drawing.Point(108, 183)
+        Me.btnDefaultDB.Name = "btnDefaultDB"
+        Me.btnDefaultDB.Size = New System.Drawing.Size(90, 23)
+        Me.btnDefaultDB.TabIndex = 9
+        Me.btnDefaultDB.Text = "Load defaults"
+        Me.btnDefaultDB.UseVisualStyleBackColor = True
+        '
         'frmLogin
         '
         Me.AcceptButton = Me.OK
@@ -143,6 +153,7 @@ Partial Class frmLogin
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel
         Me.ClientSize = New System.Drawing.Size(403, 211)
+        Me.Controls.Add(Me.btnDefaultDB)
         Me.Controls.Add(Me.txtServer)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.txtDatabase)
@@ -170,5 +181,6 @@ Partial Class frmLogin
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents txtServer As System.Windows.Forms.TextBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents btnDefaultDB As System.Windows.Forms.Button
 
 End Class

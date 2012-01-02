@@ -24,14 +24,16 @@ Public Class frmLogin
     End Sub
 
     Private Sub LoginForm1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        'txtUsername.Text = "genomerunner"
-        'txtPassword.Text = "genomerunner"
-        'txtServer.Text = "156.110.144.34"
-        'txtDatabase.Text = "hg18test"
-
         txtUsername.Text = GetSetting("GenomeRunner", "Database", "uName")
         txtPassword.Text = GetSetting("GenomeRunner", "Database", "uPassword")
         txtServer.Text = GetSetting("GenomeRunner", "Database", "uServer")
         txtDatabase.Text = GetSetting("GenomeRunner", "Database", "uDatabase")
+    End Sub
+
+    Private Sub btnDefaultDB_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDefaultDB.Click
+        txtUsername.Text = "genomerunner"
+        txtPassword.Text = "genomerunner"
+        txtServer.Text = "156.110.144.34"
+        txtDatabase.Text = "hg19test"
     End Sub
 End Class
