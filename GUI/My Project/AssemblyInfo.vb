@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("GenomeRunner - automating genome exploration")> 
 <Assembly: AssemblyCompany("")> 
 <Assembly: AssemblyProduct("GenomeRunner")> 
-<Assembly: AssemblyCopyright("Copyright © Mikhail Dozmorov 2011")> 
+<Assembly: AssemblyCopyright("Copyright © Mikhail Dozmorov 2012")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>

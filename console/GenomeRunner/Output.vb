@@ -12,7 +12,7 @@ Namespace GenomeRunner
         End Sub
 
         'Outputs combined log file of all files passed
-        Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String))
+        Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String), Optional ByVal OutfilePath As String = "")
             Dim AccumulatedRows As New Hashtable
             Dim OrderedAccumulatedRowKeys As New List(Of String) 'This is only needed because Hashtable does not preserver order
             Dim FileNames As New List(Of String)
@@ -33,7 +33,13 @@ Namespace GenomeRunner
             Next
 
             'Write combined file
-            Using writer As New StreamWriter(Path.GetDirectoryName(FilePaths(0)) & "\combined.gr", False)
+            Dim writeToHere As String = ""
+            If OutfilePath <> "" Then
+                writeToHere = OutfilePath
+            Else
+                writeToHere = Path.GetDirectoryName(FilePaths(0)) & "\combined.gr"
+            End If
+            Using writer As New StreamWriter(writeToHere, False)
                 Dim isHeaderRow = True
                 For Each key In OrderedAccumulatedRowKeys
                     If isHeaderRow Then

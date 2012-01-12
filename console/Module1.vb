@@ -67,7 +67,8 @@ Module Module1
 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, Settings.ConnectionString, Settings.Strand)
                 Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
-                Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(Settings.ConnectionString)
+                'Dim Background As List(Of Feature) = GREngin.GetGenomeBackground(Settings.ConnectionString)
+                Dim Background As List(Of Feature) = GREngin.GetChromInfo(Settings.ConnectionString)
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
                 'Copy original settings file to new directory.
@@ -95,7 +96,7 @@ Module Module1
 
                 'Copy original settings file to new directory.
                 File.Copy(SettingsPath, OutputDir & "AnnotationSettingsCopy.xml")
-            
+
             End If
         ElseIf args.Length = 2 Then
             Dim AnalysisType = args(0)
@@ -119,37 +120,24 @@ Module Module1
     End Sub
 
     Private Sub PrintHelp()
-        'Flags used : (path of features of interest file) (path of genomic features ids file)  a | [e [-m [mc [10] | an] [-p [ct | bd]] [-a [pc | po]] ]
-        Console.WriteLine("General argument structure is as follows: [Full path to features of interest file] [Full path to genomic feastures IDs file] [type of analysis ('e'nrichment|'a'nnotation)] [parameters: (-flag argument) (examples. -m mc)]")
-        Console.WriteLine("")
-        Console.WriteLine("=Annotation=")
-        Console.WriteLine("")
-        Console.WriteLine("Does not have any parameters, only 'a' to specify annotation analysis")
-        Console.WriteLine("")
-        Console.WriteLine("--------------------------------------------------------------------------------")
-        Console.WriteLine("")
-        Console.WriteLine("Example: 'C:\FeatureOfInterest.bed' 'C:\GenomicFeatureIDsFile' a")
-        Console.WriteLine("")
-        Console.WriteLine("--------------------------------------------------------------------------------")
-        Console.WriteLine("=Enrichment=")
-        Console.WriteLine("flag: -m : method to use to calculate expected random feature association")
-        Console.WriteLine("Arguments: 'mc[#ofruns]' for monte carlo | 'an' analytical")
-        Console.WriteLine("       -p : method to use to calculate p-value")
-        Console.WriteLine("           'ct' for chi-square test | 'bd' for binomial distribution (does not work for monte-carlo)")
-        Console.WriteLine("       -a : what type of audjustment should be done on the matrix p-values")
-        Console.WriteLine("           'pc' to weight by Pearson's coefficient | 'po' to weight by percent of features of interest that overlap with genomic features")
-        Console.WriteLine("")
-        Console.WriteLine("If no parameters given, default are used (e -m mc10 -p ct)")
-        Console.WriteLine("--------------------------------------------------------------------------------")
-        Console.WriteLine("Example: 'C:\FeatureOfInterest.bed' 'C:\GenomicFeatureIDsFile' e -m mc10 -p ct -a po")
-        Console.WriteLine("")
-        Console.WriteLine("*This will do an enrichment analysis on the features of interest contained in the first file against the genomic features identified by ID's in the GenomeRunnerTable in the MySQL database")
-        Console.WriteLine("*This run will use the Monte-Carlo simulation with 10 runs to calculate the number of expected associations by random chance.")
-        Console.WriteLine("*The p-value will be calculated using the Chi-Square test.")
-        Console.WriteLine("*The matrix will be weighted by the percent overlap")
-        Console.WriteLine("--------------------------------------------------------------------------------")
-        Console.WriteLine("")
-       
+        Console.WriteLine("Usage: GenomeRunnerConsole.exe [-a|-e|-m] <Features_Of_Interest.bed> <Genomic_Features_IDs.txt> <Settings.xml>")
+        Console.WriteLine()
+        Console.WriteLine("Example: GenomeRunnerConsole.exe -e " & """" & "F:\GRtest\wgRNA-HAcaBox.bed" & """" & " " & """" & "F:\GRtest\GFs.txt" & """" & " " & """" & "F:\GRtest\EnrichmentSettings.xml" & """" & "")
+        Console.WriteLine()
+        Console.WriteLine("GenomeRunner – Annotation and Enrichment analysis of experimental Features Of Interest (FOIs) vs. Genomic Features (GFs)")
+        Console.WriteLine()
+        Console.WriteLine("Options:")
+        Console.WriteLine("-a" & vbTab & "Annotation analysis. Returns <FOI.gr> tab-delimited file with Num_Of_GFs x Num_Of_FOIs table with number of times a FOI co-localized with and/or lies in the proximity of a GF. <Details> section provides full information about GFs.")
+        Console.WriteLine()
+        Console.WriteLine("-e" & vbTab & "Enrichment analysis. Returns <…_Matrix.gr> tab-delimited file with Num_Of_GFs x 1 table with p-values of a set of FOIs enrichment/depletion within and/or in proximity of a set of GFs, as compared with random chance. P-values are –log10 transformed, and a '-' is added to specify depletion. Multiple matrixes may be outputted, if <AllAdjustments> settings are set to TRUE, see <GenomeRunner – Supplemental.pdf> for explanation.")
+        Console.WriteLine()
+        Console.WriteLine("-m" & vbTab & "Merging enrichment analysis .gr matrixes from multiple runs into a single matrix. This switch accepts only a single following parameter - <C:\Path_To\Some_directory_of_.gr_files>. Matrixes should be from the runs using the same <Genomic_Features_IDs.txt> and copied into a single folder for merging.")
+        Console.WriteLine()
+        Console.WriteLine("<Features_Of_Interest.bed> - User provided set of Features Of Interest. A tab-delimited file containing chrom, chromStart, chromEnd, name, strand, the rest of the columns is ignored.")
+        Console.WriteLine()
+        Console.WriteLine("<Genomic_Features_IDs.txt> - A tab-delimited file with Genomic Features IDs. This file can be created by selecting desirable rows from 'genomerunner.txt'; pre-defined Tier 1,2,3 GF IDs files are provided.")
+        Console.WriteLine()
+        Console.WriteLine("<Settings.xml> - A text file containing database and analysis settings. <OutputDir> setting specifies the folder for outputting the results; for other settings see <GenomeRunner – Supplemental.pdf>.")
     End Sub
 
     Private Function GetIdsFromFile(ByRef filePath As String) As List(Of Integer)

@@ -257,6 +257,41 @@ Namespace GenomeRunner
                     Next
                     Debug.Print("Total rows returned for annotaitonanalysis" & debugFeatureSQLdatacount)
 
+                Case Is = "GeneOnly"
+                    'goes through each feature of interest and decides if it falls within the genomic region of interest
+                    Dim lastChrom As String = ""
+                    For x As Integer = 0 To NumOfFeatures Step +1
+                        Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
+                        If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            lastChrom = proximityFeaturesOfInterest(x).Chrom
+                        End If
+                        'compares the feature to the entire listfeaturedata for regions that fall within
+                        For Each featureRow In listFeatureSQLData
+                            If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
+                                Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
+                                 Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
+
+                                featureHit.CountData += 1
+                                featureHit.fStartData.Add(featureRow.ChromStart)
+                                featureHit.fEndData.Add(featureRow.ChromEnd)
+                                featureHit.StrandData.Add(featureRow.Strand)
+                                featureHit.NameData.Add(featureRow.Name)
+                                featureHit.ThresholdData.Add(featureRow.Threshold)
+                                featureHit.OverLapTypeData.Add(Nothing)
+                                featureHit.OverLapAmountData.Add(Nothing)
+                                GenomicFeature.FeatureReturnedData(x) = featureHit
+                                'End If
+                            End If
+                        Next
+
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
+                    Next
+
                 Case Is = "Gene"
                     Dim fthreshold As String
                     'goes through each feature of interest and decides if it falls within the genomic region of interest
@@ -513,6 +548,8 @@ FeatureLoadStart:
                     dr.Close() : cmd.Dispose()
                     Dim nameIndex As Integer = columnnames.ToLower().IndexOf("name")
                     Dim strandIndex As Integer = columnnames.ToLower().IndexOf("strand")
+                    Dim repnameIndex As Integer = columnnames.ToLower().IndexOf("repname") 'In case of rmsk table we have repName column
+                    If repnameIndex <> -1 Then nameIndex = -1 'If detected, name should not be used, set nameIndex manually to -1
                     If nameIndex <> -1 And strandIndex <> -1 Then : useNameUseStrand = "yesnameyesstrand" : End If
                     If nameIndex <> -1 And strandIndex = -1 Then : useNameUseStrand = "yesnamenostrand" : End If
                     If nameIndex = -1 And strandIndex <> -1 Then : useNameUseStrand = "nonameyesstrand" : End If
@@ -753,6 +790,25 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             End If
+
+                        Case Is = "GeneOnly"
+                            OpenDatabase()
+                            'returns the entire database and enters the values into the listFeatureData
+                            cmd = New MySqlCommand("SELECT tName,strand,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
+                            dr = cmd.ExecuteReader()
+                            If dr.HasRows Then
+                                While dr.Read()
+                                    Dim data As New FeatureSQLData
+                                    data.Chrom = dr(0)
+                                    data.Strand = dr(1)
+                                    data.Name = ""
+                                    data.ChromStart = dr(2)
+                                    data.ChromEnd = dr(3)
+                                    data.Threshold = ""
+                                    GenomicFeatureDataBaseData.Add(data)
+                                End While
+                            End If
+                            dr.Close() : cmd.Dispose()
 
                         Case Is = "Gene"
                             OpenDatabase()
