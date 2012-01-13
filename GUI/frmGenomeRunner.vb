@@ -528,7 +528,7 @@ Public Class frmGenomeRunner
                                                OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, _
                                                AllAdjustments, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, _
                                                txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, _
-                                               PromoterDownstream, txtproximity.Value, cmbStrandsToAnalyze.Text)
+                                               PromoterDownstream, txtproximity.Value, cmbStrandsToAnalyze.Text, chkbxoutputMerged.Checked)
         Return Settings
     End Function
 

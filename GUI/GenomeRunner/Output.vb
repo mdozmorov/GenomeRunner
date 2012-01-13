@@ -577,38 +577,38 @@ Namespace GenomeRunner
             End If
         End Sub
 
-        'Public Sub OutputPValueMatrixTransposed(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestNames As List(Of String), ByVal AccumulatedGenomicFeatures As Hashtable)
-        '    '8 Possible options:
-        '    '---------------------------------------------------------------------------
-        '    '1. UseMonteCarlo, UseChiSquare, OutputPCCweightedPvalueMatrix
-        '    '2. UseMonteCarlo, UseChiSquare, OutputPercentOverlapPvalueMatrix
-        '    '3. UseMonteCarlo, UseChiSquare
-        '    '4. UseAnalytical, UseChiSquare, OutputPCCweightedPvalueMatrix
-        '    '5. UseAnalytical, UseChiSquare, OutputPercentOverlapPvalueMatrix
-        '    '6. UseAnalytical, UseChiSquare
-        '    '7. UseAnalytical, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix
-        '    '8. UseAnalytical, UseBinomialDistribution
+        Public Sub OutputPValueMatrixTransposed(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestNames As List(Of String), ByVal AccumulatedGenomicFeatures As Hashtable)
+            '8 Possible options:
+            '---------------------------------------------------------------------------
+            '1. UseMonteCarlo, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '2. UseMonteCarlo, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '3. UseMonteCarlo, UseChiSquare
+            '4. UseAnalytical, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '5. UseAnalytical, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '6. UseAnalytical, UseChiSquare
+            '7. UseAnalytical, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix
+            '8. UseAnalytical, UseBinomialDistribution
 
-        '    'Output lines.
-        '    Dim PvalueFilename As String = getPvalueFilename(Settings)
-        '    Dim Log10Pvalues As New List(Of Double)
-        '    Using sw As New StreamWriter(PvalueFilename)
-        '        'writes the header columns
-        '        sw.Write(vbTab & String.Join(vbTab, FeaturesOfInterestNames) & vbCrLf)
-        '        'assembles a row of pvalue results
-        '        For Each gfName In AccumulatedGenomicFeatures.Keys
-        '            'TODO how does one loop this through features of interest?
-        '            'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
-        '            'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
-        '            Log10Pvalues.Clear()
-        '            For Each GF In AccumulatedGenomicFeatures(gfName)
-        '                Log10Pvalues.Add(getLog10Pvalue(GF, Settings))
-        '            Next
-        '            sw.Write(gfName & vbTab & String.Join(vbTab, Log10Pvalues) & vbCrLf)
-        '        Next
-        '    End Using
+            'Output lines.
+            Dim PvalueFilename As String = getPvalueFilename(Settings, "")
+            Dim Log10Pvalues As New List(Of Double)
+            Using sw As New StreamWriter(PvalueFilename)
+                'writes the header columns
+                sw.Write(vbTab & String.Join(vbTab, FeaturesOfInterestNames) & vbCrLf)
+                'assembles a row of pvalue results
+                For Each gfName In AccumulatedGenomicFeatures.Keys
+                    'TODO how does one loop this through features of interest?
+                    'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
+                    'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
+                    Log10Pvalues.Clear()
+                    For Each GF In AccumulatedGenomicFeatures(gfName)
+                        Log10Pvalues.Add(getLog10Pvalue(GF, Settings))
+                    Next
+                    sw.Write(gfName & vbTab & String.Join(vbTab, Log10Pvalues) & vbCrLf)
+                Next
+            End Using
 
-        'End Sub
+        End Sub
 
         Public Sub OutputPValueMatrixIndividualTransposed(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
             '8 Possible options:
