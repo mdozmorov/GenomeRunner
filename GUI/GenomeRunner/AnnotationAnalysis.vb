@@ -56,6 +56,7 @@ Namespace GenomeRunner
             End If
         End Sub
 
+
         'loads the FOIs from the filepath
         Private Function LoadFeatureOfInterests(ByVal FeaturesOfInterestFilePath As String) As List(Of Feature)
             Dim FeaturesOfInterest As New List(Of Feature)
@@ -536,7 +537,9 @@ FeatureLoadStart:
                     GC.Collect()
                     'checks if the strand and name column exist
                     OpenDatabase()
-                    cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature.TableName, cn)
+                    'A workaround Promoter is not a table. Remove "Promoter" from tablename and use it to get strand/name, and to get actual Promoter data ("Promoter" query)
+                    Dim GFeature_TableName As String = Replace(GFeature.TableName, "Promoter", vbNullString)
+                    cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature_TableName, cn)
                     dr = cmd.ExecuteReader()
 
                     'controls whether strand or should be outputed or not
@@ -848,12 +851,11 @@ FeatureLoadStart:
                                 If containskey = True Then
                                     featuresql.Threshold = kgIDToGeneSymbolDict(featuresql.Name)
                                 End If
-
                             Next
                         Case Is = "Promoter"
                             OpenDatabase()
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature_TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()

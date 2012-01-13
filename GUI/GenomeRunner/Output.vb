@@ -637,7 +637,7 @@ Namespace GenomeRunner
                     'TODO FeatureName vs FeatureTable
                     'sw.Write(GF.Name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
                     Dim name As String = GF.TableName
-                    If GF.QueryType = "Promoter" Then name = GF.TableName & "Promoter"
+                    'If GF.QueryType = "Promoter" Then name = GF.TableName & "Promoter"
                     sw.Write(name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
                 Next
             End Using
@@ -664,7 +664,7 @@ Namespace GenomeRunner
 
             'PCC, Square PercentOverlap, PercentOverlap
             If Settings.OutputPCCweightedPvalueMatrix Then
-                name &= "_WeightedPersonsCoefficient"
+                name &= "_WeightedPearsonsCoefficient"
             ElseIf Settings.OutputPercentOverlapPvalueMatrix And Settings.SquarePercentOverlap Then
                 name &= "_WeightedSquarePercentOverlap"
             ElseIf Settings.OutputPercentOverlapPvalueMatrix Then

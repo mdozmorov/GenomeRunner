@@ -147,6 +147,11 @@ Namespace GenomeRunner
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                'If GF.QueryType = "Promoter" Then
+                '    AccumulatedGenomicFeatures.Add(GF.TableName & "Promoter", New List(Of GenomicFeature))
+                'Else
+                '    AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                'End If
             Next
             'Prints the legend into the log file
             Outputer.OutputLogFileHeader(Settings)

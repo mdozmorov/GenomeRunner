@@ -318,7 +318,7 @@ Public Class frmGenomeRunner
             listFeaturesToRun.Items.Add(nGF)
             'checks if the GenomicFeature is a gene, if so a promotter and exon genomic feature are generated as well
             If lvGF.GenomicFeature.QueryType = "Gene" Then
-                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName, "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
+                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName & "Promoter", "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
                 Dim nlvGFPromoter As New ListItemGenomicFeature(nGFPromoter)
                 'TODO FeatureName vs FeatureTable
                 'nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
