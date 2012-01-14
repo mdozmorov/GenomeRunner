@@ -11,12 +11,12 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>-m "F:\GRtest\MergeTest"</StartArguments>
+    <StartArguments>-e "F:\GRtest\wgRNA-HAcaBox.bed" "F:\GRtest\GFs.txt" "F:\GRtest\EnrichmentSettings.xml"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>-m "F:\GRtest\MergeTest"</StartArguments>
+    <StartArguments>-e "F:\GRtest\wgRNA-HAcaBox.bed" "F:\GRtest\GFs.txt" "F:\GRtest\EnrichmentSettings.xml"</StartArguments>
   </PropertyGroup>
 </Project>

@@ -31,8 +31,7 @@ Module Module1
         Dim progStart As ProgressStart : progStart = AddressOf HandleProgressStart
         Dim progUpdate As ProgressUpdate : progUpdate = AddressOf HandleProgressUpdate
         Dim progDone As ProgressDone : progDone = AddressOf HandleProgressDone
-        Console.WriteLine("Welcome to GenomeRunner")
-        PrintHelp()
+        'PrintHelp()
         'TODO raise error if args(2) is out of range!
         'TODO shouldn't need to use this params stuff any more. Plus it's sketchy because it uses args outside of the Main method.
         If args.Length = 4 Then
@@ -55,15 +54,15 @@ Module Module1
 
                 featureOfInterestPath.Add(FOIFilePath)
                 'Parameters = GetParameters(args) 'get the parameters inputed by the command line and orginizes them into parameters
-                Dim OutputDir As String = Path.GetDirectoryName(FOIFilePath) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
                 'Settings = GetEnrichmentSettings(OutputDir, params) 'generates an enrichmentsettings classed based on the paramaters inputed by the user. 
 
                 'Deserialize XML file to a new object.
                 Dim sr As New StreamReader(SettingsPath)
                 Dim x As New XmlSerializer(Settings.GetType)
-                Settings = x.Deserialize(sr)
-                Settings.OutputDir = OutputDir 'Uses current time; so this should ignore what's in the settings file.
-                sr.Close()
+                Settings = x.Deserialize(sr) : sr.Close()
+                'Dim OutputDir As String = Path.GetDirectoryName(FOIFilePath) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
+                Dim OutputDir As String = DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
+                Settings.OutputDir &= OutputDir 'Add current time subfolder
 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, Settings.ConnectionString, Settings.Strand)
                 Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
@@ -72,7 +71,7 @@ Module Module1
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
                 'Copy original settings file to new directory.
-                File.Copy(SettingsPath, OutputDir & "EnrichmentSettingsCopy.xml")
+                File.Copy(SettingsPath, Settings.OutputDir & "EnrichmentSettings.xml")
             ElseIf analysisType = "-a" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 'ANNOTATION
@@ -91,7 +90,7 @@ Module Module1
                 'TODO get this above the loop now
                 'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis()
-                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\"
+                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\" & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
                 analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
 
                 'Copy original settings file to new directory.
@@ -116,10 +115,13 @@ Module Module1
                 Console.WriteLine("Merging files: " & Join(filePaths.ToArray, " "))
                 outputter.OutputMergedLogFiles(filePaths)
             End If
+        Else
+            PrintHelp()
         End If
     End Sub
 
     Private Sub PrintHelp()
+        Console.WriteLine("Welcome to GenomeRunner")
         Console.WriteLine("Usage: GenomeRunnerConsole.exe [-a|-e|-m] <Features_Of_Interest.bed> <Genomic_Features_IDs.txt> <Settings.xml>")
         Console.WriteLine()
         Console.WriteLine("Example: GenomeRunnerConsole.exe -e " & """" & "F:\GRtest\wgRNA-HAcaBox.bed" & """" & " " & """" & "F:\GRtest\GFs.txt" & """" & " " & """" & "F:\GRtest\EnrichmentSettings.xml" & """" & "")
@@ -167,8 +169,9 @@ Module Module1
 
     Private Sub HandleProgressDone(ByVal OuputDir As String)
         Console.WriteLine(AnalysisType & " analysis complete.  Results outputed to: " & OuputDir)
-        Console.WriteLine("Press enter to quit...")
-        Console.ReadLine()
+        'Console.WriteLine("Press enter to quit...")
+        'Console.ReadLine()
+        Console.WriteLine("*******************************")
     End Sub
 
     Function GetParameters(ByVal Args As String()) As List(Of Parameters)
@@ -241,7 +244,7 @@ Module Module1
         For Each GF In GenomicFeaturesToRun
             If GF.QueryType = "Gene" Then
                 GenomicFeaturesToRunWithEP.Add(GF)
-                Dim nGFPromoter As New GenomicFeature(GF.id, GF.Name & "Promoter", GF.TableName, "Promoter", "NA", 0, "2000", "10000", "5000", "", 0, Nothing, "", 1)
+                Dim nGFPromoter As New GenomicFeature(GF.id, GF.Name & "Promoter", GF.TableName & "Promoter", "Promoter", "NA", 0, "2000", "10000", "5000", "", 0, Nothing, "", 1)
                 GenomicFeaturesToRunWithEP.Add(nGFPromoter)
                 Dim nGFExon As New GenomicFeature(GF.id, GF.Name & "Exon", GF.TableName & "Exons", "Exon", "NA", 0, 0, 0, 0, "", 0, Nothing, "", 1)
                 GenomicFeaturesToRunWithEP.Add(nGFExon)

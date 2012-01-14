@@ -382,8 +382,11 @@ Public Class frmGenomeRunner
         For Each FeatureFile As ListItemFile In listFeatureFiles.Items                                                          'goes through each of the files to annotate
             FeatureOfInterestFilePaths.Add(FeatureFile.filPath)
         Next
-        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)                                                               'gets the file information of the features of interest file
-        Dim AnnotationOutputDir As String = firstFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & " " & txtJobName.Text & "\"  'sets what directory the results are to outputed to
+        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim JobName As String = txtJobName.Text
+        If JobName = "" Then JobName = firstFile.fileName 'gets the file information of the features of interest file
+        'Dim AnnotationOutputDir As String = firstFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & " " & txtJobName.Text & "\"  'sets what directory the results are to outputed to
+        Dim AnnotationOutputDir As String = firstFile.fileDir & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & JobName & "\"  'sets what directory the results are to outputed to
 
         Dim args As New AnnotationArguments(ConnectionString, GRFeaturesToAnalyze, FeatureOfInterestFilePaths, AnnotationOutputDir, AnoSettings)
         BackgroundWorkerAnnotationAnalysis.RunWorkerAsync(args)
@@ -488,7 +491,6 @@ Public Class frmGenomeRunner
 
     'gets the settings from the user interface and adds them to a EnrichmentSettings class which is passed on to the enrichment analyzer
     Private Function GetUserSettings() As EnrichmentSettings
-        Dim JobName As String = " " & txtJobName.Text
         Dim UseMonteCarlo As Boolean, UseAnalytical As Boolean, UseTradMC As Boolean, UseChiSquare As Boolean, UseBinomialDistrobution As Boolean
         Dim OutputPearsonsCoefficientWeightedMatrix As Boolean
         Dim OutputPercentOverlapWeightedMatrix As Boolean
@@ -519,9 +521,11 @@ Public Class frmGenomeRunner
             Case Is = 3
                 AllAdjustments = True
         End Select
-        Dim featureFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim JobName As String = txtJobName.Text
+        If JobName = "" Then JobName = firstFile.fileName
         Dim PeasonsAudjustmentConst As Integer = txtPearsonAudjustmentConstant.Value
-        Dim PValueOutputDir As String = featureFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & JobName & "\"  'sets what directory the results are to outputed to
+        Dim PValueOutputDir As String = firstFile.fileDir & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & JobName & "\"  'sets what directory the results are to outputed to
         Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, _
                                                UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, _
                                                OutputPercentOverlapWeightedMatrix, rbSquared.Checked, _

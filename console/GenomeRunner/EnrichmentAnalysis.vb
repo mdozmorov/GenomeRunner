@@ -32,8 +32,9 @@ Namespace GenomeRunner
         Public PromoterDownstream As UInteger = 0                                                   'stores how many base pairs the promoter regions covers downstream of the gene's startpoint
         Public Proximity As UInteger = 0                                                            'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
         Public Strand As String
+        Public OutputMerged As Boolean
 
-        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String)
+        Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String, ByVal OutputMerged As Boolean)
             Me.ConnectionString = ConnectionString
             Me.EnrichmentJobName = EnrichmentJobName
             Me.UseMonteCarlo = UseMonteCarlo
@@ -56,6 +57,7 @@ Namespace GenomeRunner
             Me.PromoterUpstream = PromoterUpstream
             Me.PromoterDownstream = PromoterDownstream
             Me.Strand = Strand
+            Me.OutputMerged = OutputMerged
         End Sub
 
         Public Sub New()
@@ -63,7 +65,7 @@ Namespace GenomeRunner
         End Sub
 
         Public Function Clone() As Object Implements System.ICloneable.Clone
-            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity, Strand)
+            Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity, Strand, OutputMerged)
             Return eSettings
         End Function
     End Class
@@ -144,7 +146,12 @@ Namespace GenomeRunner
             '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             For Each GF In GenomicFeatures
-                AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
+                AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                'If GF.QueryType = "Promoter" Then
+                '    AccumulatedGenomicFeatures.Add(GF.TableName & "Promoter", New List(Of GenomicFeature))
+                'Else
+                '    AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                'End If
             Next
             'Prints the legend into the log file
             Outputer.OutputLogFileHeader(Settings)
@@ -172,7 +179,7 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    AccumulatedGenomicFeatures(GF.Name).Add(GF.Clone)
+                    AccumulatedGenomicFeatures(GF.TableName).Add(GF.Clone)
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()
@@ -194,13 +201,23 @@ Namespace GenomeRunner
                     pcc.OutputPercentOverlapPvalueMatrix = False : pcc.OutputPCCweightedPvalueMatrix = True
 
                     For Each setting In {none, percentLinear, percentSquared, pcc}
-                        Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, setting, Path.GetFileNameWithoutExtension(FeatureFilePath))
+                        If Settings.OutputMerged Then
+                            Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, setting, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+                        Else
+                            For Each featureOfInterestName In FeaturesOfInterestNames
+                                Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, setting, Path.GetFileNameWithoutExtension(FeatureFilePath))
+                            Next
+                        End If
+
                     Next
                 Else
-                    'Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
-                    For Each featureOfInterestName In FeaturesOfInterestNames
-                        Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))
-                    Next
+                    If Settings.OutputMerged Then
+                        Outputer.OutputPValueMatrixTransposed(Settings.OutputDir, GenomicFeatures, Settings, FeaturesOfInterestNames, AccumulatedGenomicFeatures)
+                    Else
+                        For Each featureOfInterestName In FeaturesOfInterestNames
+                            Outputer.OutputPValueMatrixIndividualTransposed(Settings.OutputDir, GenomicFeatures, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))
+                        Next
+                    End If
                 End If
                 OutputMatrixColumnHeaders = False
             Next
