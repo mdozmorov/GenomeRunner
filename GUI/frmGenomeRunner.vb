@@ -219,7 +219,8 @@ Public Class frmGenomeRunner
             BackgroundName = OpenFD.SafeFileName
         End If
         BackgroundFileName = Path.GetFileNameWithoutExtension(OpenFD.FileName)
-        Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
+        'Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
+        Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
         UseSpotBackground = True
         lblBackground.Text = "Using '" & OpenFD.SafeFileName & "' as spot background"
     End Sub
@@ -903,7 +904,6 @@ Public Class frmGenomeRunner
         cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
         OpenDatabase()
     End Sub
-
 End Class
 
 'these settings are passed onto the background worker as arguments

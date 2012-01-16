@@ -187,7 +187,7 @@ Namespace GenomeRunner
                     For Each name In Names
                         Dim lName As New List(Of String)
                         lName.Add(name) 'adds the single name to list of names to filter which is passed to the genomic feature. 
-                        Dim nGF As New GenomicFeature(GF.id, GF.Name & " Filt.Name(s):" & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                        Dim nGF As New GenomicFeature(GF.id, GF.Name & " Filt.Name(s):" & lName(0), GF.Name, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
                         GenomicFeaturesByName.Add(nGF)
                     Next
                 Else
@@ -248,6 +248,30 @@ Namespace GenomeRunner
             Return Background
         End Function
 
+        Public Function GenerateSNP132GenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
+            Dim Background As New List(Of Feature)
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd FROM snp132;", cn)
+            dr = cmd.ExecuteReader
+            Dim chrom As String
+            While dr.Read
+                Dim Interval As New Feature
+                Interval.Chrom = dr(0)
+                If chrom <> dr(0) Then
+                    chrom = dr(0) : Debug.Print(chrom)
+                End If
+                Interval.ChromStart = dr(1)
+                Interval.ChromEnd = dr(2)
+                Try
+                    Background.Add(Interval)
+                Catch
+                    Debug.Print("Incomplete loading, stopped at " & dr(0) & ":" & dr(1) & "-" & dr(2))
+                    Exit While
+                End Try
+            End While
+            dr.Close() : cmd.Dispose()
+            Return Background
+        End Function
         Public Sub New()
             'GetGenomeBackground() 'sets the default interval to cover the entire genome
         End Sub

@@ -590,7 +590,7 @@ Namespace GenomeRunner
             '8. UseAnalytical, UseBinomialDistribution
 
             'Output lines.
-            Dim PvalueFilename As String = getPvalueFilename(Settings, "")
+            Dim PvalueFilename As String = getPvalueFilename(Settings, FeaturesOfInterestNames(0))
             Dim Log10Pvalues As New List(Of Double)
             Using sw As New StreamWriter(PvalueFilename)
                 'writes the header columns
@@ -672,7 +672,7 @@ Namespace GenomeRunner
             End If
 
             name &= "_Matrix.gr"
-            Return Settings.OutputDir & Settings.EnrichmentJobName & name
+            Return Settings.OutputDir & name
         End Function
 
         Private Function getLog10Pvalue(ByVal GF As GenomicFeature, ByVal Settings As EnrichmentSettings) As Double

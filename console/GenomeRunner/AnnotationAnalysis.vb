@@ -797,16 +797,16 @@ FeatureLoadStart:
                         Case Is = "GeneOnly"
                             OpenDatabase()
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT tName,strand,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
+                            cmd = New MySqlCommand("SELECT tName,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
                                     Dim data As New FeatureSQLData
                                     data.Chrom = dr(0)
-                                    data.Strand = dr(1)
+                                    data.Strand = ""
                                     data.Name = ""
-                                    data.ChromStart = dr(2)
-                                    data.ChromEnd = dr(3)
+                                    data.ChromStart = dr(1)
+                                    data.ChromEnd = dr(2)
                                     data.Threshold = ""
                                     GenomicFeatureDataBaseData.Add(data)
                                 End While

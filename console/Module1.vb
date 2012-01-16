@@ -60,9 +60,10 @@ Module Module1
                 Dim sr As New StreamReader(SettingsPath)
                 Dim x As New XmlSerializer(Settings.GetType)
                 Settings = x.Deserialize(sr) : sr.Close()
+                Settings.OutputMerged = False 'Just a precaution, to prevent incorrect output. For command line it is always individual file processing
                 'Dim OutputDir As String = Path.GetDirectoryName(FOIFilePath) & "\" & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & "\" 'sets what directory the results are to outputed to
-                Dim OutputDir As String = DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
-                Settings.OutputDir &= OutputDir 'Add current time subfolder
+                'Dim OutputDir As String = DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
+                'Settings.OutputDir &= OutputDir 'Add current time subfolder
 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, Settings.ConnectionString, Settings.Strand)
                 Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
@@ -71,6 +72,7 @@ Module Module1
                 Analyzer.RunEnrichmentAnlysis(featureOfInterestPath, GenomicFeaturesToRun, Background, Settings)
 
                 'Copy original settings file to new directory.
+                File.Delete(Settings.OutputDir & "EnrichmentSettings.xml")
                 File.Copy(SettingsPath, Settings.OutputDir & "EnrichmentSettings.xml")
             ElseIf analysisType = "-a" Then
                 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -90,7 +92,7 @@ Module Module1
                 'TODO get this above the loop now
                 'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis()
-                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\" & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
+                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\" '& DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
                 analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
 
                 'Copy original settings file to new directory.
