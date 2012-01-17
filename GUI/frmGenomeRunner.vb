@@ -219,8 +219,8 @@ Public Class frmGenomeRunner
             BackgroundName = OpenFD.SafeFileName
         End If
         BackgroundFileName = Path.GetFileNameWithoutExtension(OpenFD.FileName)
-        'Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
-        Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
+        Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
+        'Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
         UseSpotBackground = True
         lblBackground.Text = "Using '" & OpenFD.SafeFileName & "' as spot background"
     End Sub

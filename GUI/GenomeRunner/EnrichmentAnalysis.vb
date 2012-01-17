@@ -147,11 +147,6 @@ Namespace GenomeRunner
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
-                'If GF.QueryType = "Promoter" Then
-                '    AccumulatedGenomicFeatures.Add(GF.TableName & "Promoter", New List(Of GenomicFeature))
-                'Else
-                '    AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
-                'End If
             Next
             'Prints the legend into the log file
             Outputer.OutputLogFileHeader(Settings)
@@ -179,7 +174,7 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    AccumulatedGenomicFeatures(GF.TableName).Add(GF.Clone)
+                    AccumulatedGenomicFeatures(GF.TableName).add(GF.Clone)
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()
