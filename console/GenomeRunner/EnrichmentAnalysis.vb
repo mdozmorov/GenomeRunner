@@ -147,11 +147,6 @@ Namespace GenomeRunner
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             For Each GF In GenomicFeatures
                 AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
-                'If GF.QueryType = "Promoter" Then
-                '    AccumulatedGenomicFeatures.Add(GF.TableName & "Promoter", New List(Of GenomicFeature))
-                'Else
-                '    AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
-                'End If
             Next
             'Prints the legend into the log file
             Outputer.OutputLogFileHeader(Settings)
@@ -179,7 +174,7 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    AccumulatedGenomicFeatures(GF.TableName).Add(GF.Clone)
+                    AccumulatedGenomicFeatures(GF.TableName).add(GF.Clone)
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()
@@ -252,6 +247,7 @@ Namespace GenomeRunner
             Dim FeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(FeaturesOfInterest, Settings.Proximity)
 
             GFeature.FeatureReturnedData.Clear()
+            GFeature.NumOfFeatures = NumOfFeatures
             GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, FeaturesOfInterest, AnnoSettings) 'runs an initial analysis so that the observed within can be determined
 
             'cycles through each of the features run and gets the number of hits for the FOI
@@ -378,6 +374,9 @@ Namespace GenomeRunner
             GFeature = fAnalysis.Feature_Analysis(GFeature, FeaturesOfInterestproximity, Features, AnoSettings)
             Dim wA(GFeature.FeatureReturnedData.Count - 1) As Integer 'width of each FOI
             Dim hA(GFeature.FeatureReturnedData.Count - 1) As Integer 'stores whether the FOI was a hit or miss 
+
+            GFeature.NumOfFeatures = Features.Count
+
             For currFOI As Integer = 0 To GFeature.FeatureReturnedData.Count - 1
                 'sets hA to true(for at least one hit) or false (no hit) for each FOI  
                 If GFeature.FeatureReturnedData(currFOI).CountData <> 0 Then

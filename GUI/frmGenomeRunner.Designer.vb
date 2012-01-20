@@ -427,8 +427,6 @@ Partial Class frmGenomeRunner
         Me.ListFeaturesAvailable.ShowItemToolTips = True
         Me.ListFeaturesAvailable.Size = New System.Drawing.Size(161, 331)
         Me.ListFeaturesAvailable.TabIndex = 57
-        Me.ToolTip2.SetToolTip(Me.ListFeaturesAvailable, "Categorized genomic features. Ctrl-select individual ones, or click on category h" & _
-        "eader to select the whole category. Use buttons to add them")
         Me.ListFeaturesAvailable.UseCompatibleStateImageBehavior = False
         Me.ListFeaturesAvailable.View = System.Windows.Forms.View.SmallIcon
         '

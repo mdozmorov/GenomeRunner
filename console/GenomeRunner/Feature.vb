@@ -27,6 +27,7 @@ Namespace GenomeRunner
         Public AnalyB As Double = 0 'stores the number of base pairs that the genomic feature coveres of the genome
         Public AnalynB As Double = 0 'stores the number of regions of the genomic feature that are scatered across the genome
         Public AnalyG As Double = 0 'stores the total number of base pairs of the entire genome
+        Public NumOfFeatures As Integer = 0 'Total number of features used for analysis
 
         'important values for storing enrichment results
         Public ActualHits As UInteger 'Double 'store the number of actual hits
@@ -94,6 +95,7 @@ Namespace GenomeRunner
             GF.RandTie = RandTie
             GF.RandUnder = RandUnder
             GF.RandOver = RandOver
+            GF.NumOfFeatures = NumOfFeatures
 
             Return GF
         End Function

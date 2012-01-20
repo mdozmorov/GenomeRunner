@@ -695,6 +695,8 @@ Namespace GenomeRunner
                 Return 0
             End If
 
+            Dim NumOfFeatures As Integer = GF.NumOfFeatures
+
             'Assigned Log10Pvalue is further adjusted depending on settings
             If Settings.UseMonteCarlo = True Then
                 If GF.ActualHits > GF.MCExpectedHits Then

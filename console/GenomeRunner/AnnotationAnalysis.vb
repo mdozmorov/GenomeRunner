@@ -835,7 +835,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -875,7 +875,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -949,7 +949,7 @@ FeatureLoadStart:
                             kgIDToGeneSymbolDict.Clear()
 
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()

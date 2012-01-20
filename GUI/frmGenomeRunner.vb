@@ -295,8 +295,9 @@ Public Class frmGenomeRunner
                     ListFeaturesAvailable.Groups.Add(category)
                     'TODO FeatureName vs FeatureTable
                     'feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
-                    feature.Name = GRfeature.TableName : feature.Group = category : feature.ToolTipText = GRfeature.Name
+                    feature.Name = GRfeature.TableName : feature.Group = category ': feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
+                    ListFeaturesAvailable.Items.Item(ListFeaturesAvailable.Items.Count - 1).ToolTipText = GRfeature.Name
                     strCurrCate = GRfeature.UICategory
                 Else
                     'TODO FeatureName vs FeatureTable
