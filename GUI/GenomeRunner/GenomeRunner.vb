@@ -166,7 +166,7 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 If NameColumnExists(GF.TableName, connectionString) = True Then
                     Dim Names As New List(Of String)
-                    GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
+                    'GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
                     'Gets the unique names for the GF and adds them to a list
                     OpenDatabase(connectionString)
                     'TODO make this part that finds NameColumn into a private subroutine for clarity's sake.
