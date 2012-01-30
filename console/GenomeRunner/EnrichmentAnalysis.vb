@@ -145,8 +145,13 @@ Namespace GenomeRunner
             '      AccumulatedGenomicFeatures = ["CpGIslands"] => {CpGIslands Genomic Feature calculated with CDBox, CpGIslands Genomic Feature calculated with HAcaBox},
             '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
             For Each GF In GenomicFeatures
-                AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                If GF.NamesToInclude.Count > 0 Then
+                    AccumulatedGenomicFeatures.Add(GF.Name, New List(Of GenomicFeature))
+                Else
+                    AccumulatedGenomicFeatures.Add(GF.TableName, New List(Of GenomicFeature))
+                End If
             Next
             'Prints the legend into the log file
             Outputer.OutputLogFileHeader(Settings)
@@ -174,7 +179,11 @@ Namespace GenomeRunner
                     If Settings.UseAnalytical = True Then
                         GF = calculatePValueUsingAnalyticalMethod(GF, FeaturesOfInterest, Background, Settings)
                     End If
-                    AccumulatedGenomicFeatures(GF.TableName).add(GF.Clone)
+                    If GF.NamesToInclude.Count > 0 Then
+                        AccumulatedGenomicFeatures(GF.Name).add(GF.Clone)
+                    Else
+                        AccumulatedGenomicFeatures(GF.TableName).add(GF.Clone)
+                    End If
                     Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()

@@ -166,7 +166,7 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 If NameColumnExists(GF.TableName, connectionString) = True Then
                     Dim Names As New List(Of String)
-                    GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
+                    'GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
                     'Gets the unique names for the GF and adds them to a list
                     OpenDatabase(connectionString)
                     'TODO make this part that finds NameColumn into a private subroutine for clarity's sake.
@@ -249,27 +249,29 @@ Namespace GenomeRunner
         End Function
 
         Public Function GenerateSNP132GenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
-            Dim Background As New List(Of Feature)
+            Dim Background As List(Of Feature) = New List(Of Feature)
+            Dim chrom As List(Of String) = New List(Of String)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd FROM snp132;", cn)
+            cmd = New MySqlCommand("SELECT DISTINCT chrom FROM  snp132;", cn)
             dr = cmd.ExecuteReader
-            Dim chrom As String
             While dr.Read
-                Dim Interval As New Feature
-                Interval.Chrom = dr(0)
-                If chrom <> dr(0) Then
-                    chrom = dr(0) : Debug.Print(chrom)
-                End If
-                Interval.ChromStart = dr(1)
-                Interval.ChromEnd = dr(2)
-                Try
-                    Background.Add(Interval)
-                Catch
-                    Debug.Print("Incomplete loading, stopped at " & dr(0) & ":" & dr(1) & "-" & dr(2))
-                    Exit While
-                End Try
+                chrom.Add(dr(0))
             End While
             dr.Close() : cmd.Dispose()
+
+            For Each chromosome In chrom
+                cmd = New MySqlCommand("SELECT chromStart,chromEnd FROM snp132 WHERE chrom='" & chromosome & "';", cn)
+                dr = cmd.ExecuteReader
+                While dr.Read
+                    Dim Interval As New Feature
+                    Interval.Chrom = chromosome
+                    Interval.ChromStart = dr(0)
+                    Interval.ChromEnd = dr(1)
+                    Background.Add(Interval)
+                End While
+                dr.Close() : cmd.Dispose() : GC.Collect()
+                Debug.Print(Now.TimeOfDay.ToString & " " & chromosome)
+            Next
             Return Background
         End Function
         Public Sub New()

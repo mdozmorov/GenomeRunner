@@ -50,6 +50,17 @@ Public Class frmGenomeRunner
         Return cn
     End Function
 
+    Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        'tests to see if the connection works
+        OpenDatabase()
+        GREngine = New GenomeRunnerEngine()
+        SetGenomeRunnerDefaults()
+        Me.Location = New Point(10, 10)     'Manually set window location
+        cmbMatrixWeighting.SelectedIndex = 0
+        cmbTier.SelectedIndex = 0
+        cmbStrandsToAnalyze.SelectedIndex = 0
+    End Sub
+
     Private Sub OpenDatabase()
         Dim uName As String = ""
         Dim uPassword As String = ""
@@ -121,7 +132,7 @@ Public Class frmGenomeRunner
             SaveSetting("GenomeRunner", "Database", "uName", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uPassword", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uServer", "156.110.144.34")
-            SaveSetting("GenomeRunner", "Database", "uDatabase", "hg18test")
+            SaveSetting("GenomeRunner", "Database", "uDatabase", "hg19")
             uName = GetSetting("GenomeRunner", "Database", "uName")
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
@@ -130,17 +141,6 @@ Public Class frmGenomeRunner
         connectionString = "Server=" & uServer & ";Database=" & uDatabase & ";User ID=" & uName & ";Password=" & uPassword & ";default command timeout=600"
         Return connectionString
     End Function
-
-    Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        'tests to see if the connection works
-        OpenDatabase()
-        GREngine = New GenomeRunnerEngine()
-        SetGenomeRunnerDefaults()
-        Me.Location = New Point(10, 10)     'Manually set window location
-        cmbMatrixWeighting.SelectedIndex = 0
-        cmbTier.SelectedIndex = 0
-        cmbStrandsToAnalyze.SelectedIndex = 0
-    End Sub
 
     'used to update progress of the analysis
     Private Sub HandleProgressStart(ByVal progressMaximum As Integer)
@@ -904,6 +904,13 @@ Public Class frmGenomeRunner
         frmLogin.ShowDialog()
         cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
         OpenDatabase()
+    End Sub
+
+
+    Private Sub mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Click
+        Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
+        UseSpotBackground = True
+        lblBackground.Text = "Using '" & "SNP132DB" & "' as spot background"
     End Sub
 End Class
 

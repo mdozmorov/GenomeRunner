@@ -26,14 +26,14 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
-    <SupportUrl>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</SupportUrl>
-    <ErrorReportUrl>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</ErrorReportUrl>
+    <SupportUrl>http://wren.omrf.org/GenomeRunner/GenomeRunner.aspx</SupportUrl>
+    <ErrorReportUrl>http://wren.omrf.org/GenomeRunner/GenomeRunner.aspx</ErrorReportUrl>
     <TargetCulture>en</TargetCulture>
     <ProductName>GenomeRunner</ProductName>
     <PublisherName>GenomeRunner</PublisherName>
     <SuiteName>GenomeRunner</SuiteName>
-    <ApplicationRevision>7</ApplicationRevision>
-    <ApplicationVersion>2.0.0.7</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>3.0.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -203,6 +203,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationEvents.vb" />
     <Compile Include="frmSqlQueryEditor.designer.vb">
       <DependentUpon>frmSqlQueryEditor.vb</DependentUpon>
     </Compile>

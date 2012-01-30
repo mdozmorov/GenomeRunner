@@ -11,12 +11,12 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>-e "F:\GRtest\wgRNA-HAcaBox.bed" "F:\GRtest\GFs1.txt" "F:\GRtest\EnrichmentSettings2.xml"</StartArguments>
+    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>-e "F:\GRtest\wgRNA-HAcaBox.bed" "F:\GRtest\GFs1.txt" "F:\GRtest\EnrichmentSettings2.xml"</StartArguments>
+    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
   </PropertyGroup>
 </Project>

@@ -88,7 +88,7 @@ Partial Class frmGenomeRunner
         Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OpenBackgroundFileIntervalsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOpenBackgroundFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCoordinatesToSNPs = New System.Windows.Forms.ToolStripMenuItem()
@@ -814,7 +814,7 @@ Partial Class frmGenomeRunner
         '
         'mnuFile
         '
-        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem, Me.OpenBackgroundFileIntervalsToolStripMenuItem, Me.mnuOpenBackgroundFileToolStripMenuItem, Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem, Me.ExitToolStripMenuItem})
+        Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFileOpen, Me.UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem, Me.OpenBackgroundFileIntervalsToolStripMenuItem, Me.mnuOpenBackgroundFileToolStripMenuItem, Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem, Me.ExitToolStripMenuItem})
         Me.mnuFile.Name = "mnuFile"
         Me.mnuFile.Size = New System.Drawing.Size(37, 20)
         Me.mnuFile.Text = "&File"
@@ -844,12 +844,12 @@ Partial Class frmGenomeRunner
         Me.mnuOpenBackgroundFileToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
         Me.mnuOpenBackgroundFileToolStripMenuItem.Text = "Open background file - Spot"
         '
-        'mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem
+        'mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem
         '
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Name = "mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem"
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Text = "Load snp130 DB as a background"
-        Me.mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem.Visible = False
+        Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Name = "mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem"
+        Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Size = New System.Drawing.Size(283, 22)
+        Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Text = "Load snp130 DB as a background"
+        Me.mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Visible = False
         '
         'ExitToolStripMenuItem
         '
@@ -1066,7 +1066,7 @@ Partial Class frmGenomeRunner
     Friend WithEvents mnuFileOpen As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents OpenBackgroundFileIntervalsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuOpenBackgroundFileToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents mnuLoadSnp130DBAsSpotBackgrountToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ExitToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuTools As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuCoordinatesToSNPs As System.Windows.Forms.ToolStripMenuItem

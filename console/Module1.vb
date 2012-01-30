@@ -82,17 +82,21 @@ Module Module1
                 FeaturesOfInterest.Add(FOIFilePath)
                 analysisType = "Annotation"                                                                                 'Used to determine what to write for progress updates
                 Dim AnoSettings As New AnnotationSettings()
+                Dim EnSettings As New EnrichmentSettings
                 'Deserialize XML file to a new object.
                 Dim sr As New StreamReader(SettingsPath)
-                Dim x As New XmlSerializer(AnoSettings.GetType)
-                AnoSettings = x.Deserialize(sr)
+                Dim x As New XmlSerializer(EnSettings.GetType)
+                EnSettings = x.Deserialize(sr)
                 sr.Close()
+                'Converting Enrichment settings to short Annotation settings
+                AnoSettings.ConnectionString = EnSettings.ConnectionString : AnoSettings.FilterLevel = EnSettings.FilterLevel : AnoSettings.PromoterDownstream = EnSettings.PromoterDownstream : AnoSettings.PromoterUpstream = EnSettings.PromoterUpstream
+                AnoSettings.proximity = EnSettings.Proximity : AnoSettings.Strand = EnSettings.Strand : AnoSettings.ShortOnly = False
 
                 Dim GenomicFeaturesToRun As List(Of GenomicFeature) = GetGenomicFeaturesFromIDsInputed(GenomicFeatureIDsToRun, AnoSettings.ConnectionString, AnoSettings.Strand)
                 'TODO get this above the loop now
                 'Dim ConnectionString As String = GetConnectionString()
                 Dim analyzer As New AnnotationAnalysis()
-                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\" '& DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
+                Dim OutputDir As String = Path.GetDirectoryName(FeaturesOfInterest(0)) & "\" & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & Path.GetFileNameWithoutExtension(FOIFilePath) & "\" 'sets what directory the results are to outputed to
                 analyzer.RunAnnotationAnalysis(FeaturesOfInterest, GenomicFeaturesToRun, OutputDir, AnoSettings, progStart, progUpdate, progDone)
 
                 'Copy original settings file to new directory.
