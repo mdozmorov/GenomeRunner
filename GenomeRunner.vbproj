@@ -207,7 +207,69 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="tempCode.vb" />
+    <Compile Include="src\GenomeRunner\core\AnnotationAnalysis.vb" />
+    <Compile Include="src\GenomeRunner\core\EnrichmentAnalysis.vb" />
+    <Compile Include="src\GenomeRunner\core\Feature.vb" />
+    <Compile Include="src\GenomeRunner\core\GenomeRunner.vb" />
+    <Compile Include="src\GenomeRunner\core\Output.vb" />
+    <Compile Include="src\GenomeRunner\ui\console\CommandLine.vb" />
+    <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.designer.vb">
+      <DependentUpon>frmAbout.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.Designer.vb">
+      <DependentUpon>frmCreateGenomeRunnerDatabase.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.Designer.vb">
+      <DependentUpon>frmCustomizeFilters.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.Designer.vb">
+      <DependentUpon>frmGenerateRandomFeatures.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.Designer.vb">
+      <DependentUpon>frmGenomeRunner.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.designer.vb">
+      <DependentUpon>frmLogin.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.Designer.vb">
+      <DependentUpon>frmQuery.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.designer.vb">
+      <DependentUpon>frmSqlQueryEditor.vb</DependentUpon>
+    </Compile>
+    <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <!-- <Compile Include="tempCode.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/AnnotationAnalysis.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/EnrichmentAnalysis.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/Feature.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/GenomeRunner.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/Output.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/core/xalglib.vb" /> -->
+    <!-- <Compile Include="src/GenomeRunner/ui/graphical/frmAbout.frm" /> -->
+    <!-- <Compile Include="src/GenomeRunner/ui/graphical/frmCreateGenomeRunnerDatabase.vb" /> -->
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -215,6 +277,30 @@
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmAbout.resx">
+      <DependentUpon>frmAbout.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.resx">
+      <DependentUpon>frmCreateGenomeRunnerDatabase.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.resx">
+      <DependentUpon>frmCustomizeFilters.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.resx">
+      <DependentUpon>frmGenerateRandomFeatures.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.resx">
+      <DependentUpon>frmGenomeRunner.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmLogin.resx">
+      <DependentUpon>frmLogin.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmQuery.resx">
+      <DependentUpon>frmQuery.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.resx">
+      <DependentUpon>frmSqlQueryEditor.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -257,9 +343,6 @@
   <ItemGroup>
     <Content Include="GenomeRunner1.png" />
     <Content Include="GRicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\GenomeRunner\core\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

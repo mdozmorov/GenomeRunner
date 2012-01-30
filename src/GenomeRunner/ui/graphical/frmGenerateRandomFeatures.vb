@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.Windows.Forms
 Imports GenomeRunner.GenomeRunner
+Imports alglib
 
 Public Class frmGenerateRandomFeatures
     Dim GREngine As New GenomeRunnerEngine
@@ -94,5 +95,9 @@ Public Class frmGenerateRandomFeatures
 
     Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
         Me.Close()
+    End Sub
+
+    Private Sub frmGenerateRandomFeatures_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
     End Sub
 End Class
