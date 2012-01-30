@@ -1,12 +1,12 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
-Imports GenomeRunnerConsole.GenomeRunner
+Imports GenomeRunner
 Imports System.IO
 Imports MySql.Data.MySqlClient
 Imports System.Xml.Serialization
 
-Module Module1
+Module CommandLine
     Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader
-    Dim GREngin As New GenomeRunnerConsole.GenomeRunner.GenomeRunnerEngine
+    Dim GREngin As New GenomeRunner.GenomeRunnerEngine
     Dim progStart As ProgressStart, progUpdate As ProgressUpdate, progDone As ProgressDone
     Dim AnalysisType As String = ""
     Structure Parameters
