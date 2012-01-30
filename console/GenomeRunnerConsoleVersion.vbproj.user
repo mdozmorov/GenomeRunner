@@ -11,12 +11,12 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>"F:\222\cdbox.bed" "F:\222\tier1sub.txt" e -m mc2</StartArguments>
+    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>"C:\Ryan Projects\CDBox.bed" "C:\Ryan Projects\tier1_features.txt" e -m mc2 -h vm-wren-01 -u root -p VentuK78A- -db hg18test</StartArguments>
+    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
   </PropertyGroup>
 </Project>

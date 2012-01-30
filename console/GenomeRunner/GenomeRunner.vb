@@ -29,19 +29,16 @@ Namespace GenomeRunner
         Private Sub OpenDatabase(ByVal ConnectionString As String)
             If IsNothing(cn) Then
                 cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
-            End If
-            If cn.State = ConnectionState.Closed Then
+            ElseIf cn.State = ConnectionState.Closed Then
                 cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
-            End If
-            If ConnectionString <> cn.ConnectionString Then
+            ElseIf ConnectionString <> cn.ConnectionString Then
                 cn.Close()
                 cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
             End If
             'opens a second connection so that two reader objects can be used at once
             If IsNothing(cn1) Then
                 cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
-            End If
-            If cn1.State = ConnectionState.Closed Then
+            ElseIf cn1.State = ConnectionState.Closed Then
                 cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
             End If
         End Sub
@@ -169,10 +166,18 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 If NameColumnExists(GF.TableName, connectionString) = True Then
                     Dim Names As New List(Of String)
-                    GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
-                    'Gest the unique names for the GF and adds them to a list
+                    'GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
+                    'Gets the unique names for the GF and adds them to a list
                     OpenDatabase(connectionString)
-                    cmd = New MySqlCommand("SELECT DISTINCT name FROM " & GF.TableName, cn)
+                    'TODO make this part that finds NameColumn into a private subroutine for clarity's sake.
+                    Dim NameColumn As String
+                    cmd = New MySqlCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
+                    dr = cmd.ExecuteReader()
+                    While dr.Read()
+                        NameColumn = dr(0)
+                    End While
+                    dr.Close() : cmd.Dispose()
+                    cmd = New MySqlCommand("SELECT DISTINCT " & NameColumn & " FROM " & GF.TableName, cn)
                     dr = cmd.ExecuteReader()
                     While dr.Read()
                         Names.Add(dr(0))
@@ -182,7 +187,7 @@ Namespace GenomeRunner
                     For Each name In Names
                         Dim lName As New List(Of String)
                         lName.Add(name) 'adds the single name to list of names to filter which is passed to the genomic feature. 
-                        Dim nGF As New GenomicFeature(GF.id, GF.Name & " Filt.Name(s):" & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                        Dim nGF As New GenomicFeature(GF.id, GF.Name & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
                         GenomicFeaturesByName.Add(nGF)
                     Next
                 Else
@@ -192,34 +197,10 @@ Namespace GenomeRunner
             Return GenomicFeaturesByName
         End Function
 
-
-        'Returns the entire genome as a background 
-        Public Function GetGenomeBackgroundHG18() As List(Of Feature)
-            Dim Background As New List(Of Feature)
-            Dim bkgChr As String(), bkgStart As Integer(), bkgEnd As Integer()
-            'bkgNum = 24 : ReDim bkgChr(bkgNum) : ReDim bkgStart(bkgNum) : ReDim bkgEnd(bkgNum)
-            'bkgChr = {"chr1", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr2", "chr20", "chr21", "chr22", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chrM", "chrX", "chrY"}
-            'bkgStart = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-            'bkgEnd = {247249719, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915, 88827254, 78774742, 76117153, 63811651, 242951149, 62435964, 46944323, 49691432, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 140273252, 16571, 154913754, 57772954}
-            bkgNum = 48 : ReDim bkgChr(bkgNum) : ReDim bkgStart(bkgNum) : ReDim bkgEnd(bkgNum)
-            bkgChr = {"chr1", "chr1_random", "chr10", "chr10_random", "chr11", "chr11_random", "chr12", "chr13", "chr13_random", "chr14", "chr15", "chr15_random", "chr16", "chr16_random", "chr17", "chr17_random", "chr18", "chr18_random", "chr19", "chr19_random", "chr2", "chr2_random", "chr20", "chr21", "chr21_random", "chr22", "chr22_random", "chr22_h2_hap1", "chr3", "chr3_random", "chr4", "chr4_random", "chr5", "chr5_random", "chr5_h2_hap1", "chr6", "chr6_random", "chr6_cox_hap1", "chr6_qbl_hap2", "chr7", "chr7_random", "chr8", "chr8_random", "chr9", "chr9_random", "chrM", "chrX", "chrX_random", "chrY"}
-            bkgStart = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-            bkgEnd = {247249719, 1663265, 135374737, 113275, 134452384, 215294, 132349534, 114142980, 186858, 106368585, 100338915, 784346, 88827254, 105485, 78774742, 2617613, 76117153, 4262, 63811651, 301858, 242951149, 185571, 62435964, 46944323, 1679693, 49691432, 257318, 63661, 199501827, 749256, 191273063, 842648, 180857866, 143687, 1794870, 170899992, 1875562, 4731698, 4565931, 158821424, 549659, 146274826, 943810, 140273252, 1146434, 16571, 154913754, 1719168, 57772954}
-
-            For i As Integer = 0 To bkgNum Step +1
-                Dim feature As New Feature
-                feature.Chrom = bkgChr(i)
-                feature.ChromStart = bkgStart(i)
-                feature.ChromEnd = bkgEnd(i)
-                Background.Add(feature)
-            Next
-            Return Background
-        End Function
-
         Public Function GetGenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
             Dim Background As New List(Of Feature)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT * FROM background WHERE useful = true;", cn)
+            cmd = New MySqlCommand("SELECT * FROM background;", cn)
             dr = cmd.ExecuteReader()
             While dr.Read()
                 Dim feature As New Feature
@@ -229,6 +210,23 @@ Namespace GenomeRunner
                 Background.Add(feature)
             End While
             Return Background
+        End Function
+
+        Public Function GetChromInfo(ByVal ConnectionString As String) As List(Of Feature)
+            Dim ChromInfo As New List(Of Feature)
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT * FROM chromInfo;", cn)
+            dr = cmd.ExecuteReader()
+            While dr.Read()
+                'chromInfo table format:
+                'chrom (string), size (int), filename (string)
+                Dim feature As New Feature
+                feature.Chrom = dr(0)
+                feature.ChromStart = 0
+                feature.ChromEnd = dr(1)
+                ChromInfo.Add(feature)
+            End While
+            Return ChromInfo
         End Function
 
         'returns a list of features that can be used as a background, can be spot or interval
@@ -250,8 +248,34 @@ Namespace GenomeRunner
             Return Background
         End Function
 
+        Public Function GenerateSNP132GenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
+            Dim Background As List(Of Feature) = New List(Of Feature)
+            Dim chrom As List(Of String) = New List(Of String)
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT DISTINCT chrom FROM  snp132;", cn)
+            dr = cmd.ExecuteReader
+            While dr.Read
+                chrom.Add(dr(0))
+            End While
+            dr.Close() : cmd.Dispose()
+
+            For Each chromosome In chrom
+                cmd = New MySqlCommand("SELECT chromStart,chromEnd FROM snp132 WHERE chrom='" & chromosome & "';", cn)
+                dr = cmd.ExecuteReader
+                While dr.Read
+                    Dim Interval As New Feature
+                    Interval.Chrom = chromosome
+                    Interval.ChromStart = dr(0)
+                    Interval.ChromEnd = dr(1)
+                    Background.Add(Interval)
+                End While
+                dr.Close() : cmd.Dispose() : GC.Collect()
+                Debug.Print(Now.TimeOfDay.ToString & " " & chromosome)
+            Next
+            Return Background
+        End Function
         Public Sub New()
-            'GetGenomeBackgroundHG18() 'sets the default interval to cover the entire genome
+            'GetGenomeBackground() 'sets the default interval to cover the entire genome
         End Sub
 
         Protected Overrides Sub Finalize()

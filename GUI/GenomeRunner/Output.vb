@@ -12,7 +12,7 @@ Namespace GenomeRunner
         End Sub
 
         'Outputs combined log file of all files passed
-        Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String))
+        Public Sub OutputMergedLogFiles(ByVal FilePaths As List(Of String), Optional ByVal OutfilePath As String = "")
             Dim AccumulatedRows As New Hashtable
             Dim OrderedAccumulatedRowKeys As New List(Of String) 'This is only needed because Hashtable does not preserver order
             Dim FileNames As New List(Of String)
@@ -33,7 +33,13 @@ Namespace GenomeRunner
             Next
 
             'Write combined file
-            Using writer As New StreamWriter(Path.GetDirectoryName(FilePaths(0)) & "\combined.gr", False)
+            Dim writeToHere As String = ""
+            If OutfilePath <> "" Then
+                writeToHere = OutfilePath
+            Else
+                writeToHere = Path.GetDirectoryName(FilePaths(0)) & "\combined.gr"
+            End If
+            Using writer As New StreamWriter(writeToHere, False)
                 Dim isHeaderRow = True
                 For Each key In OrderedAccumulatedRowKeys
                     If isHeaderRow Then
@@ -107,7 +113,9 @@ Namespace GenomeRunner
                 Next
                 writer.WriteLine()
                 For Each gFeature In GRFeaturesToAnalyze
-                    writer.Write(gFeature.Name)
+                    'TODO FeatureName vs FeatureTable
+                    'writer.Write(gFeature.Name)
+                    writer.Write(gFeature.TableName)
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then
                             writer.Write(vbTab & gFeature.FeatureReturnedData(currFeature).CountData)
@@ -156,7 +164,9 @@ Namespace GenomeRunner
                 writer.WriteLine()
                 'outputs the returned hits for the genomic features for each of the features of interest
                 For Each gFeature In GRFeaturesToAnalyze
-                    Dim strStartOutput As String = gFeature.Name & "ChromStart", strEndOutput As String = gFeature.Name & "ChromEnd", strStrandOutput As String = gFeature.Name & "Strand", strNameOutput As String = gFeature.Name & "Name", strThresholdOutput As String = gFeature.Name & "Threshold", strOverLapTypeOutput As String = gFeature.Name & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.Name & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
+                    'TODO FeatureName vs FeatureTable
+                    'Dim strStartOutput As String = gFeature.Name & "ChromStart", strEndOutput As String = gFeature.Name & "ChromEnd", strStrandOutput As String = gFeature.Name & "Strand", strNameOutput As String = gFeature.Name & "Name", strThresholdOutput As String = gFeature.Name & "Threshold", strOverLapTypeOutput As String = gFeature.Name & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.Name & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
+                    Dim strStartOutput As String = gFeature.TableName & "ChromStart", strEndOutput As String = gFeature.TableName & "ChromEnd", strStrandOutput As String = gFeature.TableName & "Strand", strNameOutput As String = gFeature.TableName & "Name", strThresholdOutput As String = gFeature.TableName & "Threshold", strOverLapTypeOutput As String = gFeature.TableName & "OverLapTypeOutput", strOverLapAmountOutput As String = gFeature.TableName & "OverLapAmount" 'LC 6/20/11 is used to store the joined arrays of FOI with mutliple GRs
                     writer.Write(strStartOutput)
 
                     '...appends the returned start points of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
@@ -184,7 +194,8 @@ Namespace GenomeRunner
                     '...appends the returned strand data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).StrandData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If
@@ -195,7 +206,9 @@ Namespace GenomeRunner
                     '...appends the returned name data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.Select(Function(x) x.ToString()).ToArray(), "|")
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.Select(Function(x) x.ToString()).ToArray(), "|")
+                            Dim stName As String = Join(gFeature.FeatureReturnedData(currFeature).NameData.ToArray(), "|")
                             If stName IsNot Nothing Then : stName.Replace(vbCrLf, "").Replace(Chr(13), "") : End If 'replaces instances of vbCrLf with blanks to prevent new lines from being created
                             writer.Write(vbTab & stName)
                         Else
@@ -208,7 +221,9 @@ Namespace GenomeRunner
                     '...appends the returned threshold data of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).ThresholdData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If
@@ -219,7 +234,9 @@ Namespace GenomeRunner
                     '...appends the overlaptype of the genomic features that overlap the feature of interest into a '|' seperated string and outputs it to the file
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then 'checks if anything was returned for the FOI
-                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            'TODO this x.ToString call causes a problem when outputting data for non-overlaps
+                            'writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.Select(Function(x) x.ToString()).ToArray(), "|"))
+                            writer.Write(vbTab & Join(gFeature.FeatureReturnedData(currFeature).OverLapTypeData.ToArray(), "|"))
                         Else
                             writer.Write(vbTab & "")
                         End If
@@ -300,8 +317,11 @@ Namespace GenomeRunner
             Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
 
                 '...this is always outputed as the number of observed and the genomic feature name are indepent of what tests are run
-                body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.Name & " association statistics" & vbCrLf
-                body &= strNamesToInclude & "Observed number of " & GFeature.Name & " associations : " & vbTab & GFeature.ActualHits
+                'TODO FeatureName vs FeatureTable
+                'body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.Name & " association statistics" & vbCrLf
+                body = vbCrLf & FeaturesOfInterestName & " : " & GFeature.TableName & " association statistics" & vbCrLf
+                'body &= strNamesToInclude & "Observed number of " & GFeature.TableName & " associations : " & vbTab & GFeature.ActualHits
+                body &= strNamesToInclude & "Observed number of " & GFeature.TableName & " associations : " & vbTab & GFeature.ActualHits
                 writer.WriteLine(body)
 
                 If Settings.UseMonteCarlo = True Then
@@ -335,8 +355,10 @@ Namespace GenomeRunner
                         If Settings.UseTradMC = True Then body &= "P-value under =" & vbTab & GFeature.PValueMonteCarloChisquare & vbCrLf
                     End If
 
-                    '...always outputted when using monte carlo 
-                    body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    '...always outputted when using monte carlo
+                    'TODO FeatureName vs FeatureTable
+                    'body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    body &= "Observed number of " & GFeature.TableName & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
                     writer.Write(body)
                 End If
 
@@ -392,7 +414,9 @@ Namespace GenomeRunner
                     End If
 
                     '...always outputted when using the analytical method
-                    body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    'TODO FeatureName vs FeatureTable
+                    'body &= "Observed number of " & GFeature.Name & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
+                    body &= "Observed number of " & GFeature.TableName & " feature associations/Total number of features = " & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2) & vbCrLf
                     'body &= "Analytical ratio of obsWithin/randWithin = " & vbTab & AnalObsRandRatio
                     writer.Write(body)
                 End If
@@ -451,7 +475,8 @@ Namespace GenomeRunner
                     & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
                     & vbCrLf & "Proximity (bp): " & Settings.Proximity _
                     & vbCrLf & strExpectedMethodUsed _
-                    & vbCrLf & strPvalueCalcMethod
+                    & vbCrLf & strPvalueCalcMethod _
+                    & vbCrLf & "Connection String: " & Settings.ConnectionString
                 'writes the header to the log file
                 Using writer As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_LOG.gr", True)
                     writer.WriteLine(header)
@@ -508,7 +533,13 @@ Namespace GenomeRunner
 
                 'header row for FOI
                 'body &= FeaturesOfInterestName & vbTab & "Observed" & vbTab & "Expected" & vbTab & "Diff" & vbTab & "p-val" & vbTab & "PCC" & vbTab & "Obs/Tot" & vbCrLf
-                body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                'TODO FeatureName vs FeatureTable
+                'body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                If GFeature.NamesToInclude.Count > 0 Then
+                    body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                Else
+                    body &= GFeature.TableName & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                End If
                 writer.WriteLine(body)
 
             End Using
@@ -563,7 +594,7 @@ Namespace GenomeRunner
             '8. UseAnalytical, UseBinomialDistribution
 
             'Output lines.
-            Dim PvalueFilename As String = getPvalueFilename(Settings)
+            Dim PvalueFilename As String = getPvalueFilename(Settings, FeaturesOfInterestNames(0))
             Dim Log10Pvalues As New List(Of Double)
             Using sw As New StreamWriter(PvalueFilename)
                 'writes the header columns
@@ -583,46 +614,69 @@ Namespace GenomeRunner
 
         End Sub
 
-        Private Function getPvalueFilename(ByVal Settings As EnrichmentSettings) As String
-            Dim name As String = ""
-            If Settings.UseMonteCarlo = True Then
-                If Settings.UseChiSquare = True Then
-                    If Settings.OutputPCCweightedPvalueMatrix = True Then
-                        name = "_MonteCarlo_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
-                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-                        name = "_MonteCarlo_ChiSquare_WeightedPercentOverlap_Matrix.gr"
-                    Else
-                        name = "_Pvalue_MonteCarlo_ChiSquare_Matrix.gr"
-                    End If
-                ElseIf Settings.UseTradMC = True Then
-                    If Settings.OutputPCCweightedPvalueMatrix = True Then
-                        name = "_MonteCarlo_TradMC_WeightedPearsonsCoefficient_Matrix.gr"
-                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-                        name = "_MonteCarlo_TradMC_WeightedPercentOverlap_Matrix.gr"
-                    Else
-                        name = "_Pvalue_MonteCarlo_TradMC_Matrix.gr"
-                    End If
-                End If
-            ElseIf Settings.UseAnalytical = True Then
-                If Settings.UseChiSquare = True Then
-                    If Settings.OutputPCCweightedPvalueMatrix = True Then
-                        name = "_Analytical_ChiSquare_WeightedPearsonsCoefficient_Matrix.gr"
-                    ElseIf Settings.OutputPercentOverlapPvalueMatrix = True Then
-                        name = "_Analytical_ChiSquare_WeightedPercentOverlap_Matrix.gr"
-                    Else
-                        name = "_Pvalue_Analytical_ChiSquare_Matrix.gr"
-                    End If
-                End If
-                If Settings.UseBinomialDistribution = True Then
-                    If Settings.OutputPercentOverlapPvalueMatrix = True Then
-                        name = "_Analytical_BD_WeightedPercentOverlap_Matrix.gr"
-                    Else
-                        name = "_Pvalue_Analytical_BinomialD_Matrix.gr"
-                    End If
-                End If
+        Public Sub OutputPValueMatrixIndividualTransposed(ByRef PValueOutputFileDir As String, ByRef genomicFeatures As List(Of GenomicFeature), ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
+            '8 Possible options:
+            '---------------------------------------------------------------------------
+            '1. UseMonteCarlo, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '2. UseMonteCarlo, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '3. UseMonteCarlo, UseChiSquare
+            '4. UseAnalytical, UseChiSquare, OutputPCCweightedPvalueMatrix
+            '5. UseAnalytical, UseChiSquare, OutputPercentOverlapPvalueMatrix
+            '6. UseAnalytical, UseChiSquare
+            '7. UseAnalytical, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix
+            '8. UseAnalytical, UseBinomialDistribution
 
+            'Output lines.
+            'TODO getPvalueFilename needs to be fixed to show FeaturesOfInterestName in front
+            Dim PvalueFilename As String = getPvalueFilename(Settings, FeaturesOfInterestName)
+            Using sw As New StreamWriter(PvalueFilename)
+                'writes the header columns
+                sw.Write(vbTab & String.Join(vbTab, FeaturesOfInterestName) & vbCrLf)
+                'assembles a row of pvalue results
+                For Each GF In genomicFeatures
+                    'TODO how does one loop this through features of interest?
+                    'the GenomicFeatures get new settings with each loop through FeatureOfInterest in RunEnrichmentAnlysis.
+                    'the problem with this new transposed way is that this output is only created once, so it doesn't have anything to create extra columns with.
+
+                    'TODO FeatureName vs FeatureTable
+                    'sw.Write(GF.Name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
+                    Dim name As String = GF.TableName
+                    'If GF.QueryType = "Promoter" Then name = GF.TableName & "Promoter"
+                    sw.Write(name & vbTab & getLog10Pvalue(GF, Settings) & vbCrLf)
+                Next
+            End Using
+
+        End Sub
+
+        Private Function getPvalueFilename(ByVal Settings As EnrichmentSettings, ByVal featureOfInterestName As String) As String
+            Dim name As String = featureOfInterestName
+            'MonteCarlo, Analytical
+            If Settings.UseMonteCarlo Then
+                name &= "_MonteCarlo"
+            ElseIf Settings.UseAnalytical Then
+                name &= "_Analytical"
             End If
-            Return Settings.OutputDir & Settings.EnrichmentJobName & name
+
+            'ChiSquare, TradMC, BinomialDistribution
+            If Settings.UseChiSquare Then
+                name &= "_ChiSquare"
+            ElseIf Settings.UseTradMC Then
+                name &= "_TradMC"
+            ElseIf Settings.UseBinomialDistribution Then
+                name &= "_BD"
+            End If
+
+            'PCC, Square PercentOverlap, PercentOverlap
+            If Settings.OutputPCCweightedPvalueMatrix Then
+                name &= "_WeightedPearsonsCoefficient"
+            ElseIf Settings.OutputPercentOverlapPvalueMatrix And Settings.SquarePercentOverlap Then
+                name &= "_WeightedSquarePercentOverlap"
+            ElseIf Settings.OutputPercentOverlapPvalueMatrix Then
+                name &= "_WeightedPercentOverlap"
+            End If
+
+            name &= "_Matrix.gr"
+            Return Settings.OutputDir & name
         End Function
 
         Private Function getLog10Pvalue(ByVal GF As GenomicFeature, ByVal Settings As EnrichmentSettings) As Double
@@ -630,6 +684,7 @@ Namespace GenomeRunner
             Dim PCC As New Double
             Dim Under As Boolean = False
             Dim PercentCoeff As New Double
+            ' Get the p-value depending on the settings into Log10Pvalue to use later
             If Settings.UseMonteCarlo = True And Settings.UseTradMC = True And GF.PValueMonteCarloTradMC <> 0 Then
                 Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloTradMC)
             ElseIf Settings.UseMonteCarlo = True And Settings.UseChiSquare = True And GF.PValueMonteCarloChisquare <> 0 Then
@@ -644,6 +699,9 @@ Namespace GenomeRunner
                 Return 0
             End If
 
+            Dim NumOfFeatures As Integer = GF.NumOfFeatures
+
+            'Assigned Log10Pvalue is further adjusted depending on settings
             If Settings.UseMonteCarlo = True Then
                 If GF.ActualHits > GF.MCExpectedHits Then
                     PercentCoeff = (GF.ActualHits / NumOfFeatures) * (1 - (GF.MCExpectedHits / NumOfFeatures))

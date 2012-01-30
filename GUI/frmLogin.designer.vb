@@ -42,6 +42,7 @@ Partial Class frmLogin
         Me.Label1 = New System.Windows.Forms.Label()
         Me.txtServer = New System.Windows.Forms.TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.btnDefaultDB = New System.Windows.Forms.Button()
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -50,13 +51,13 @@ Partial Class frmLogin
         Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"), System.Drawing.Image)
         Me.LogoPictureBox.Location = New System.Drawing.Point(1, 6)
         Me.LogoPictureBox.Name = "LogoPictureBox"
-        Me.LogoPictureBox.Size = New System.Drawing.Size(165, 193)
+        Me.LogoPictureBox.Size = New System.Drawing.Size(165, 171)
         Me.LogoPictureBox.TabIndex = 0
         Me.LogoPictureBox.TabStop = False
         '
         'UsernameLabel
         '
-        Me.UsernameLabel.Location = New System.Drawing.Point(172, 6)
+        Me.UsernameLabel.Location = New System.Drawing.Point(173, 51)
         Me.UsernameLabel.Name = "UsernameLabel"
         Me.UsernameLabel.Size = New System.Drawing.Size(220, 23)
         Me.UsernameLabel.TabIndex = 0
@@ -65,7 +66,7 @@ Partial Class frmLogin
         '
         'PasswordLabel
         '
-        Me.PasswordLabel.Location = New System.Drawing.Point(174, 49)
+        Me.PasswordLabel.Location = New System.Drawing.Point(174, 94)
         Me.PasswordLabel.Name = "PasswordLabel"
         Me.PasswordLabel.Size = New System.Drawing.Size(220, 23)
         Me.PasswordLabel.TabIndex = 2
@@ -74,46 +75,49 @@ Partial Class frmLogin
         '
         'txtUsername
         '
-        Me.txtUsername.Location = New System.Drawing.Point(174, 26)
+        Me.txtUsername.Location = New System.Drawing.Point(175, 71)
         Me.txtUsername.Name = "txtUsername"
         Me.txtUsername.Size = New System.Drawing.Size(220, 20)
-        Me.txtUsername.TabIndex = 1
+        Me.txtUsername.TabIndex = 2
+        Me.txtUsername.Text = "genomerunner"
         '
         'txtPassword
         '
-        Me.txtPassword.Location = New System.Drawing.Point(176, 69)
+        Me.txtPassword.Location = New System.Drawing.Point(176, 114)
         Me.txtPassword.Name = "txtPassword"
         Me.txtPassword.PasswordChar = Global.Microsoft.VisualBasic.ChrW(42)
         Me.txtPassword.Size = New System.Drawing.Size(220, 20)
         Me.txtPassword.TabIndex = 3
+        Me.txtPassword.Text = "genomerunner"
         '
         'OK
         '
-        Me.OK.Location = New System.Drawing.Point(179, 183)
+        Me.OK.Location = New System.Drawing.Point(304, 183)
         Me.OK.Name = "OK"
         Me.OK.Size = New System.Drawing.Size(94, 23)
-        Me.OK.TabIndex = 6
+        Me.OK.TabIndex = 5
         Me.OK.Text = "&OK"
         '
         'Cancel
         '
         Me.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.Cancel.Location = New System.Drawing.Point(279, 183)
+        Me.Cancel.Location = New System.Drawing.Point(204, 183)
         Me.Cancel.Name = "Cancel"
         Me.Cancel.Size = New System.Drawing.Size(94, 23)
-        Me.Cancel.TabIndex = 7
+        Me.Cancel.TabIndex = 6
         Me.Cancel.Text = "&Cancel"
         '
         'txtDatabase
         '
-        Me.txtDatabase.Location = New System.Drawing.Point(174, 157)
+        Me.txtDatabase.Location = New System.Drawing.Point(175, 157)
         Me.txtDatabase.Name = "txtDatabase"
         Me.txtDatabase.Size = New System.Drawing.Size(220, 20)
-        Me.txtDatabase.TabIndex = 5
+        Me.txtDatabase.TabIndex = 4
+        Me.txtDatabase.Text = "hg19"
         '
         'Label1
         '
-        Me.Label1.Location = New System.Drawing.Point(172, 137)
+        Me.Label1.Location = New System.Drawing.Point(173, 137)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(220, 23)
         Me.Label1.TabIndex = 6
@@ -122,19 +126,29 @@ Partial Class frmLogin
         '
         'txtServer
         '
-        Me.txtServer.Location = New System.Drawing.Point(173, 112)
+        Me.txtServer.Location = New System.Drawing.Point(176, 26)
         Me.txtServer.Name = "txtServer"
         Me.txtServer.Size = New System.Drawing.Size(220, 20)
-        Me.txtServer.TabIndex = 4
+        Me.txtServer.TabIndex = 1
+        Me.txtServer.Text = "156.110.144.34"
         '
         'Label2
         '
-        Me.Label2.Location = New System.Drawing.Point(171, 92)
+        Me.Label2.Location = New System.Drawing.Point(173, 4)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(220, 23)
         Me.Label2.TabIndex = 8
         Me.Label2.Text = "&Server"
         Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'btnDefaultDB
+        '
+        Me.btnDefaultDB.Location = New System.Drawing.Point(108, 183)
+        Me.btnDefaultDB.Name = "btnDefaultDB"
+        Me.btnDefaultDB.Size = New System.Drawing.Size(90, 23)
+        Me.btnDefaultDB.TabIndex = 7
+        Me.btnDefaultDB.Text = "Default"
+        Me.btnDefaultDB.UseVisualStyleBackColor = True
         '
         'frmLogin
         '
@@ -143,6 +157,7 @@ Partial Class frmLogin
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel
         Me.ClientSize = New System.Drawing.Size(403, 211)
+        Me.Controls.Add(Me.btnDefaultDB)
         Me.Controls.Add(Me.txtServer)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.txtDatabase)
@@ -160,7 +175,7 @@ Partial Class frmLogin
         Me.Name = "frmLogin"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Local database login"
+        Me.Text = "Database settings"
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -170,5 +185,6 @@ Partial Class frmLogin
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents txtServer As System.Windows.Forms.TextBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents btnDefaultDB As System.Windows.Forms.Button
 
 End Class

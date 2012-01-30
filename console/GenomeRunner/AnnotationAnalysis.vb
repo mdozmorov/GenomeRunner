@@ -6,14 +6,26 @@ Imports alglib
 Namespace GenomeRunner
 
     Public Class AnnotationSettings
+        Public ConnectionString As String
         Public PromoterUpstream As UInteger = 0                                          'the numbr of base pairs that the promoters are defined to start upstream of the gene start site
         Public PromoterDownstream As UInteger = 0                                        'the number of base pairs that the promoters are defined to go past the gene start site
         Public proximity As UInteger = 0                                                 'the number of base pairs that a feature of interest can be from a genomic feature and still be considered a hit
+        Public FilterLevel As String
+        Public Strand As String
+        Public ShortOnly As Boolean
 
-        Public Sub New(ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger)
+        Public Sub New(ByVal ConnectionString As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal FilterLevel As String, ByVal Strand As String, ByVal ShortOnly As Boolean)
+            Me.ConnectionString = ConnectionString
             Me.PromoterUpstream = PromoterUpstream
             Me.PromoterDownstream = PromoterDownstream
             Me.proximity = proximity
+            Me.FilterLevel = FilterLevel
+            Me.Strand = Strand
+            Me.ShortOnly = ShortOnly
+        End Sub
+
+        Public Sub New()
+            'Constructor with no parameters is used for XML serialization
         End Sub
     End Class
 
@@ -22,9 +34,9 @@ Namespace GenomeRunner
         Dim kgIDToGeneSymbolDict As New Dictionary(Of String, String)                   'is a dictionary that is loaded with the values from the kgxref (kgID, geneSymbol) to convert the gene name into standard form
         Dim Background As List(Of Feature)                                              'the background from which random features of interest are generated for the Monte Carlo simulation
         Dim ConnectionString As String                                                  'stores settings which are used by the annotation analysis
+        
+        Public Sub New()
 
-        Public Sub New(ByVal ConnectionString As String)
-            Me.ConnectionString = ConnectionString
         End Sub
 
         'opens a connection to the database
@@ -43,6 +55,7 @@ Namespace GenomeRunner
                 cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
             End If
         End Sub
+
 
         'loads the FOIs from the filepath
         Private Function LoadFeatureOfInterests(ByVal FeaturesOfInterestFilePath As String) As List(Of Feature)
@@ -77,6 +90,7 @@ Namespace GenomeRunner
         'runs annotation anlysis on all of the files passed as paths
         Public Sub RunAnnotationAnalysis(ByVal FeatureOfInterestPath As List(Of String), ByVal GenomicFeatures As List(Of GenomicFeature), ByVal OutputDir As String, ByVal AnnotationSettings As AnnotationSettings, ByVal Progstart As ProgressStart, ByVal ProgUpdate As ProgressUpdate, ByVal ProgDone As ProgressDone)
             Directory.CreateDirectory(OutputDir)
+            ConnectionString = AnnotationSettings.ConnectionString
 
             For Each FeatureFilePath In FeatureOfInterestPath
                 Dim FeaturesOfInterest As List(Of Feature) = LoadFeatureOfInterests(FeatureFilePath)
@@ -88,7 +102,7 @@ Namespace GenomeRunner
                 Progstart.Invoke(GenomicFeatures.Count)
                 Dim CurrGF As Integer = 0
                 For Each GF In GenomicFeatures
-                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name)
+                    ProgUpdate(CurrGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
                     GF = Feature_Analysis(GF, FeaturesOfInterestproximity, FeaturesOfInterest, AnnotationSettings)
                     CurrGF += 1
                 Next
@@ -119,6 +133,7 @@ Namespace GenomeRunner
 
         'Checks which Features overlap with the GF and returns the meta data for the genomic feature
         Function Feature_Analysis(ByVal GenomicFeature As GenomicFeature, ByVal proximityFeaturesOfInterest As List(Of Feature), ByVal FeaturesOfInterest As List(Of Feature), ByVal Settings As AnnotationSettings) As GenomicFeature
+            ConnectionString = Settings.ConnectionString
             Dim NumOfFeatures As Integer = proximityFeaturesOfInterest.Count - 1
             Dim listFeatureSQLData As List(Of FeatureSQLData)
             GenomicFeature.FeatureReturnedData.Clear() 'clears the feature class of any past metadata (returned GF information)
@@ -150,17 +165,7 @@ Namespace GenomeRunner
                             If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
                                     Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
                                      Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
-                                'Dim matchesName As Boolean = True
-                                'If genomicFeature.FilteredByName = True And genomicFeature.NamesToInclude.Count <> 0 Then 'if the GR feature is supposed to filtered by name, then the hit is further checked to see if its name matches that of one of the names to be included
-                                '    matchesName = False
-                                '    For Each nameToInclude In genomicFeature.NamesToInclude
-                                '        If featureRow.Name = nameToInclude Then
-                                '            matchesName = True 'if a match is found than the GR featurerow metadata is stored as a returned hit
-                                '        End If
-                                '    Next
-                                'End If
 
-                                'If matchesName = True Then
                                 featureHit.CountData += 1
                                 featureHit.fStartData.Add(featureRow.ChromStart)
                                 featureHit.fEndData.Add(featureRow.ChromEnd)
@@ -173,6 +178,11 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
 
 
@@ -190,18 +200,7 @@ Namespace GenomeRunner
                             If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
                                 Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
                                  Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
-                                'Dim matchesName As Boolean = True
-                                'If genomicFeature.FilteredByName = True And genomicFeature.NamesToInclude.Count <> 0 Then 'if the GR feature is supposed to filtered by name, then the hit is further checked to see if its name matches that of one of the names to be included
-                                '    matchesName = False
-                                '    For Each nameToInclude In genomicFeature.NamesToInclude
-                                '        If featureRow.Name = nameToInclude Then
-                                '            matchesName = True 'if a match is found than the GR featurerow metadata is stored as a returned hit
-                                '        End If
-                                '    Next
-                                'End If
 
-
-                                'If matchesName = True Then
                                 featureHit.CountData += 1
                                 featureHit.fStartData.Add(featureRow.ChromStart)
                                 featureHit.fEndData.Add(featureRow.ChromEnd)
@@ -214,6 +213,12 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
 
                 Case Is = "OutputScore"
@@ -232,17 +237,7 @@ Namespace GenomeRunner
                             If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
                                 Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
                                  Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
-                                'Dim matchesName As Boolean = True
-                                'If genomicFeature.FilteredByName = True And genomicFeature.NamesToInclude.Count <> 0 Then 'if the GR feature is supposed to filtered by name, then the hit is further checked to see if its name matches that of one of the names to be included
-                                '    matchesName = False
-                                '    For Each nameToInclude In genomicFeature.NamesToInclude
-                                '        If featureRow.Name = nameToInclude Then
-                                '            matchesName = True 'if a match is found than the GR featurerow metadata is stored as a returned hit
-                                '        End If
-                                '    Next
-                                'End If
 
-                                'If matchesName = True Then
                                 featureHit.CountData += 1
                                 featureHit.fStartData.Add(featureRow.ChromStart)
                                 featureHit.fEndData.Add(featureRow.ChromEnd)
@@ -255,8 +250,48 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
                     Debug.Print("Total rows returned for annotaitonanalysis" & debugFeatureSQLdatacount)
+
+                Case Is = "GeneOnly"
+                    'goes through each feature of interest and decides if it falls within the genomic region of interest
+                    Dim lastChrom As String = ""
+                    For x As Integer = 0 To NumOfFeatures Step +1
+                        Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
+                        If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            lastChrom = proximityFeaturesOfInterest(x).Chrom
+                        End If
+                        'compares the feature to the entire listfeaturedata for regions that fall within
+                        For Each featureRow In listFeatureSQLData
+                            If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
+                                Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
+                                 Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
+
+                                featureHit.CountData += 1
+                                featureHit.fStartData.Add(featureRow.ChromStart)
+                                featureHit.fEndData.Add(featureRow.ChromEnd)
+                                featureHit.StrandData.Add(featureRow.Strand)
+                                featureHit.NameData.Add(featureRow.Name)
+                                featureHit.ThresholdData.Add(featureRow.Threshold)
+                                featureHit.OverLapTypeData.Add(Nothing)
+                                featureHit.OverLapAmountData.Add(Nothing)
+                                GenomicFeature.FeatureReturnedData(x) = featureHit
+                                'End If
+                            End If
+                        Next
+
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
+                    Next
 
                 Case Is = "Gene"
                     Dim fthreshold As String
@@ -275,17 +310,7 @@ Namespace GenomeRunner
                             If (proximityFeaturesOfInterest(x).ChromStart >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromStart <= featureRow.ChromEnd) _
                                 Or (proximityFeaturesOfInterest(x).ChromEnd >= featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd <= featureRow.ChromEnd) _
                                  Or (proximityFeaturesOfInterest(x).ChromStart < featureRow.ChromStart And proximityFeaturesOfInterest(x).ChromEnd > featureRow.ChromEnd) Then
-                                'Dim matchesName As Boolean = True
-                                'If genomicFeature.FilteredByName = True And genomicFeature.NamesToInclude.Count <> 0 Then 'if the GR feature is supposed to filtered by name, then the hit is further checked to see if its name matches that of one of the names to be included
-                                '    matchesName = False
-                                '    For Each nameToInclude In genomicFeature.NamesToInclude
-                                '        If featureRow.Name = nameToInclude Then
-                                '            matchesName = True 'if a match is found than the GR featurerow metadata is stored as a returned hit
-                                '        End If
-                                '    Next
-                                'End If
 
-                                'If matchesName = True Then
                                 featureHit.CountData += 1
                                 featureHit.fStartData.Add(featureRow.ChromStart)
                                 featureHit.fEndData.Add(featureRow.ChromEnd)
@@ -298,6 +323,11 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
                     Debug.Print("Total rows returned for annotaitonanalysis" & debugFeatureSQLdatacount)
 
@@ -339,6 +369,11 @@ Namespace GenomeRunner
                                 'End If
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
 
                 Case Is = "Exon"
@@ -379,6 +414,11 @@ Namespace GenomeRunner
                                 End If
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
                     Debug.Print("Total rows returned for annotaitonanalysis" & debugFeatureSQLdatacount)
                 Case Is = "Custom"
@@ -406,6 +446,11 @@ Namespace GenomeRunner
                                 GenomicFeature.FeatureReturnedData(x) = featureHit
                             End If
                         Next
+                        'NO OVERLAP: if data for this FOI & GenomicFeature has no hits, find closest GF to it & track its location.
+                        If 0 = GenomicFeature.FeatureReturnedData(x).CountData And listFeatureSQLData.Count > 0 Then
+                            featureHit = FindNearestRegion(proximityFeaturesOfInterest(x), listFeatureSQLData, Settings.ShortOnly)
+                            GenomicFeature.FeatureReturnedData(x) = featureHit
+                        End If
                     Next
             End Select
             Process_Regions(GenomicFeature, FeaturesOfInterest)
@@ -467,6 +512,9 @@ Namespace GenomeRunner
                             AmountOverlapEnd = FOIstart - GFEnd + 1
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = -AmountOverlapEnd
                         Else
+                            'TODO find info about nearest GF.
+                            '     Mikhail's idea: if it gets to this point, put the current FOI into list of GF's then sort them.
+                            '                     look at the GF's before & after this one to find which is closer.
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapTypeData(currHit) = "NA"
                             GenomicFeatures.FeatureReturnedData(currFeature).OverLapAmountData(currHit) = 0
                         End If
@@ -489,7 +537,9 @@ FeatureLoadStart:
                     GC.Collect()
                     'checks if the strand and name column exist
                     OpenDatabase()
-                    cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature.TableName, cn)
+                    'A workaround Promoter is not a table. Remove "Promoter" from tablename and use it to get strand/name, and to get actual Promoter data ("Promoter" query)
+                    Dim GFeature_TableName As String = Replace(GFeature.TableName, "Promoter", vbNullString)
+                    cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature_TableName, cn)
                     dr = cmd.ExecuteReader()
 
                     'controls whether strand or should be outputed or not
@@ -501,6 +551,8 @@ FeatureLoadStart:
                     dr.Close() : cmd.Dispose()
                     Dim nameIndex As Integer = columnnames.ToLower().IndexOf("name")
                     Dim strandIndex As Integer = columnnames.ToLower().IndexOf("strand")
+                    Dim repnameIndex As Integer = columnnames.ToLower().IndexOf("repname") 'In case of rmsk table we have repName column
+                    If repnameIndex <> -1 Then nameIndex = -1 'If detected, name should not be used, set nameIndex manually to -1
                     If nameIndex <> -1 And strandIndex <> -1 Then : useNameUseStrand = "yesnameyesstrand" : End If
                     If nameIndex <> -1 And strandIndex = -1 Then : useNameUseStrand = "yesnamenostrand" : End If
                     If nameIndex = -1 And strandIndex <> -1 Then : useNameUseStrand = "nonameyesstrand" : End If
@@ -742,6 +794,25 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             End If
 
+                        Case Is = "GeneOnly"
+                            OpenDatabase()
+                            'returns the entire database and enters the values into the listFeatureData
+                            cmd = New MySqlCommand("SELECT tName,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
+                            dr = cmd.ExecuteReader()
+                            If dr.HasRows Then
+                                While dr.Read()
+                                    Dim data As New FeatureSQLData
+                                    data.Chrom = dr(0)
+                                    data.Strand = ""
+                                    data.Name = ""
+                                    data.ChromStart = dr(1)
+                                    data.ChromEnd = dr(2)
+                                    data.Threshold = ""
+                                    GenomicFeatureDataBaseData.Add(data)
+                                End While
+                            End If
+                            dr.Close() : cmd.Dispose()
+
                         Case Is = "Gene"
                             OpenDatabase()
                             'returns the entire database and enters the values into the listFeatureData
@@ -764,7 +835,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -780,12 +851,11 @@ FeatureLoadStart:
                                 If containskey = True Then
                                     featuresql.Threshold = kgIDToGeneSymbolDict(featuresql.Name)
                                 End If
-
                             Next
                         Case Is = "Promoter"
                             OpenDatabase()
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature_TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -805,7 +875,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -879,7 +949,7 @@ FeatureLoadStart:
                             kgIDToGeneSymbolDict.Clear()
 
                             OpenDatabase()
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgxref;", cn)
+                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -920,6 +990,78 @@ FeatureLoadStart:
                 'MessageBox.Show("There was an error retrieving the genomic feature data from the server." & vbCrLf & "Retrying to load data" & vbCrLf & e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 GoTo FeatureLoadStart
             End Try
+        End Function
+
+        Function FindNearestRegion(ByVal FOI As Feature, ByVal SQLData As List(Of FeatureSQLData), ByVal shortOnlyChecked As Boolean) As FeaturesReturnedHits
+            'put FOI into list of rows, keep track of where it is
+            Dim FOIasFeatureSQLDataType As New FeatureSQLData
+            FOIasFeatureSQLDataType.Chrom = FOI.Chrom
+            FOIasFeatureSQLDataType.ChromEnd = FOI.ChromEnd
+            FOIasFeatureSQLDataType.ChromStart = FOI.ChromStart
+            FOIasFeatureSQLDataType.Name = FOI.Name
+            SQLData.Add(FOIasFeatureSQLDataType)
+            'sort rows by start point
+            SQLData.Sort(Function(r1, r2) r1.ChromStart.CompareTo(r2.ChromStart))
+
+            'look at rows before & after
+            Dim foiIndex As Integer = SQLData.IndexOf(FOIasFeatureSQLDataType)
+
+            'add info for closest left & right regions
+            Dim featureHit As New FeaturesReturnedHits
+            Dim leftRegions As New List(Of FeatureSQLData) 'need to sort these by end point rather than start point like the rest.
+            Dim leftRegion As New FeatureSQLData
+            Dim rightRegion As New FeatureSQLData
+            Dim leftOverlap As Integer = -1
+            Dim rightOverlap As Integer = -1
+            If (foiIndex - 1) >= 0 Then
+                leftRegions.Clear()
+                For i As Integer = 0 To foiIndex - 1 Step +1
+                    leftRegions.Add(SQLData(i))
+                Next
+                'sort rows by end point since we're on left side; want to find end pt closest to FOI.
+                leftRegions.Sort(Function(r1, r2) r1.ChromEnd.CompareTo(r2.ChromEnd))
+                leftRegion = leftRegions.Last
+                leftOverlap = FOIasFeatureSQLDataType.ChromStart - leftRegion.ChromEnd
+                featureHit.fEndData.Add(leftRegion.ChromEnd)
+                featureHit.fStartData.Add(leftRegion.ChromStart)
+                featureHit.NameData.Add(leftRegion.Name)
+                featureHit.OverLapTypeData.Add("Left-No overlap")
+                featureHit.OverLapAmountData.Add(leftOverlap)
+                featureHit.StrandData.Add(leftRegion.Strand)
+                featureHit.ThresholdData.Add(leftRegion.Threshold)
+            End If
+            If (foiIndex + 1) < (SQLData.Count - 1) Then
+                'RIGHT region
+                rightRegion = SQLData(foiIndex + 1)
+                rightOverlap = rightRegion.ChromStart - FOIasFeatureSQLDataType.ChromEnd
+                featureHit.fEndData.Add(rightRegion.ChromEnd)
+                featureHit.fStartData.Add(rightRegion.ChromStart)
+                featureHit.NameData.Add(rightRegion.Name)
+                featureHit.OverLapTypeData.Add("Right-No overlap")
+                featureHit.OverLapAmountData.Add(rightOverlap)
+                featureHit.StrandData.Add(rightRegion.Strand)
+                featureHit.ThresholdData.Add(rightRegion.Threshold)
+            End If
+
+            'get rid of longer region if "Short Only" checkbox is checked.
+            If shortOnlyChecked = True And featureHit.fStartData.Count = 2 Then
+                Dim indexToRemove As New Integer
+                If leftOverlap < rightOverlap Then
+                    indexToRemove = 1
+                Else
+                    indexToRemove = 0
+                End If
+                featureHit.fEndData.Remove(featureHit.fEndData(indexToRemove))
+                featureHit.fStartData.Remove(featureHit.fStartData(indexToRemove))
+                featureHit.NameData.Remove(featureHit.NameData(indexToRemove))
+                featureHit.OverLapTypeData.Remove(featureHit.OverLapTypeData(indexToRemove))
+                featureHit.OverLapAmountData.Remove(featureHit.OverLapAmountData(indexToRemove))
+                featureHit.StrandData.Remove(featureHit.StrandData(indexToRemove))
+                featureHit.ThresholdData.Remove(featureHit.ThresholdData(indexToRemove))
+            End If
+            'remove FOI from list of rows
+            SQLData.Remove(FOIasFeatureSQLDataType)
+            Return featureHit
         End Function
 
     End Class

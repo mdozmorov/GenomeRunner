@@ -47,9 +47,19 @@ Public Class frmGenomeRunner
     End Class
 
     Public Function DatabaseConnection() As MySqlConnection
-        'OpenDatabase()
         Return cn
     End Function
+
+    Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        'tests to see if the connection works
+        OpenDatabase()
+        GREngine = New GenomeRunnerEngine()
+        SetGenomeRunnerDefaults()
+        Me.Location = New Point(10, 10)     'Manually set window location
+        cmbMatrixWeighting.SelectedIndex = 0
+        cmbTier.SelectedIndex = 0
+        cmbStrandsToAnalyze.SelectedIndex = 0
+    End Sub
 
     Private Sub OpenDatabase()
         Dim uName As String = ""
@@ -78,6 +88,8 @@ Public Class frmGenomeRunner
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
             End Try
         End While
+
+        lnklblHost.Text = uServer
         'TODO This shouldn't be necessary because it's already called in Form1_Load. But for some reason everything breaks when it's not called here as well.
         GREngine = New GenomeRunnerEngine
         If cmbDatabase.SelectedIndex = -1 Then
@@ -120,7 +132,7 @@ Public Class frmGenomeRunner
             SaveSetting("GenomeRunner", "Database", "uName", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uPassword", "genomerunner")
             SaveSetting("GenomeRunner", "Database", "uServer", "156.110.144.34")
-            SaveSetting("GenomeRunner", "Database", "uDatabase", "hg18test")
+            SaveSetting("GenomeRunner", "Database", "uDatabase", "hg19")
             uName = GetSetting("GenomeRunner", "Database", "uName")
             uPassword = GetSetting("GenomeRunner", "Database", "uPassword")
             uServer = GetSetting("GenomeRunner", "Database", "uServer")
@@ -130,17 +142,6 @@ Public Class frmGenomeRunner
         Return connectionString
     End Function
 
-    Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        'tests to see if the connection works
-        OpenDatabase()
-        GREngine = New GenomeRunnerEngine()
-        SetGenomeRunnerDefaults()
-        Me.Location = New Point(10, 10)     'Manually set window location    
-        cmbMatrixWeighting.SelectedIndex = 0
-        cmbTier.SelectedIndex = 0
-        cmbStrandsToAnalyze.SelectedIndex = 0
-    End Sub
-
     'used to update progress of the analysis
     Private Sub HandleProgressStart(ByVal progressMaximum As Integer)
         SetProgress_ThreadSafe(ProgressBar1, 0)
@@ -148,7 +149,7 @@ Public Class frmGenomeRunner
 
     Private Sub HandleProgressUpdate(ByVal currProgress As Integer, ByVal FeatureFileName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRun As Integer)
         SetProgress_ThreadSafe(Me.ProgressBar1, currProgress)
-        If rbUseAnalytical.Checked = True Then
+        If rbUseAnalytical.Checked = True Or NumMonteCarloRun = 0 Then
             SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName)
         ElseIf rbUseMonteCarlo.Checked = True Then
             SetProgressLabel_ThreadSafe(lblProgress, "Doing " & AnalysisType & " Analysis for " & FeatureFileName & ": " & GenomicFeatureName & ". Monte Carlo run " & NumMonteCarloRun & " of " & txtNumMCtoRun.Value)
@@ -165,7 +166,7 @@ Public Class frmGenomeRunner
     Private Sub SetGenomeRunnerDefaults()
         cmbFilterLevels.SelectedIndex = 0
         'sets the background to be the entire genome
-        Background = GREngine.GetGenomeBackground(ConnectionString)
+        Background = GREngine.GetChromInfo(ConnectionString)
         BackgroundName = cmbDatabase.SelectedItem
     End Sub
 
@@ -219,6 +220,7 @@ Public Class frmGenomeRunner
         End If
         BackgroundFileName = Path.GetFileNameWithoutExtension(OpenFD.FileName)
         Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
+        'Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
         UseSpotBackground = True
         lblBackground.Text = "Using '" & OpenFD.SafeFileName & "' as spot background"
     End Sub
@@ -274,8 +276,6 @@ Public Class frmGenomeRunner
     End Sub
 
     Public Sub LoadAvailableGenomicFeatures()
-        'TODO the following call shouldn't be necessary. GREngine is already created elsewhere. GetGeomeBackground() is causing the problem.
-        'GREngine = New GenomeRunnerEngine()
         Dim GenomicFeatures As List(Of GenomicFeature) = GREngine.GetGenomicFeaturesAvailable(ConnectionString) 'gets all of the genomic features and adds them to a list
         Dim strCurrCate As String = ""
         Dim CurrCateIndex As Integer = -1
@@ -287,14 +287,22 @@ Public Class frmGenomeRunner
                     CurrCateIndex += 1                                                                      'moves the current group index to the index of the newly created cat
                     Dim arrayCat = Split(GRfeature.UICategory, "|")                                         'splits the catagory results in order to take off the numerical indexegory()
                     category = New ListViewGroup
-                    category.Name = GRfeature.UICategory : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
-                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
+                    'category.Name = CInt(GRfeature.UICategory) : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
+                    category.Name = CInt(arrayCat(0)) : category.Header = arrayCat(1) 'sets a new instance of a header level, the name is set equal to the category in order for it to be found later
+                    'TODO FeatureName vs FeatureTable
+                    'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Group = category : feature.GenomicFeature = GRfeature
+                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Group = category : feature.GenomicFeature = GRfeature
                     ListFeaturesAvailable.Groups.Add(category)
-                    feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    'TODO FeatureName vs FeatureTable
+                    'feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    feature.Name = GRfeature.TableName : feature.Group = category ': feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
+                    ListFeaturesAvailable.Items.Item(ListFeaturesAvailable.Items.Count - 1).ToolTipText = GRfeature.Name
                     strCurrCate = GRfeature.UICategory
                 Else
-                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    'TODO FeatureName vs FeatureTable
+                    'Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.Name : feature.Name = GRfeature.Name : feature.Group = category : feature.ToolTipText = GRfeature.TableName
+                    Dim feature As New ListItemGenomicFeature(GRfeature) : feature.Text = GRfeature.TableName : feature.Name = GRfeature.TableName : feature.Group = category : feature.ToolTipText = GRfeature.Name
                     ListFeaturesAvailable.Items.Add(feature)
                 End If
             End If
@@ -306,17 +314,23 @@ Public Class frmGenomeRunner
         'adds all of the features available to the list of features to run
         For Each lvGF As ListItemGenomicFeature In ListFeaturesAvailable.SelectedItems
             Dim nGF As New ListItemGenomicFeature(lvGF.GenomicFeature)
-            nGF.Text = lvGF.GenomicFeature.Name
+            'TODO FeatureName vs FeatureTable
+            'nGF.Text = lvGF.GenomicFeature.Name
+            nGF.Text = lvGF.GenomicFeature.TableName
             listFeaturesToRun.Items.Add(nGF)
             'checks if the GenomicFeature is a gene, if so a promotter and exon genomic feature are generated as well
             If lvGF.GenomicFeature.QueryType = "Gene" Then
-                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName, "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
+                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName & "Promoter", "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
                 Dim nlvGFPromoter As New ListItemGenomicFeature(nGFPromoter)
-                nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
+                'TODO FeatureName vs FeatureTable
+                'nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
+                nlvGFPromoter.Text = lvGF.GenomicFeature.TableName & "Promoter"
                 listFeaturesToRun.Items.Add(nlvGFPromoter)
                 Dim nGFExon As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Exon", lvGF.GenomicFeature.TableName & "Exons", "Exon", "NA", 0, 0, 0, 0, "", 0, Nothing, "", 1)
                 Dim nlvGFExon As New ListItemGenomicFeature(nGFExon)
-                nlvGFExon.Text = lvGF.GenomicFeature.Name & "Exon"
+                'TODO FeatureName vs FeatureTable
+                'nlvGFExon.Text = lvGF.GenomicFeature.Name & "Exon"
+                nlvGFExon.Text = lvGF.GenomicFeature.TableName & "Exon"
                 listFeaturesToRun.Items.Add(nlvGFExon)
             End If
         Next
@@ -334,7 +348,7 @@ Public Class frmGenomeRunner
             listFeaturesToRun.Items.Add(nlvGF)
             'checks if the GenomicFeature is a gene, if so a promotter and exon genomic feature are generated as well
             If lvGF.GenomicFeature.QueryType = "Gene" Then
-                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName, "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
+                Dim nGFPromoter As New GenomicFeature(lvGF.GenomicFeature.id, lvGF.GenomicFeature.Name & "Promoter", lvGF.GenomicFeature.TableName & "Promoter", "Promoter", "NA", 0, "1000", "11000", "3000", "", 0, Nothing, "", 1)
                 Dim nlvGFPromoter As New ListItemGenomicFeature(nGFPromoter)
                 nlvGFPromoter.Text = lvGF.GenomicFeature.Name & "Promoter"
                 listFeaturesToRun.Items.Add(nlvGFPromoter)
@@ -352,8 +366,8 @@ Public Class frmGenomeRunner
     Private Sub btnRun_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRun.Click
         Dim GRFeaturesToAnalyze As New List(Of GenomicFeature)
         Dim FeatureOfInterestFilePaths As New List(Of String)
-        Dim AnoSettings As New AnnotationSettings(PromoterUpstream, PromoterDownstream, txtproximity.Value)
-        Dim Analyzer As New AnnotationAnalysis(ConnectionString)
+        Dim AnoSettings As New AnnotationSettings(ConnectionString, PromoterUpstream, PromoterDownstream, txtproximity.Value, cmbFilterLevels.Text, cmbStrandsToAnalyze.Text, chkbxShortOnly.Checked)
+        Dim Analyzer As New AnnotationAnalysis()
         AnalysisType = "Annotation"
         If listFeaturesToRun.Items.Count = 0 Then
             MessageBox.Show("Please select genomic features to analyze")
@@ -370,8 +384,11 @@ Public Class frmGenomeRunner
         For Each FeatureFile As ListItemFile In listFeatureFiles.Items                                                          'goes through each of the files to annotate
             FeatureOfInterestFilePaths.Add(FeatureFile.filPath)
         Next
-        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)                                                               'gets the file information of the features of interest file
-        Dim AnnotationOutputDir As String = firstFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & " " & txtJobName.Text & "\"  'sets what directory the results are to outputed to
+        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim JobName As String = txtJobName.Text
+        If JobName = "" Then JobName = firstFile.fileName 'gets the file information of the features of interest file
+        'Dim AnnotationOutputDir As String = firstFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & " " & txtJobName.Text & "\"  'sets what directory the results are to outputed to
+        Dim AnnotationOutputDir As String = firstFile.fileDir & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & JobName & "\"  'sets what directory the results are to outputed to
 
         Dim args As New AnnotationArguments(ConnectionString, GRFeaturesToAnalyze, FeatureOfInterestFilePaths, AnnotationOutputDir, AnoSettings)
         BackgroundWorkerAnnotationAnalysis.RunWorkerAsync(args)
@@ -384,7 +401,7 @@ Public Class frmGenomeRunner
         'Get the argument
         Dim args As AnnotationArguments = e.Argument
         'starts the enrichment analysis
-        Dim Analyzer As New AnnotationAnalysis(ConnectionString)
+        Dim Analyzer As New AnnotationAnalysis()
         Analyzer.RunAnnotationAnalysis(args.FeatureFilePaths, args.GenomicFeatures, args.OutputDir, args.AnnotationSettings, progStart, progUpdate, progDone)
     End Sub
 
@@ -432,7 +449,7 @@ Public Class frmGenomeRunner
     Private Sub btnPValue_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPValue.Click
         Dim GenomicFeaturesToAnalyze As New List(Of GenomicFeature)
         Dim FeatureFilePaths As New List(Of String) 'stores the filepaths of the files containing the FOIs to do an enrichment analysis on
-        Dim Analyzer As New EnrichmentAnalysis(ConnectionString, progStart, progUpdate, progDone)
+        Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
         AnalysisType = "Enrichment"
         If listFeatureFiles.Items.Count <> 0 Then
             btnRun.Enabled = False
@@ -465,7 +482,7 @@ Public Class frmGenomeRunner
         'Get the argument
         Dim args As EnrichmentArgument = e.Argument
         'starts the enrichment analysis
-        Dim Analyzer As New EnrichmentAnalysis(args.Settings.ConnectionString, progStart, progUpdate, progDone)
+        Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
         Analyzer.RunEnrichmentAnlysis(args.FeatureFilePaths, args.GenomicFeatures, args.Background, args.Settings)
     End Sub
 
@@ -476,10 +493,10 @@ Public Class frmGenomeRunner
 
     'gets the settings from the user interface and adds them to a EnrichmentSettings class which is passed on to the enrichment analyzer
     Private Function GetUserSettings() As EnrichmentSettings
-        Dim JobName As String = " " & txtJobName.Text
         Dim UseMonteCarlo As Boolean, UseAnalytical As Boolean, UseTradMC As Boolean, UseChiSquare As Boolean, UseBinomialDistrobution As Boolean
         Dim OutputPearsonsCoefficientWeightedMatrix As Boolean
         Dim OutputPercentOverlapWeightedMatrix As Boolean
+        Dim AllAdjustments As Boolean = False
         If rbChiSquareTest.Checked = True Then
             UseChiSquare = True
         ElseIf rbBinomialDistrobution.Checked = True Then
@@ -503,11 +520,21 @@ Public Class frmGenomeRunner
             Case Is = 2
                 OutputPercentOverlapWeightedMatrix = False
                 OutputPearsonsCoefficientWeightedMatrix = True
+            Case Is = 3
+                AllAdjustments = True
         End Select
-        Dim featureFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim firstFile As ListItemFile = listFeatureFiles.Items(0)
+        Dim JobName As String = txtJobName.Text
+        If JobName = "" Then JobName = firstFile.fileName
         Dim PeasonsAudjustmentConst As Integer = txtPearsonAudjustmentConstant.Value
-        Dim PValueOutputDir As String = featureFile.fileDir & Strings.Replace(Date.Now, "/", "-").Replace(":", ",") & JobName & "\"  'sets what directory the results are to outputed to
-        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, OutputPercentOverlapWeightedMatrix, rbSquared.Checked, OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, PromoterDownstream, txtproximity.Value)
+        Dim PValueOutputDir As String = firstFile.fileDir & DateTime.Now.ToString("MM-dd-yyyy_hh.mm.sstt") & "_" & JobName & "\"  'sets what directory the results are to outputed to
+        Dim Settings As New EnrichmentSettings(ConnectionString, txtJobName.Text, PValueOutputDir, UseMonteCarlo, _
+                                               UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistrobution, _
+                                               OutputPercentOverlapWeightedMatrix, rbSquared.Checked, _
+                                               OutputPearsonsCoefficientWeightedMatrix, PeasonsAudjustmentConst, _
+                                               AllAdjustments, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, _
+                                               txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, _
+                                               PromoterDownstream, txtproximity.Value, cmbStrandsToAnalyze.Text, chkbxoutputMerged.Checked)
         Return Settings
     End Function
 
@@ -708,6 +735,9 @@ Public Class frmGenomeRunner
         ElseIf cmbMatrixWeighting.SelectedIndex = 2 Then
             GroupBoxPearsons.Visible = True
             GroupBoxPercentAudjustment.Visible = False
+        ElseIf cmbMatrixWeighting.SelectedIndex = 3 Then
+            GroupBoxPearsons.Visible = False
+            GroupBoxPercentAudjustment.Visible = False
         End If
         If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistrobution.Checked = True Then
             MessageBox.Show("Pearson's Contingency Coefficient not available for the Chi Square Test")
@@ -733,7 +763,8 @@ Public Class frmGenomeRunner
 
     Private Sub SetDatabaseConnectionSettingsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SetDatabaseConnectionSettingsToolStripMenuItem.Click
         frmLogin.ShowDialog()
-        'OpenDatabase()
+        cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
+        OpenDatabase()
     End Sub
 
     Private Sub CreateLocalGenomeRunnerTableToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CreateLocalGenomeRunnerTableToolStripMenuItem.Click
@@ -776,7 +807,7 @@ Public Class frmGenomeRunner
     End Sub
 
     Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetGenomeBackground(ConnectionString)
+        Background = GREngine.GetChromInfo(ConnectionString)
         lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
         rbUseMonteCarlo.Enabled = True
         UseSpotBackground = False
@@ -803,7 +834,7 @@ Public Class frmGenomeRunner
                 listFeaturesToRun.Clear()
                 UpdateListFeaturesAvailable()
             End If
-            Background = GREngine.GetGenomeBackground(ConnectionString)
+            Background = GREngine.GetChromInfo(ConnectionString)
             BackgroundName = cmbDatabase.SelectedItem
         End If
     End Sub
@@ -823,7 +854,7 @@ Public Class frmGenomeRunner
         Dim filePaths As New List(Of String)
         Dim output As New Output(0)
 
-        If dlgResult = Windows.Forms.DialogResult.OK Then
+        If dlgResult = DialogResult.OK Then
             For Each filePath In Directory.GetFiles(FolderBrowser.SelectedPath)
                 If filePath.Contains(".gr") Then
                     filePaths.Add(filePath)
@@ -831,10 +862,56 @@ Public Class frmGenomeRunner
             Next
             output.OutputMergedLogFiles(filePaths)
             MessageBox.Show("Combined log file outputted to: " & Path.GetDirectoryName(filePaths(0)) & "\combined.gr")
-            Me.Close()
         End If
     End Sub
 
+    Private Sub btnMerge_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnMerge.Click
+        If listFeatureFiles.Items.Count >= 2 Then
+            'Get outfile path from user
+            Dim saveFileDialog As New SaveFileDialog
+            saveFileDialog.Filter = "gr files (*.gr)|*.gr|All files (*.*)|*.*"
+            Dim MatrixFile As ListItemFile = listFeatureFiles.Items.Item(0)
+            saveFileDialog.InitialDirectory = MatrixFile.filPath
+            saveFileDialog.FileName = "combined"
+            Dim dlgResult As DialogResult = saveFileDialog.ShowDialog()
+
+            If dlgResult = Windows.Forms.DialogResult.OK Then
+                If My.Computer.FileSystem.FileExists(saveFileDialog.FileName) = True Then
+                    My.Computer.FileSystem.DeleteFile(saveFileDialog.FileName) 'If file with user-provided name already exist, delete that file, as it'll be replaced
+                End If
+                Dim FeatureOfInterestFilePaths As New List(Of String)
+                For Each FeatureFile As ListItemFile In listFeatureFiles.Items      'goes through each of the files to annotate
+                    FeatureOfInterestFilePaths.Add(FeatureFile.filPath)
+                Next
+
+                Dim output As New Output(0)
+                Dim OutfilePath As String = saveFileDialog.ToString
+                Try
+                    output.OutputMergedLogFiles(FeatureOfInterestFilePaths)         'Output goes to "combined.gr" by definition
+                    Dim sp() As String = saveFileDialog.FileName.Split("\")         'But we need to rename it to the name provided by user. Split the filename string to get the last element
+                    If sp(sp.Length - 1) <> "combined.gr" Then My.Computer.FileSystem.RenameFile(Path.GetDirectoryName(saveFileDialog.FileName) & "\combined.gr", sp(sp.Length - 1)) 'Rename "combined.gr" to the user provided name
+                    MessageBox.Show("Combined log file outputted to: " & saveFileDialog.FileName)
+                Catch
+                    MessageBox.Show("Files could not be merged. Please ensure they are all correctly formatted log files & try again.")
+                End Try
+            End If
+        Else
+            MessageBox.Show("2 or more files for merging must be selected.")
+        End If
+    End Sub
+
+    Private Sub lnklblHost_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lnklblHost.LinkClicked
+        frmLogin.ShowDialog()
+        cmbDatabase.SelectedIndex = -1 'Need to clear this since it usually defaults to first hg* db on current server.
+        OpenDatabase()
+    End Sub
+
+
+    Private Sub mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Click
+        Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
+        UseSpotBackground = True
+        lblBackground.Text = "Using '" & "SNP132DB" & "' as spot background"
+    End Sub
 End Class
 
 'these settings are passed onto the background worker as arguments
