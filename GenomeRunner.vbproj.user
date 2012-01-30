@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishUrlHistory>F:\222\|F:\222c\|C:\Users\wrenlab\Desktop\genomerunnerconsole\|publish\</PublishUrlHistory>
+    <PublishUrlHistory>F:\111\|F:\222\|C:\Users\wrenlab\Desktop\genomerunner\|publish\</PublishUrlHistory>
     <InstallUrlHistory />
     <SupportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</SupportUrlHistory>
     <UpdateUrlHistory />
@@ -9,14 +9,9 @@
     <ErrorReportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</ErrorReportUrlHistory>
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
+    <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>-a "F:\RandSNPs.bed" "F:\GRtest\testGF.txt" "F:\GRtest\Settings.xml"</StartArguments>
   </PropertyGroup>
 </Project>
