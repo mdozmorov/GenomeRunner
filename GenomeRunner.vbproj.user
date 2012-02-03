@@ -3,10 +3,10 @@
   <PropertyGroup>
     <PublishUrlHistory>F:\111\|F:\222\|C:\Users\wrenlab\Desktop\genomerunner\|publish\</PublishUrlHistory>
     <InstallUrlHistory />
-    <SupportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</SupportUrlHistory>
+    <SupportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner.aspx|http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</SupportUrlHistory>
     <UpdateUrlHistory />
     <BootstrapperUrlHistory />
-    <ErrorReportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</ErrorReportUrlHistory>
+    <ErrorReportUrlHistory>http://wren.omrf.org/GenomeRunner/GenomeRunner.aspx|http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm</ErrorReportUrlHistory>
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
     <ProjectView>ProjectFiles</ProjectView>

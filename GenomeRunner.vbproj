@@ -7,12 +7,13 @@
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AF2FB0A7-9897-45F7-97EC-666543AF561A}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <StartupObject>GenomeRunner.My.MyApplication</StartupObject>
+    <OutputType>Library</OutputType>
+    <StartupObject>
+    </StartupObject>
     <RootNamespace>GenomeRunner</RootNamespace>
     <AssemblyName>GenomeRunner</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <MyType>WindowsForms</MyType>
+    <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -216,51 +217,51 @@
     <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.designer.vb">
       <DependentUpon>frmAbout.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmAbout.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.Designer.vb">
       <DependentUpon>frmCreateGenomeRunnerDatabase.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.Designer.vb">
       <DependentUpon>frmCustomizeFilters.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.Designer.vb">
       <DependentUpon>frmGenerateRandomFeatures.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.Designer.vb">
       <DependentUpon>frmGenomeRunner.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.designer.vb">
       <DependentUpon>frmLogin.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmLogin.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.Designer.vb">
       <DependentUpon>frmQuery.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmQuery.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.designer.vb">
       <DependentUpon>frmSqlQueryEditor.vb</DependentUpon>
     </Compile>
-    <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.vb">
+    <None Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.vb">
       <SubType>Form</SubType>
-    </Compile>
+    </None>
     <!-- <Compile Include="tempCode.vb" /> -->
     <!-- <Compile Include="src/GenomeRunner/core/AnnotationAnalysis.vb" /> -->
     <!-- <Compile Include="src/GenomeRunner/core/EnrichmentAnalysis.vb" /> -->

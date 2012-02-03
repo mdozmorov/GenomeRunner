@@ -22,7 +22,12 @@ Namespace UI
         End Structure
         Dim connectSettings As New ConnectionSettings
 
-        Public Sub Main(ByVal Argument As String())
+        Public Overloads Shared Sub Main(ByVal args As String())
+            Dim cl As New CommandLine()
+            cl.Run(args)
+        End Sub
+
+        Public Sub Run(ByVal Argument As String())
             'Flags used : (path of features of interest file) (path of genomic features ids file)  a | [e [-m [mc [10] | an] [-p [ct | bd]] [-a [pc | po]] ]
             'TODO why is lower casing everything necessary? Should be input correctly do begin with. Also this is messing up db password input.
             'Dim args As String() = ConvertArrayToLowerCase(Argument)
