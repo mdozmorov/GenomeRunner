@@ -565,7 +565,8 @@ FeatureLoadStart:
 
                     'assembles all of the names to be analyzed into a query
                     If GFeature.NamesToInclude.Count <> 0 Then
-                        NameQuery = "AND name IN ("
+                        Dim NamesToInclude As String() = GFeature.Name.Split(".")
+                        NameQuery = "AND " & NamesToInclude(0) & " IN ("
                         For Each name In GFeature.NamesToInclude
                             NameQuery &= "'" & name & "',"
                         Next

@@ -164,19 +164,15 @@ Namespace GenomeRunner
         Public Function GenerateGenomicFeaturesByName(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal connectionString As String) As List(Of GenomicFeature)
             Dim GenomicFeaturesByName As New List(Of GenomicFeature)
             For Each GF In GenomicFeatures
-                If NameColumnExists(GF.TableName, connectionString) = True Then
+                OpenDatabase(connectionString)
+                Dim NameColumn As String = vbNullString
+                cmd = New MySqlCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
+                dr = cmd.ExecuteReader()
+                'Get name from the Name column
+                If dr.HasRows Then dr.Read() : NameColumn = dr(0)
+                dr.Close() : cmd.Dispose()
+                If NameColumn <> vbNullString And NameColumn <> "NULL" Then
                     Dim Names As New List(Of String)
-                    'GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
-                    'Gets the unique names for the GF and adds them to a list
-                    OpenDatabase(connectionString)
-                    'TODO make this part that finds NameColumn into a private subroutine for clarity's sake.
-                    Dim NameColumn As String
-                    cmd = New MySqlCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
-                    dr = cmd.ExecuteReader()
-                    While dr.Read()
-                        NameColumn = dr(0)
-                    End While
-                    dr.Close() : cmd.Dispose()
                     cmd = New MySqlCommand("SELECT DISTINCT " & NameColumn & " FROM " & GF.TableName, cn)
                     dr = cmd.ExecuteReader()
                     While dr.Read()
@@ -187,12 +183,42 @@ Namespace GenomeRunner
                     For Each name In Names
                         Dim lName As New List(Of String)
                         lName.Add(name) 'adds the single name to list of names to filter which is passed to the genomic feature. 
-                        Dim nGF As New GenomicFeature(GF.id, GF.Name & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                        Dim nGF As New GenomicFeature(GF.id, NameColumn & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
                         GenomicFeaturesByName.Add(nGF)
                     Next
                 Else
                     GenomicFeaturesByName.Add(GF)
                 End If
+
+                'If NameColumnExists(GF.TableName, connectionString) = True Then
+                '    Dim Names As New List(Of String)
+                '    'GenomicFeaturesByName.Add(GF) 'adds the initial feature with all names to be filtered 
+                '    'Gets the unique names for the GF and adds them to a list
+                '    OpenDatabase(connectionString)
+                '    'TODO make this part that finds NameColumn into a private subroutine for clarity's sake.
+                '    Dim NameColumn As String
+                '    cmd = New MySqlCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
+                '    dr = cmd.ExecuteReader()
+                '    While dr.Read()
+                '        NameColumn = dr(0)
+                '    End While
+                '    dr.Close() : cmd.Dispose()
+                '    cmd = New MySqlCommand("SELECT DISTINCT " & NameColumn & " FROM " & GF.TableName, cn)
+                '    dr = cmd.ExecuteReader()
+                '    While dr.Read()
+                '        Names.Add(dr(0))
+                '    End While
+                '    dr.Close() : cmd.Dispose()
+                '    'creates a genomic feature to analyze for each name found which is set to filter by the name 
+                '    For Each name In Names
+                '        Dim lName As New List(Of String)
+                '        lName.Add(name) 'adds the single name to list of names to filter which is passed to the genomic feature. 
+                '        Dim nGF As New GenomicFeature(GF.id, GF.Name & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                '        GenomicFeaturesByName.Add(nGF)
+                '    Next
+                'Else
+                '    GenomicFeaturesByName.Add(GF)
+                'End If
             Next
             Return GenomicFeaturesByName
         End Function
