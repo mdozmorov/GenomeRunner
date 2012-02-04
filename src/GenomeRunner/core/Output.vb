@@ -685,15 +685,15 @@ Namespace GenomeRunner
             Dim Under As Boolean = False
             Dim PercentCoeff As New Double
             ' Get the p-value depending on the settings into Log10Pvalue to use later
-            If Settings.UseMonteCarlo = True And Settings.UseTradMC = True And GF.PValueMonteCarloTradMC <> 0 Then
-                Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloTradMC)
-            ElseIf Settings.UseMonteCarlo = True And Settings.UseChiSquare = True And GF.PValueMonteCarloChisquare <> 0 Then
-                Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare) : PCC = GF.PCCMonteCarloChiSquare
-            ElseIf Settings.UseAnalytical = True And Settings.UseChiSquare = True And GF.PValueAnalyticalChisquare <> 0 Then
-                Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare) : PCC = GF.PCCAnalyticalChiSquare
+            If Settings.UseMonteCarlo = True And Settings.UseTradMC = True Then
+                If GF.PValueMonteCarloTradMC = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloTradMC)
+            ElseIf Settings.UseMonteCarlo = True And Settings.UseChiSquare = True Then
+                If GF.PValueMonteCarloChisquare = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare) : PCC = GF.PCCMonteCarloChiSquare
+            ElseIf Settings.UseAnalytical = True And Settings.UseChiSquare = True Then
+                If GF.PValueAnalyticalChisquare = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare) : PCC = GF.PCCAnalyticalChiSquare
                 If GF.ActualHits < GF.AnalyticalExpectedWithin Then Under = True
-            ElseIf Settings.UseAnalytical = True And Settings.UseBinomialDistribution = True And GF.PValueAnalyticalBinomialDistribution <> 0 Then
-                Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
+            ElseIf Settings.UseAnalytical = True And Settings.UseBinomialDistribution = True Then
+                If GF.PValueAnalyticalBinomialDistribution = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalBinomialDistribution)
                 If GF.ActualHits < GF.AnalyticalExpectedWithin Then Under = True
             Else
                 Return 0

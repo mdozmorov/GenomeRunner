@@ -7,13 +7,12 @@
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AF2FB0A7-9897-45F7-97EC-666543AF561A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <StartupObject>
-    </StartupObject>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>GenomeRunner.My.MyApplication</StartupObject>
     <RootNamespace>GenomeRunner</RootNamespace>
     <AssemblyName>GenomeRunner</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <MyType>Windows</MyType>
+    <MyType>WindowsForms</MyType>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -213,55 +212,55 @@
     <Compile Include="src\GenomeRunner\core\Feature.vb" />
     <Compile Include="src\GenomeRunner\core\GenomeRunner.vb" />
     <Compile Include="src\GenomeRunner\core\Output.vb" />
-    <Compile Include="src\GenomeRunner\ui\console\CommandLine.vb" />
+    <None Include="src\GenomeRunner\ui\console\CommandLine.vb" />
     <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.designer.vb">
       <DependentUpon>frmAbout.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmAbout.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmAbout.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.Designer.vb">
       <DependentUpon>frmCreateGenomeRunnerDatabase.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCreateGenomeRunnerDatabase.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.Designer.vb">
       <DependentUpon>frmCustomizeFilters.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmCustomizeFilters.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.Designer.vb">
       <DependentUpon>frmGenerateRandomFeatures.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenerateRandomFeatures.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.Designer.vb">
       <DependentUpon>frmGenomeRunner.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmGenomeRunner.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.designer.vb">
       <DependentUpon>frmLogin.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmLogin.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmLogin.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.Designer.vb">
       <DependentUpon>frmQuery.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmQuery.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmQuery.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.designer.vb">
       <DependentUpon>frmSqlQueryEditor.vb</DependentUpon>
     </Compile>
-    <None Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.vb">
+    <Compile Include="src\GenomeRunner\ui\graphical\frmSqlQueryEditor.vb">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <!-- <Compile Include="tempCode.vb" /> -->
     <!-- <Compile Include="src/GenomeRunner/core/AnnotationAnalysis.vb" /> -->
     <!-- <Compile Include="src/GenomeRunner/core/EnrichmentAnalysis.vb" /> -->
