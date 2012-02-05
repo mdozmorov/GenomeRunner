@@ -121,7 +121,7 @@
   <data name="PictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAA/oAAAC6CAIAAACRNKEHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEEwAABBMAbXL4wQAAG/+SURBVHhe7b2Hlx3HkeY7f5FGO2/fzp7zzhm+3ffWjTRv
+        YQUAAAAJcEhZcwAAEEsAABBLAeePRXsAAG/+SURBVHhe7b2Hlx3HkeY7f5FGO2/fzp7zzhm+3ffWjTRv
         5HbMSpREkRQd6AACBAGCJACS8KbRABpoeE802sADhAdhCHoHgABJ0XsjSiQlzcy694O+ObG5VffWrXsz
         b/e9hTinTp9Go6qy8svIiC8jIiP/5H/+z2f9cgQcAUfAEXAEHAFHwBFwBByBSiLwJ5XslXfKEXAEHAFH
         wBFwBBwBR8ARcARAwOm+BzccAUfAEXAEHAFHwBFwBByByiLgdL+yQ+vLWUfAEXAEHAFHwBFwBBwBR8Dp
@@ -603,11 +603,10 @@
 </value>
   </data>
   <data name="txtAbout.Text" xml:space="preserve">
-    <value>GenomeRunner version 1.0
+    <value>GenomeRunner version 3.0.0.1
 
-Copyright (C) 2011 by Mikhail G. Dozmorov and Jonathan D. Wren
-
-Please, cite: Dozmorov MG, Cara LR, Giles GB, Wren JW. "GenomeRunner: Automating genome exploration" (manuscript submitted)
+Please, cite: 
+Dozmorov MG, Cara LR, Giles CB, Wren JD. GenomeRunner: automating genome exploration. Bioinformatics. 2012 Feb 1;28(3):419-20. Epub 2011 Dec 6. PubMed PMID: 22155868; PubMed Central PMCID: PMC3268239. 
 
 Contact: Mikhail.Dozmorov@gmail.com</value>
   </data>

@@ -274,11 +274,11 @@ Namespace GenomeRunner
             Return Background
         End Function
 
-        Public Function GenerateSNP132GenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
+        Public Function GenerateGenomeBackground(ByVal ConnectionString As String, ByVal SelectedGFname As String) As List(Of Feature)
             Dim Background As List(Of Feature) = New List(Of Feature)
             Dim chrom As List(Of String) = New List(Of String)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT DISTINCT chrom FROM  snp132;", cn)
+            cmd = New MySqlCommand("SELECT DISTINCT chrom FROM " & SelectedGFname & ";", cn)
             dr = cmd.ExecuteReader
             While dr.Read
                 chrom.Add(dr(0))
@@ -286,7 +286,7 @@ Namespace GenomeRunner
             dr.Close() : cmd.Dispose()
 
             For Each chromosome In chrom
-                cmd = New MySqlCommand("SELECT chromStart,chromEnd FROM snp132 WHERE chrom='" & chromosome & "';", cn)
+                cmd = New MySqlCommand("SELECT chromStart,chromEnd FROM " & SelectedGFname & " WHERE chrom='" & chromosome & "';", cn)
                 dr = cmd.ExecuteReader
                 While dr.Read
                     Dim Interval As New Feature

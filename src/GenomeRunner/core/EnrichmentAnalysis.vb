@@ -497,7 +497,7 @@ Namespace GenomeRunner
         End Function
 
         'generates randomfeatures from the background based on the length of the FOIs passed on to it
-        Private Function createRandomRegions(ByVal FeaturesOfInterest As List(Of Feature), ByVal BackgroundInterval As List(Of Feature), ByVal UseSpot As Boolean)
+        Public Function createRandomRegions(ByVal FeaturesOfInterest As List(Of Feature), ByVal BackgroundInterval As List(Of Feature), ByVal UseSpot As Boolean)
             Dim NumOfFeatures As Integer = FeaturesOfInterest.Count
             Dim RandomFeatures As New List(Of Feature)
             Dim rand As New System.Random

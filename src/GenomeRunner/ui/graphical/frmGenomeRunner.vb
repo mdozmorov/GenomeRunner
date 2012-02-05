@@ -46,8 +46,12 @@ Public Class frmGenomeRunner
         Public fileName As String
     End Class
 
-    Public Function DatabaseConnection() As MySqlConnection
-        Return cn
+    Public Function DatabaseConnection() As String 'MySqlConnection
+        Return ConnectionString 'cn
+    End Function
+
+    Public Function GetUseSpot() As Boolean
+        Return UseSpotBackground
     End Function
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
@@ -799,19 +803,15 @@ Public Class frmGenomeRunner
 
 
     Private Sub mnuProgramInterface_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuProgramInterface.Click
-        System.Diagnostics.Process.Start("http://wren.omrf.org/GenomeRunner/GenomeRunner_Supplemental.htm")
+        System.Diagnostics.Process.Start("http://sourceforge.net/projects/genomerunner/files/GenomeRunner-v3.0-Supplemental.pdf/download")
     End Sub
 
     Private Sub mnuGenomeFeatures_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuGenomeFeatures.Click
-        System.Diagnostics.Process.Start("http://genome.ucsc.edu/cgi-bin/hgTracks?clade=mammal&org=Human&db=hg18&position=chr16%3A70%2C289%2C971-70%2C290%2C104&hgt.suggest=&hgt.suggestTrack=knownGene&pix=800&hgsid=207715539&hgTracksConfigPage=configure+tracks+and+display&hgt.newJQuery=1")
+        System.Diagnostics.Process.Start("http://genome.ucsc.edu/cgi-bin/hgGateway")
     End Sub
 
-    Private Sub UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseNCBI36hg18GenomeAssemblyasBackgroundToolStripMenuItem.Click
-        Background = GREngine.GetChromInfo(ConnectionString)
-        lblBackground.Text = "Using NCBI36/hg18 genome assembly as genomic background"
-        rbUseMonteCarlo.Enabled = True
-        UseSpotBackground = False
-        rbUseAnalytical.Enabled = True
+    Private Sub UseGenomeAssemblyasBackgroundToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles UseGenomeAssemblyasBackgroundToolStripMenuItem.Click
+        cmbDatabase_SelectedIndexChanged(sender, e)
     End Sub
 
     Private Sub AboutToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AboutToolStripMenuItem.Click
@@ -836,6 +836,7 @@ Public Class frmGenomeRunner
             End If
             Background = GREngine.GetChromInfo(ConnectionString)
             BackgroundName = cmbDatabase.SelectedItem
+            UseSpotBackground = False
         End If
     End Sub
 
@@ -908,10 +909,30 @@ Public Class frmGenomeRunner
 
 
     Private Sub mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem_Click(sender As System.Object, e As System.EventArgs) Handles mnuLoadSnpDBAsSpotBackgrountToolStripMenuItem.Click
-        Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
+        'Background = GREngine.GenerateSNP132GenomeBackground(ConnectionString)
         UseSpotBackground = True
         lblBackground.Text = "Using '" & "SNP132DB" & "' as spot background"
     End Sub
+
+    Private Sub mnuLoadGFsAsSpotBackground_Click(sender As System.Object, e As System.EventArgs) Handles mnuLoadGFsAsSpotBackground.Click
+        If listFeaturesToRun.Items.Count = 1 Then
+            Dim response As MsgBoxResult
+            response = MsgBox("This will load selected genomic features into memory as spot background and show confirmation dialog again." & vbCrLf & "For large tables it may take long time, and the application may seem to freeze. Do you want to continue?", MessageBoxButtons.YesNo, "Load GFs as SPOT background")
+            If response = MsgBoxResult.Yes Then
+                For Each SelectedGF As ListItemGenomicFeature In listFeaturesToRun.Items
+                    Background = GREngine.GenerateGenomeBackground(ConnectionString, SelectedGF.GenomicFeature.TableName)
+                    lblBackground.Text = "Using '" & SelectedGF.GenomicFeature.TableName & "' as spot background"
+                    BackgroundName = SelectedGF.GenomicFeature.TableName
+                    UseSpotBackground = True
+                Next
+            Else
+                Exit Sub
+            End If
+        Else
+            MsgBox("Please, select only one genomic feature to be used as a spot background, such as snp135", MsgBoxStyle.Critical)
+        End If
+    End Sub
+
 End Class
 
 'these settings are passed onto the background worker as arguments
