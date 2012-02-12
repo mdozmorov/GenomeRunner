@@ -113,9 +113,11 @@ Namespace GenomeRunner
                 Next
                 writer.WriteLine()
                 For Each gFeature In GRFeaturesToAnalyze
-                    'TODO FeatureName vs FeatureTable
-                    'writer.Write(gFeature.Name)
-                    writer.Write(gFeature.TableName)
+                    If gFeature.Name <> "" Then
+                        writer.Write(gFeature.Name)
+                    Else
+                        writer.Write(gFeature.TableName)
+                    End If
                     For currFeature As Integer = 0 To NumOfFeatures - 1
                         If gFeature.FeatureReturnedData(currFeature) IsNot Nothing Then
                             writer.Write(vbTab & gFeature.FeatureReturnedData(currFeature).CountData)
