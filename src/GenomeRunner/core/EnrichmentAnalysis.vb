@@ -449,7 +449,7 @@ Namespace GenomeRunner
             For currInterval As Integer = 0 To Background.Count - 1
 
                 Dim GenomicFeaturesSQLData As List(Of FeatureSQLData) _
-                    = Analyzer.Feature_Load_GRFeature_In_Memory(GenomicFeature, Background(currInterval).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads GF into memory so that its bps and regions can be counted
+                    = Analyzer.Feature_Load_GRFeature_In_Memory(GenomicFeature, Background(currInterval).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads GF into memory so that its bps and regions can be counted
                 debugRoCount += GenomicFeaturesSQLData.Count
                 Dim NumFeatureBasePair As Integer = Background(currInterval).ChromEnd - Background(currInterval).ChromStart + 1 'the number of base pairs in the interval
                 Dim BasePairs(NumFeatureBasePair) As Boolean                                                                    'an boolean array that is that has a value for each base pair in the interval and is used to keep track of base pairs that are covered by a genomic feature

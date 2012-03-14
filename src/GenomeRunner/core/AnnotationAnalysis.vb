@@ -40,7 +40,7 @@ Namespace GenomeRunner
         End Sub
 
         'opens a connection to the database
-        Private Sub OpenDatabase()
+        Private Sub OpenDatabase(ByVal ConnectionString As String)
             If IsNothing(cn) Then
                 cn = New MySqlConnection(ConnectionString) : cn.Open()
             End If
@@ -157,7 +157,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, GenomicFeature.Threshold, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, GenomicFeature.Threshold, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
                         'compares the feature to the entire listfeaturedata for regions that fall within
@@ -192,7 +192,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
                         'compares the feature to the entire listfeaturedata for regions that fall within
@@ -228,7 +228,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                             debugFeatureSQLdatacount += listFeatureSQLData.Count
                         End If
@@ -264,7 +264,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
                         'compares the feature to the entire listfeaturedata for regions that fall within
@@ -301,7 +301,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                             debugFeatureSQLdatacount += listFeatureSQLData.Count
                         End If
@@ -338,7 +338,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits 'creates an instance of the feature hit class which contains all of the hits for the current FIO
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
                         'compares the feature to the entire listfeaturedata for regions that fall within
@@ -382,7 +382,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             debugFeatureSQLdatacount += listFeatureSQLData.Count
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
@@ -426,7 +426,7 @@ Namespace GenomeRunner
                     For x As Integer = 0 To NumOfFeatures Step +1
                         Dim featureHit As New FeaturesReturnedHits
                         If proximityFeaturesOfInterest(x).Chrom <> lastChrom Then 'if the current FOI is on a diff chrom than the last the GR features is reloded for that chrom
-                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
+                            listFeatureSQLData = Feature_Load_GRFeature_In_Memory(GenomicFeature, proximityFeaturesOfInterest(x).Chrom, 0, Settings.PromoterUpstream, Settings.PromoterDownstream, ConnectionString) 'loads the GR feature data of GR features on the same chrom as the FOI from the mysql database into memory
                             lastChrom = proximityFeaturesOfInterest(x).Chrom
                         End If
                         'compares the feature to the entire listfeaturedata for regions that fall within
@@ -526,7 +526,7 @@ Namespace GenomeRunner
 
         'loads the GR feature data from the mysql database into memory for the GR features on the same chrom as the FOI.  The query is setup to only bring those features back which satisfy
         'the filters.
-        Public Function Feature_Load_GRFeature_In_Memory(ByRef GFeature As GenomicFeature, ByVal Chrom As String, ByVal Threshold As Integer, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger) As List(Of FeatureSQLData)
+        Public Function Feature_Load_GRFeature_In_Memory(ByRef GFeature As GenomicFeature, ByVal Chrom As String, ByVal Threshold As Integer, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal ConnectionString As String) As List(Of FeatureSQLData)
 FeatureLoadStart:
             Try
                 Dim GenomicFeatureDataBaseData As New List(Of FeatureSQLData) 'clears the list of data returned from the mysql database
@@ -536,7 +536,7 @@ FeatureLoadStart:
                     Dim NameQuery As String = ""
                     GC.Collect()
                     'checks if the strand and name column exist
-                    OpenDatabase()
+                    OpenDatabase(ConnectionString)
                     'A workaround Promoter is not a table. Remove "Promoter" from tablename and use it to get strand/name, and to get actual Promoter data ("Promoter" query)
                     Dim GFeature_TableName As String = Replace(GFeature.TableName, "Promoter", vbNullString)
                     cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature_TableName, cn)
@@ -578,7 +578,7 @@ FeatureLoadStart:
                     Select Case GFeature.QueryType
                         Case Is = "Threshold"
                             If useNameUseStrand = "yesnameyesstrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 'returns the entire database and enters the values into the listFeatureData
                                 cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",strand,name FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
                                                        & "'" & StrandQuery & NameQuery & ";", cn)
@@ -655,7 +655,7 @@ FeatureLoadStart:
 
                         Case Is = "General"
                             If useNameUseStrand = "yesnameyesstrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,strand,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -672,7 +672,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "yesnamenostrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -689,7 +689,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonameyesstrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,strand,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -706,7 +706,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonamenostrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "';", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -726,7 +726,7 @@ FeatureLoadStart:
 
                         Case Is = "OutputScore"
                             If useNameUseStrand = "yesnameyesstrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,strand,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -743,7 +743,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "yesnamenostrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -760,7 +760,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonameyesstrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,strand,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -777,7 +777,7 @@ FeatureLoadStart:
                                 End If
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonamenostrand" Then
-                                OpenDatabase()
+                                OpenDatabase(ConnectionString)
                                 cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -796,7 +796,7 @@ FeatureLoadStart:
                             End If
 
                         Case Is = "GeneOnly"
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
                             cmd = New MySqlCommand("SELECT tName,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
                             dr = cmd.ExecuteReader()
@@ -815,7 +815,7 @@ FeatureLoadStart:
                             dr.Close() : cmd.Dispose()
 
                         Case Is = "Gene"
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
                             cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
@@ -835,7 +835,7 @@ FeatureLoadStart:
 
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
@@ -854,7 +854,7 @@ FeatureLoadStart:
                                 End If
                             Next
                         Case Is = "Promoter"
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
                             cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature_TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
@@ -875,7 +875,7 @@ FeatureLoadStart:
 
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
@@ -926,7 +926,7 @@ FeatureLoadStart:
                             Next
 
                         Case Is = "Exon"
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             GenomicFeatureDataBaseData.Clear() 'clears the list of data returned from the mysql database
                             GC.Collect()
                             'returns the entire database and enters the values into the listFeatureData
@@ -949,7 +949,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
 
-                            OpenDatabase()
+                            OpenDatabase(ConnectionString)
                             cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
