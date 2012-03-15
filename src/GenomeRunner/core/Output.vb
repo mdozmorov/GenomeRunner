@@ -493,11 +493,13 @@ Namespace GenomeRunner
                 Dim diff As String = ""
                 Dim UsePvalue As Double = 0, pVal As String = ""
                 Dim pcc As String = ""
+                Dim UseExpectedWithin As Double = 0
 
                 If Settings.UseMonteCarlo = True Then
                     If Settings.UseChiSquare = True Then UsePvalue = GFeature.PValueMonteCarloChisquare : pcc = GFeature.PCCMonteCarloChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
                     If Settings.UseTradMC = True Then UsePvalue = GFeature.PValueMonteCarloTradMC : pcc = "NA"
                     pVal = UsePvalue.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                    UseExpectedWithin = Math.Round(GFeature.MCExpectedHits, 2)
                     If GFeature.ActualHits >= GFeature.MCExpectedHits Then
                         'features are OVERrepresented
                         If UsePvalue < Settings.PvalueThreshold Then
@@ -517,6 +519,7 @@ Namespace GenomeRunner
                     If Settings.UseBinomialDistribution = True Then UsePvalue = GFeature.PValueAnalyticalBinomialDistribution : pcc = "NA"
                     If Settings.UseChiSquare = True Then UsePvalue = GFeature.PValueAnalyticalChisquare : pcc = GFeature.PCCAnalyticalChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
                     pVal = UsePvalue.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                    UseExpectedWithin = Math.Round(GFeature.AnalyticalExpectedWithin, 2)
                     If GFeature.ActualHits >= GFeature.AnalyticalExpectedWithin Then
                         'features are OVERrepresented 
                         If UsePvalue < Settings.PvalueThreshold Then
@@ -539,9 +542,9 @@ Namespace GenomeRunner
                 'TODO FeatureName vs FeatureTable
                 'body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
                 If GFeature.NamesToInclude.Count > 0 Then
-                    body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                    body &= GFeature.Name & vbTab & GFeature.ActualHits & vbTab & UseExpectedWithin & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
                 Else
-                    body &= GFeature.TableName & vbTab & GFeature.ActualHits & vbTab & Math.Round(GFeature.MCExpectedHits, 2) & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
+                    body &= GFeature.TableName & vbTab & GFeature.ActualHits & vbTab & UseExpectedWithin & vbTab & diff & vbTab & pVal & vbTab & pcc & vbTab & Math.Round((GFeature.ActualHits / NumOfFeatures), 2)
                 End If
                 writer.WriteLine(body)
 
