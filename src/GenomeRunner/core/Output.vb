@@ -516,6 +516,7 @@ Namespace GenomeRunner
                 ElseIf Settings.UseAnalytical = True Then
                     If Settings.UseBinomialDistribution = True Then UsePvalue = GFeature.PValueAnalyticalBinomialDistribution : pcc = "NA"
                     If Settings.UseChiSquare = True Then UsePvalue = GFeature.PValueAnalyticalChisquare : pcc = GFeature.PCCAnalyticalChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
+                    pVal = UsePvalue.ToString("0.##E+0", CultureInfo.InvariantCulture)
                     If GFeature.ActualHits >= GFeature.AnalyticalExpectedWithin Then
                         'features are OVERrepresented 
                         If UsePvalue < Settings.PvalueThreshold Then
