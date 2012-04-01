@@ -274,6 +274,37 @@ Namespace GenomeRunner
             Return Background
         End Function
 
+        'returns a list of features that can be used as a background, can be spot or interval
+        'For large SNP file, predefined arrays are populated, then Background created
+        Public Function GenerateCustomGenomeBackgroundSNP(ByVal BackgroundFilePath As String) As List(Of Feature)
+            Dim Background As New List(Of Feature)
+            Dim ArraySize = 33026120
+            Dim backChr As String() : ReDim backChr(ArraySize)
+            Dim backChrStart As UInteger() : ReDim backChrStart(ArraySize)
+            Dim backChrEnd As UInteger() : ReDim backChrEnd(ArraySize)
+            Dim counter As Long = 0
+            Using SR As New StreamReader(BackgroundFilePath)
+                For i = 0 To ArraySize
+                    Dim Line = SR.ReadLine().Split(vbTab)
+                    backChr(counter) = Line(0)
+                    backChrStart(counter) = Line(1)
+                    If Line.Length > 2 Then
+                        backChrEnd(counter) = Line(2)
+                    Else
+                        backChrEnd(counter) = backChrStart(counter)
+                    End If
+                    counter += 1
+                    If (counter Mod 100000) = 0 Then Debug.Print(counter & " lines processed") : GC.Collect()
+                Next
+                For i = 0 To counter - 1
+                    Dim Interval As New Feature
+                    Interval.Chrom = backChr(i) : Interval.ChromStart = backChrStart(i) : Interval.ChromEnd = backChrEnd(i)
+                    Background.Add(Interval)
+                Next
+            End Using
+            Return Background
+        End Function
+
         Public Function GenerateGenomeBackground(ByVal ConnectionString As String, ByVal SelectedGFname As String) As List(Of Feature)
             Dim Background As List(Of Feature) = New List(Of Feature)
             Dim chrom As List(Of String) = New List(Of String)

@@ -570,26 +570,26 @@ Namespace GenomeRunner
                 hqrndrandomize(state)                                                                      'Initialize random number generator
                 For i As Integer = 0 To NumOfFeatures - 1
                     Dim feature As New Feature
-                    ''Simple reshuffilng
-                    'RandFeature = hqrnduniformi(state, BackgroundInterval.Count)                           'Random position from the whole spectrum of spots
-                    'feature.Chrom = BackgroundInterval(RandFeature).Chrom                                  'Store chromosome of random position
-                    'feature.ChromStart = BackgroundInterval(RandFeature).ChromStart                        'and start coordinate
-                    'feature.ChromEnd = BackgroundInterval(RandFeature).ChromEnd
-                    'Weighted chromosome selection
-                    Dim selected As Boolean = False
-                    Do Until selected 'Select random chromosome that is also present in the list of chromosomes from background intervals
-                        feature.Chrom = BackgroundInterval(getWeightedRandomChromosome(state, BackgroundInterval)).Chrom
-                        If BackgroundChromosomes.Contains(feature.Chrom) Then selected = True 'If selected chromosome is in the background interval, use it
-                    Loop
-                    selected = False
-                    Do Until selected
-                        RandFeature = hqrnduniformi(state, BackgroundInterval.Count)                           'Random position from the whole spectrum of spots
-                        If feature.Chrom = BackgroundInterval(RandFeature).Chrom Then selected = True 'if this random selection from the selected chromosome, go with it
-                    Loop
+                    'Simple reshuffilng
+                    RandFeature = hqrnduniformi(state, BackgroundInterval.Count)                           'Random position from the whole spectrum of spots
+                    feature.Chrom = BackgroundInterval(RandFeature).Chrom                                  'Store chromosome of random position
                     feature.ChromStart = BackgroundInterval(RandFeature).ChromStart                        'and start coordinate
                     feature.ChromEnd = BackgroundInterval(RandFeature).ChromEnd
-
                     RandomFeatures.Add(feature)
+                    ''Weighted chromosome selection
+                    'Dim selected As Boolean = False
+                    'Do Until selected 'Select random chromosome that is also present in the list of chromosomes from background intervals
+                    '    feature.Chrom = BackgroundInterval(getWeightedRandomChromosome(state, BackgroundInterval)).Chrom
+                    '    If BackgroundChromosomes.Contains(feature.Chrom) Then selected = True 'If selected chromosome is in the background interval, use it
+                    'Loop
+                    'selected = False
+                    'Do Until selected
+                    '    RandFeature = hqrnduniformi(state, BackgroundInterval.Count)                           'Random position from the whole spectrum of spots
+                    '    If feature.Chrom = BackgroundInterval(RandFeature).Chrom Then selected = True 'if this random selection from the selected chromosome, go with it
+                    'Loop
+                    'feature.ChromStart = BackgroundInterval(RandFeature).ChromStart                        'and start coordinate
+                    'feature.ChromEnd = BackgroundInterval(RandFeature).ChromEnd
+                    'RandomFeatures.Add(feature)
                 Next
                 'Return RandomFeatures                                                                       'returns the list of randomly generated features
             End If
