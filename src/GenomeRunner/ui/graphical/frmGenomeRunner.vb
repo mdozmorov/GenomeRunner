@@ -72,21 +72,27 @@ Public Class frmGenomeRunner
         Dim uDatabase As String = ""
 
         ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
+
         'checks again to see if the values are still empty, if they are the connection is left blank and a connection is not oppened. 
         Dim ConnectionWorks As Boolean = False
         While ConnectionWorks = False
             Try
-                cn = New MySqlConnection(ConnectionString) : cn.Open()
-                If cmbDatabase.SelectedIndex = -1 Then
-                    'get only the ones that have a genomerunner table in them.
-                    cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+                If uServer <> "" Then
+                    cn = New MySqlConnection(ConnectionString) : cn.Open()
+                    If cmbDatabase.SelectedIndex = -1 Then
+                        'get only the ones that have a genomerunner table in them.
+                        cmd = New MySqlCommand("select TABLE_SCHEMA from information_schema.TABLES where TABLE_NAME='genomerunner';", cn)
+                    Else
+                        'Dummy command just to see if the selected db has a genomerunner table.
+                        cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                    End If
+                    dr = cmd.ExecuteReader()
+                    ConnectionWorks = True
+                    dr.Close() : cmd.Dispose()
                 Else
-                    'Dummy command just to see if the selected db has a genomerunner table.
-                    cmd = New MySqlCommand("SELECT id FROM genomerunner limit 1", cn)
+                    frmLogin.ShowDialog()
+                    ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
                 End If
-                dr = cmd.ExecuteReader()
-                ConnectionWorks = True
-                dr.Close() : cmd.Dispose()
             Catch
                 frmLogin.ShowDialog()
                 ConnectionString = GetConnectionSettings(uName, uPassword, uServer, uDatabase)
@@ -94,6 +100,7 @@ Public Class frmGenomeRunner
         End While
 
         lnklblHost.Text = uServer
+
         'TODO This shouldn't be necessary because it's already called in Form1_Load. But for some reason everything breaks when it's not called here as well.
         GREngine = New GenomeRunnerEngine
         If cmbDatabase.SelectedIndex = -1 Then
@@ -539,7 +546,8 @@ Public Class frmGenomeRunner
                                                AllAdjustments, BackgroundName, UseSpotBackground, txtNumMCtoRun.Text, _
                                                txtPvalueThreshold.Text, cmbFilterLevels.Text, PromoterUpstream, _
                                                PromoterDownstream, txtproximity.Value, cmbStrandsToAnalyze.Text, chkbxoutputMerged.Checked)
-        Return Settings
+        Settings.OuputPercentObservedExpected = True
+        Return (Settings)
     End Function
 
 

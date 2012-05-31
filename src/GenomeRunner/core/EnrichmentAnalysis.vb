@@ -33,6 +33,7 @@ Namespace GenomeRunner
         Public Proximity As UInteger = 0                                                            'the number of basepairs that a feature of interest can be away from a genomic feature and still be considered a hit.  this value is NOT taken into consideration when calculating the overlap type
         Public Strand As String
         Public OutputMerged As Boolean
+        Public OuputPercentObservedExpected As Boolean = False
 
         Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String, ByVal OutputMerged As Boolean)
             Me.ConnectionString = ConnectionString
@@ -223,8 +224,12 @@ Namespace GenomeRunner
                         Next
                     End If
                 End If
+
+                'outputs a matrix for the percen of observed versus percent expected
+                Outputer.OuputPercentObservedExpected(GenomicFeatures, OutputMatrixColumnHeaders, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))
                 OutputMatrixColumnHeaders = False
             Next
+
 
             progDone.Invoke(Settings.OutputDir)
         End Sub
