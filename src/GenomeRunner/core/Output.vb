@@ -498,8 +498,9 @@ Namespace GenomeRunner
                 If Settings.UseMonteCarlo = True Then
                     If Settings.UseChiSquare = True Then UsePvalue = GFeature.PValueMonteCarloChisquare : pcc = GFeature.PCCMonteCarloChiSquare.ToString("0.##E+0", CultureInfo.InvariantCulture)
                     If Settings.UseTradMC = True Then UsePvalue = GFeature.PValueMonteCarloTradMC : pcc = "NA"
+                    If Settings.UseBinomialDistribution = True Then UsePvalue = GFeature.PValueMonteCarloBinomialDistribution : pcc = "NA"
                     pVal = UsePvalue.ToString("0.##E+0", CultureInfo.InvariantCulture)
-                    UseExpectedWithin = Math.Round(GFeature.MCExpectedHits, 2)
+                    UseExpectedWithin = GFeature.MCExpectedHits 'Math.Round(GFeature.MCExpectedHits, 2)
                     If GFeature.ActualHits >= GFeature.MCExpectedHits Then
                         'features are OVERrepresented
                         If UsePvalue < Settings.PvalueThreshold Then
@@ -660,6 +661,8 @@ Namespace GenomeRunner
                 If GF.PValueMonteCarloTradMC = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloTradMC)
             ElseIf Settings.UseMonteCarlo = True And Settings.UseChiSquare = True Then
                 If GF.PValueMonteCarloChisquare = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloChisquare) : PCC = GF.PCCMonteCarloChiSquare
+            ElseIf Settings.UseMonteCarlo = True And Settings.UseBinomialDistribution = True Then
+                If GF.PValueMonteCarloBinomialDistribution = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueMonteCarloBinomialDistribution)
             ElseIf Settings.UseAnalytical = True And Settings.UseChiSquare = True Then
                 If GF.PValueAnalyticalChisquare = 0 Then Log10Pvalue = System.Math.Log10(System.Double.MaxValue) Else Log10Pvalue = -1 * System.Math.Log10(GF.PValueAnalyticalChisquare) : PCC = GF.PCCAnalyticalChiSquare
                 If GF.ActualHits < GF.AnalyticalExpectedWithin Then Under = True

@@ -31,7 +31,7 @@ Namespace GenomeRunner
 
         'important values for storing enrichment results
         Public ActualHits As UInteger 'Double 'store the number of actual hits
-        Public MCExpectedHits As UInteger 'Double 'stores the number of expected hits through randomly selected FOI
+        Public MCExpectedHits As Double 'stores the number of expected hits through randomly selected FOI
         Public AnalyticalExpectedWithin As Double 'stores the expected within for the analytical method
         Public PValueAnalyticalBinomialDistribution As Double = Nothing 'stores the pvalue of the genomicfeature for the analytical method using Binomial Distrobution
         Public PValueAnalyticalChisquare As Double = Nothing 'stores the pvalue of the genomicfeature for the analytical method using Chi Square

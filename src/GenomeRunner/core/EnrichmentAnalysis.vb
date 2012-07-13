@@ -20,7 +20,7 @@ Namespace GenomeRunner
         Public UseAnalytical As Boolean                                                             'whether the analytical method should be used to calculate the number of associations expected by random chance
         Public UseTradMC As Boolean                                                                 'whether traditional Monte-Carlo calculations should be used
         Public UseChiSquare As Boolean                                                              'whether the Chi-Square test should be used to calculate the p-value
-        Public UseBinomialDistribution As Boolean                                                   'whether binomial distrobution should be used to calculate the p-value
+        Public UseBinomialDistribution As Boolean                                                   'whether binomial distribution should be used to calculate the p-value
         Public OutputPercentOverlapPvalueMatrix As Boolean                                          'whether a matrix should be outputed where pvalues are weighted by percent overlap
         Public SquarePercentOverlap As Boolean                                                      'whether the percent overlap weight should be sqaured before being applyed 
         Public OutputPCCweightedPvalueMatrix As Boolean                                             'whether a matrix should be outputed where pvalues are weighted by the pearson's contingency coefficient 
@@ -336,7 +336,13 @@ Namespace GenomeRunner
             End If
             'TODO Still need this other if, I think...
             If Settings.UseBinomialDistribution = True Then
-                'GFeature.PValueMonteCarloBinomialDistribution =  Return alglib.binomialdistribution(HasHit.Sum(), HasHit.Length, p)
+                If ObservedWithin = GFeature.MCMean Then 'If observed and expected are equal
+                    GFeature.PValueMonteCarloBinomialDistribution = 1
+                ElseIf ObservedWithin < GFeature.MCMean Then
+                    GFeature.PValueMonteCarloBinomialDistribution = binomialdistribution(ObservedWithin, NumOfFeatures, GFeature.MCMean / NumOfFeatures)
+                ElseIf ObservedWithin > GFeature.MCMean Then
+                    GFeature.PValueMonteCarloBinomialDistribution = binomialcdistribution(ObservedWithin - 1, NumOfFeatures, GFeature.MCMean / NumOfFeatures)
+                End If
             End If
             GFeature.MCExpectedHits = randEventsCountMC.Average
             GFeature.ActualHits = ObservedWithin
@@ -782,7 +788,12 @@ Namespace GenomeRunner
         Private Function pHit(ByVal WidthFOI As Integer()) As Double()
             Dim rpHit As Double() = New Double(WidthFOI.Length - 1) {}
             For i As Integer = 0 To WidthFOI.Length - 1
-                rpHit(i) = ((WidthGF + WidthFOI(i)) * NumOfRegionsGF) / TotalBasePairs
+                rpHit(i) = ((WidthGF + (WidthFOI(i) - 1)) * NumOfRegionsGF) / (TotalBasePairs - WidthFOI(i) + 1)
+                If rpHit(i) > 1 Then
+                    rpHit(i) = 1
+                    Debug.Print("Exception!!!")
+                End If
+
             Next
             Return rpHit
         End Function

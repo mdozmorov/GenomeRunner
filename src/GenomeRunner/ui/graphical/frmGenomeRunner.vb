@@ -260,8 +260,8 @@ Public Class frmGenomeRunner
         Background = GREngine.GenerateCustomGenomeBackground(OpenFD.FileName)
         BackgroundName = Path.GetFileName(OpenFD.FileName)
         UseSpotBackground = False
-        rbUseMonteCarlo.Checked = True
-        rbUseAnalytical.Enabled = False
+        'rbUseMonteCarlo.Checked = True
+        'rbUseAnalytical.Enabled = False
         lblBackground.Text = "Using '" & OpenFD.SafeFileName & "' as interval background"
     End Sub
 
@@ -510,7 +510,7 @@ Public Class frmGenomeRunner
         Dim AllAdjustments As Boolean = False
         If rbChiSquareTest.Checked = True Then
             UseChiSquare = True
-        ElseIf rbBinomialDistrobution.Checked = True Then
+        ElseIf rbBinomialDistribution.Checked = True Then
             UseBinomialDistrobution = True
         ElseIf rbTradMC.Checked = True Then
             UseTradMC = True
@@ -707,12 +707,12 @@ Public Class frmGenomeRunner
         If rbUseMonteCarlo.Checked = True Then
             txtNumMCtoRun.Enabled = True : txtNumMCtoRun.Value = 10 : rbChiSquareTest.Checked = True
         Else
-            txtNumMCtoRun.Enabled = False : rbBinomialDistrobution.Checked = True
+            txtNumMCtoRun.Enabled = False : rbBinomialDistribution.Checked = True
         End If
-        If rbUseMonteCarlo.Checked = True And rbBinomialDistrobution.Checked = True Then
-            MessageBox.Show("Binomial distribution not available for Monte Carlo simulation")
-            rbChiSquareTest.Checked = True : txtNumMCtoRun.Value = 10
-        End If
+        'If rbUseMonteCarlo.Checked = True And rbBinomialDistribution.Checked = True Then
+        '    MessageBox.Show("Binomial distribution not available for Monte Carlo simulation")
+        '    rbChiSquareTest.Checked = True : txtNumMCtoRun.Value = 10
+        'End If
     End Sub
 
     Private Sub cmbStrandsToAnalyze_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbStrandsToAnalyze.SelectedIndexChanged
@@ -751,7 +751,7 @@ Public Class frmGenomeRunner
             GroupBoxPearsons.Visible = False
             GroupBoxPercentAudjustment.Visible = False
         End If
-        If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistrobution.Checked = True Then
+        If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistribution.Checked = True Then
             MessageBox.Show("Pearson's Contingency Coefficient not available for the Chi Square Test")
             cmbMatrixWeighting.SelectedIndex = 0
         End If
@@ -762,15 +762,15 @@ Public Class frmGenomeRunner
 
     End Sub
 
-    Private Sub rbBinomialDistrobution_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbBinomialDistrobution.CheckedChanged
-        If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistrobution.Checked = True Then
+    Private Sub rbBinomialDistribution_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbBinomialDistribution.CheckedChanged
+        If cmbMatrixWeighting.SelectedIndex = 2 And rbBinomialDistribution.Checked = True Then
             MessageBox.Show("Pearson's Contingency Coefficient not available for the Chi Square Test")
             cmbMatrixWeighting.SelectedIndex = 0
         End If
-        If rbUseMonteCarlo.Checked = True And rbBinomialDistrobution.Checked = True Then
-            MessageBox.Show("Binomial distribution not available for Monte Carlo simulation")
-            rbChiSquareTest.Checked = True
-        End If
+        'If rbUseMonteCarlo.Checked = True And rbBinomialDistribution.Checked = True Then
+        '    MessageBox.Show("Binomial distribution not available for Monte Carlo simulation")
+        '    rbChiSquareTest.Checked = True
+        'End If
     End Sub
 
     Private Sub SetDatabaseConnectionSettingsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SetDatabaseConnectionSettingsToolStripMenuItem.Click
@@ -828,7 +828,7 @@ Public Class frmGenomeRunner
 
 
     Private Sub rbTradMC_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbTradMC.CheckedChanged
-        If rbUseAnalytical.Checked = True And rbTradMC.Checked = True Then MessageBox.Show("Traditional Monte-Carlo test is not available for analytical method") : rbBinomialDistrobution.Checked = True
+        If rbUseAnalytical.Checked = True And rbTradMC.Checked = True Then MessageBox.Show("Traditional Monte-Carlo test is not available for analytical method") : rbBinomialDistribution.Checked = True
         If rbUseMonteCarlo.Checked = True And rbTradMC.Checked = True Then txtNumMCtoRun.Value = 10000
         If rbUseMonteCarlo.Checked = True And rbChiSquareTest.Checked = True Then txtNumMCtoRun.Value = 10
     End Sub
