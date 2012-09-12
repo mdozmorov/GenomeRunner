@@ -405,7 +405,7 @@ Namespace GenomeRunner
                     hA(currFOI) = 0
                 End If
                 'stores the width of the FOI
-                wA(currFOI) = Features(currFOI).ChromEnd + 1 - Features(currFOI).ChromStart
+                wA(currFOI) = Features(currFOI).ChromEnd - Features(currFOI).ChromStart '+1
             Next
 
             'counts the number of actual hits
