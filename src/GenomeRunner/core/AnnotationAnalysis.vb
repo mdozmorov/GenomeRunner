@@ -27,6 +27,7 @@ Namespace GenomeRunner
         Public Sub New()
             'Constructor with no parameters is used for XML serialization
         End Sub
+
     End Class
 
     Public Class AnnotationAnalysis
@@ -523,6 +524,8 @@ Namespace GenomeRunner
             Next
             Return GenomicFeatures
         End Function
+
+    
 
         'loads the GR feature data from the mysql database into memory for the GR features on the same chrom as the FOI.  The query is setup to only bring those features back which satisfy
         'the filters.

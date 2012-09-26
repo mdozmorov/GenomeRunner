@@ -117,11 +117,26 @@ Namespace GenomeRunner
     'stores the data retrieved from the mysql for the GR feature
     Public Class FeatureSQLData
         Public Chrom As String, ChromStart As Integer, ChromEnd As Integer, Strand As String, Name As String, Threshold As Object
+        Public Overrides Function ToString() As String
+            Return "Class-FeatureSQLData" & vbTab & "Chrom: " & vbTab & Chrom & vbTab & _
+                 "ChromStart: " & vbTab & ChromStart & vbTab & _
+                 "ChromEnd: " & vbTab & ChromEnd & vbTab & _
+                 "Strand: " & vbTab & Strand & vbTab & _
+                 "Name: " & vbTab & Name & vbTab & _
+                 "Threshold: " & vbTab & Threshold
+        End Function
     End Class
 
     'stores the FOI
     Public Class Feature
         Public Chrom As String, ChromStart As Integer = -1, ChromEnd As Integer = -1, Name As String
+
+        Public Overrides Function ToString() As String
+            Return "Class-Feature" & vbTab & "Chrom: " & vbTab & Chrom & vbTab & _
+                 "ChromStart: " & vbTab & ChromStart & vbTab & _
+                  "ChromEnd: " & vbTab & ChromEnd & vbTab & _
+                 "Name: " & vbTab & Name
+        End Function
     End Class
 
 End Namespace

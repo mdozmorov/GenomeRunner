@@ -290,9 +290,15 @@ Namespace GenomeRunner
             Dim currentTime As System.DateTime = System.DateTime.Now                                'used in the header of the output
             Dim body As String = ""
             If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
+                Dim background As String = ""
+                If Settings.UseSNP = True Then
+                    background = "Used snp135 as background"
+                Else
+                    background = "Name of background used: " & Settings.BackgroundName
+                End If
                 Dim header As String = vbCrLf & currentTime.Date & " " & currentTime.Hour & ":" & currentTime.Minute & " " _
                     & vbCrLf & "Features analyzed: " & FeaturesOfInterestName _
-                    & vbCrLf & "Name of background used: " & Settings.BackgroundName _
+                    & vbCrLf & background _
                     & vbCrLf & "Total number of features: " & NumOfFeatures _
                     & vbCrLf & "Threshold at: " & Settings.FilterLevel _
                     & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
@@ -470,9 +476,15 @@ Namespace GenomeRunner
             Dim currentTime As System.DateTime = System.DateTime.Now                                'used in the header of the output
             Dim body As String = ""
             If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
+                Dim background As String = ""
+                If Settings.UseSNP = True Then
+                    background = "Used snp135 as background"
+                Else
+                    background = "Name of background used: " & Settings.BackgroundName
+                End If
                 Dim header As String = vbCrLf & currentTime.Date & " " & currentTime.Hour & ":" & currentTime.Minute & " " _
                     & vbCrLf & "Features analyzed: " & FeaturesOfInterestName & " (Total " & NumOfFeatures & ")" _
-                    & vbCrLf & "Name of background used: " & Settings.BackgroundName _
+                    & vbCrLf & background _
                     & vbCrLf & "Threshold at: " & Settings.FilterLevel _
                     & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
                     & vbCrLf & "Proximity (bp): " & Settings.Proximity _

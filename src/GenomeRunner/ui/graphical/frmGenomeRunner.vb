@@ -941,6 +941,49 @@ Public Class frmGenomeRunner
         End If
     End Sub
 
+    Private Sub SNPsEnrichmentAnalysisToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SNPsEnrichmentAnalysisToolStripMenuItem.Click
+        Dim hasSNP135 = False
+        OpenDatabase()
+        cmd = New MySqlCommand("SHOW TABLES", cn)
+        dr = cmd.ExecuteReader()
+        While dr.Read()
+            If dr(0) = "snp135" Then
+                hasSNP135 = True
+            End If
+        End While
+        dr.Close() : cmd.Dispose()
+        If hasSNP135 = False Then
+            MessageBox.Show("SNP analysis not available for this organism assembly. Can't locate the table snp135.")
+            Exit Sub
+        End If
+
+        Dim GenomicFeaturesToAnalyze As New List(Of GenomicFeature)
+        Dim FeatureFilePaths As New List(Of String) 'stores the filepaths of the files containing the FOIs to do an enrichment analysis on
+        Dim Analyzer As New EnrichmentAnalysis(progStart, progUpdate, progDone)
+        AnalysisType = "Enrichment"
+        If listFeatureFiles.Items.Count <> 0 Then
+            btnRun.Enabled = False
+            btnPValue.Enabled = False
+            'Goes through each of the listview items in the list of features to run and adds each of the genomicfeatures that are attache to them to a list of GF to analyze
+            For Each lvGF As ListItemGenomicFeature In listFeaturesToRun.Items
+                GenomicFeaturesToAnalyze.Add(lvGF.GenomicFeature)
+            Next
+            Me.ProgressBar1.Maximum = GenomicFeaturesToAnalyze.Count
+            'goes through each Feature Of Interest file that is loaded by the user and adds their paths to a list that is passed on to the Enrichment Analyzer
+            For Each FeatureFile As ListItemFile In listFeatureFiles.Items
+                FeatureFilePaths.Add(FeatureFile.filPath)
+            Next
+
+            Dim Settings As EnrichmentSettings = GetUserSettings() 'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
+            Settings.UseSNP = True
+            Dim args As EnrichmentArgument = New EnrichmentArgument(GenomicFeaturesToAnalyze, Settings, FeatureFilePaths, Background)
+            BackgroundWorkerEnrichmentAnalysis.RunWorkerAsync(args)
+            'Analyzer.RunEnrichmentAnlysis(FeatureFilePaths, GenomicFeaturesToAnalyze, Background, Settings)
+            ' MessageBox.Show("Enrichment analysis results saved in: " & vbCrLf & Settings.OutputDir)
+        Else
+            MessageBox.Show("Please add features of interest to run")
+        End If
+    End Sub
 End Class
 
 'these settings are passed onto the background worker as arguments

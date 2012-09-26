@@ -1,6 +1,7 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
 Imports alglib
 Imports System.IO
+Imports MySql.Data.MySqlClient
 Namespace GenomeRunner
     Public Delegate Sub ProgressStart(ByVal Total As Integer)
     Public Delegate Sub ProgressUpdate(ByVal CurrItem As Integer, ByVal CurrFeaturesOfInterestName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRunDone As Integer)
@@ -34,6 +35,7 @@ Namespace GenomeRunner
         Public Strand As String
         Public OutputMerged As Boolean
         Public OuputPercentObservedExpected As Boolean = False
+        Public UseSNP As Boolean = False                                                            'whether 
 
         Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String, ByVal OutputMerged As Boolean)
             Me.ConnectionString = ConnectionString
@@ -69,6 +71,7 @@ Namespace GenomeRunner
             Dim eSettings As New EnrichmentSettings(ConnectionString, EnrichmentJobName, OutputDir, UseMonteCarlo, UseAnalytical, UseTradMC, UseChiSquare, UseBinomialDistribution, OutputPercentOverlapPvalueMatrix, SquarePercentOverlap, OutputPCCweightedPvalueMatrix, PearsonsAudjustment, AllAdjustments, BackgroundName, UseSpotBackground, NumMCtoRun, PvalueThreshold, FilterLevel, PromoterUpstream, PromoterDownstream, Proximity, Strand, OutputMerged)
             Return eSettings
         End Function
+
     End Class
 
     'this class is passed on to the Monte Carlo simulator so that it can return progress updates to the user interface
@@ -85,6 +88,24 @@ Namespace GenomeRunner
 
     Public Class EnrichmentAnalysis
         Public ConnectionString As String
+        Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader, cmd1 As MySqlCommand, dr1 As MySqlDataReader, cn1 As MySqlConnection
+        'opens a connection to the database
+        Private Sub OpenDatabase(ByVal ConnectionString As String)
+            If IsNothing(cn) Then
+                cn = New MySqlConnection(ConnectionString) : cn.Open()
+            End If
+            If cn.State = ConnectionState.Closed Then
+                cn = New MySqlConnection(ConnectionString) : cn.Open()
+            End If
+            'opens a second connection so that two reader objects can be used at once
+            If IsNothing(cn1) Then
+                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
+            End If
+            If cn1.State = ConnectionState.Closed Then
+                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
+            End If
+        End Sub
+
         Dim progStart As ProgressStart                                                                      'used to set initial progress
         Dim progUpdate As ProgressUpdate                                                                    'used to update progress
         Dim progDone As ProgressDone                                                                    'used return progress complete
@@ -171,6 +192,7 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
 
                     progUpdate.Invoke(currGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
+                  
                     'uses either monte carlo or the analytical method for the enrichment analysis
                     If Settings.UseMonteCarlo = True Then
                         Debug.Print("Running initial analysis MonteCarlo for " & GF.Name)
@@ -234,6 +256,7 @@ Namespace GenomeRunner
             progDone.Invoke(Settings.OutputDir)
         End Sub
 
+
         'creates features of interest with extended start and endpoints for proximity analysis
         Private Function CreateproximityFeaturesOfInterest(ByVal FeaturesOfInterest As List(Of Feature), ByVal proximity As UInteger) As List(Of Feature)
             Dim FeaturesOfInterestproximity As New List(Of Feature)
@@ -276,8 +299,13 @@ Namespace GenomeRunner
             Dim HitArray(NumOfFeatures - 1) As Integer 'Special array to hold number of hits during each MC simulation
             For i As Integer = 0 To Settings.NumMCtoRun - 1
                 Debug.Print("Running MC run# " & i + 1 & " of " & Settings.NumMCtoRun & " " & TimeOfDay)
-				progUpdate.Invoke(analysisProgress.overallRunProgress, analysisProgress.featureFileName, analysisProgress.genomicFeatureName, i + 1)
-                Dim RandomFeatures As List(Of Feature) = createRandomRegions(FeaturesOfInterest, Background, Settings.UseSpotBackground) 'generates a random features of interest 
+                progUpdate.Invoke(analysisProgress.overallRunProgress, analysisProgress.featureFileName, analysisProgress.genomicFeatureName, i + 1)
+                Dim RandomFeatures As New List(Of Feature)
+                If Settings.UseSNP = True Then
+                    RandomFeatures = Generate_Random_SNP("snp135", NumOfFeatures)
+                Else
+                    RandomFeatures = createRandomRegions(FeaturesOfInterest, Background, Settings.UseSpotBackground) 'generates a random features of interest 
+                End If
                 Dim RandomFeaturesOfInterestproximity As List(Of Feature) = CreateproximityFeaturesOfInterest(RandomFeatures, Settings.Proximity)
 
                 GFeature.FeatureReturnedData.Clear() 'clears the returned data of the previous run
@@ -310,10 +338,10 @@ Namespace GenomeRunner
                 ElseIf Settings.UseTradMC = True Then
                     GFeature.PValueMonteCarloTradMC = pValueTradMC(ObservedWithin, randEventsCountMC.Average, NumOfFeatures, HitArray, Settings.NumMCtoRun)
                 End If
-				
+
                 'TODO New way
-				'This is on hold for the time being; it used tie/over/under for calculation.
-				
+                'This is on hold for the time being; it used tie/over/under for calculation.
+
                 'GFeature.RandUnder = 0 : GFeature.RandOver = 0 : GFeature.RandTie = 0
                 'For Each rFOI In randEventsCountMC
                 '    If rFOI < GFeature.ActualHits Then
@@ -347,6 +375,45 @@ Namespace GenomeRunner
             GFeature.MCExpectedHits = randEventsCountMC.Average
             GFeature.ActualHits = ObservedWithin
             Return GFeature
+        End Function
+
+        ' Gets random SNPs from the snp135 table
+        Public Function Generate_Random_SNP(ByRef TableName As String, ByVal NumOfFeatures As Integer) As List(Of Feature)
+            OpenDatabase(ConnectionString)
+            ' Get the max id from the table
+            cmd = New MySqlCommand("SELECT max(id) FROM " & TableName, cn)
+            dr = cmd.ExecuteReader()
+            dr.Read()
+            Dim snp_count = dr(0)
+            dr.Close() : cmd.Dispose()
+
+            Dim state As hqrndstate, random_SNP As String = "", GenomicFeatureDataBaseData As New List(Of Feature)
+            hqrndrandomize(state)
+
+            'select random SNPs
+            For i As Integer = 1 To NumOfFeatures
+                Dim rand = hqrnduniformi(state, snp_count - 1) + 1
+                random_SNP += rand.ToString() & ","
+            Next
+            random_SNP = random_SNP.Remove(random_SNP.Length - 1)
+
+            ' Return the SNPs with the by the randomly selected id
+            OpenDatabase(ConnectionString)
+            cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd,strand FROM " & TableName & " WHERE id IN (" & random_SNP & ")", cn)
+            dr = cmd.ExecuteReader()
+            If dr.HasRows Then
+                While dr.Read()
+                    Dim data As New Feature
+                    data.Chrom = dr(0)
+                    data.ChromStart = dr(1)
+                    data.ChromEnd = dr(2)
+                    data.Name = ""
+                    ' Debug.Print(data.ToString())
+                    GenomicFeatureDataBaseData.Add(data)
+                End While
+            End If
+            dr.Close() : cmd.Dispose()
+            Return GenomicFeatureDataBaseData
         End Function
 
         Private Function pValueTradMC(ByVal ObservedWithin As Double, ByVal ExpectedWithinMean As Double, ByVal NumOfFeatures As Integer, ByVal HitArray() As Integer, ByVal NumMCtoRun As Integer)
