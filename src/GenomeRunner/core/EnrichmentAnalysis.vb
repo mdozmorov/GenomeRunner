@@ -391,18 +391,20 @@ Namespace GenomeRunner
             hqrndrandomize(state)
 
             'select random SNPs
-            For i As Integer = 1 To NumOfFeatures
+            For i As Integer = 1 To NumOfFeatures + 10 'Get random snp IDs, more than actual number, just in case
                 Dim rand = hqrnduniformi(state, snp_count - 1) + 1
                 random_SNP += rand.ToString() & ","
             Next
             random_SNP = random_SNP.Remove(random_SNP.Length - 1)
 
             ' Return the SNPs with the by the randomly selected id
+            Dim SNPcount As Integer = 0
             OpenDatabase(ConnectionString)
             cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd,strand FROM " & TableName & " WHERE id IN (" & random_SNP & ")", cn)
             dr = cmd.ExecuteReader()
             If dr.HasRows Then
-                While dr.Read()
+                While SNPcount < NumOfFeatures 'Select random SNPs, same number as the number of features
+                    dr.Read()
                     Dim data As New Feature
                     data.Chrom = dr(0)
                     data.ChromStart = dr(1)
@@ -410,6 +412,7 @@ Namespace GenomeRunner
                     data.Name = ""
                     ' Debug.Print(data.ToString())
                     GenomicFeatureDataBaseData.Add(data)
+                    SNPcount += 1
                 End While
             End If
             dr.Close() : cmd.Dispose()

@@ -947,7 +947,7 @@ Public Class frmGenomeRunner
         cmd = New MySqlCommand("SHOW TABLES", cn)
         dr = cmd.ExecuteReader()
         While dr.Read()
-            If dr(0) = "snp135" Then
+            If dr(0) = "snp135flagged" Then
                 hasSNP135 = True
             End If
         End While

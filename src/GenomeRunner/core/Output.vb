@@ -719,7 +719,40 @@ Namespace GenomeRunner
         End Function
 
         Public Sub OuputPercentObservedExpected(ByVal GenomicFeatures As List(Of GenomicFeature), ByVal DoOutputHeader As Boolean, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
-            Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_PercentObservedExpected.gr", Not DoOutputHeader)
+            'Lukas implemented output observed/expected
+            'Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_PercentObservedExpected.gr", Not DoOutputHeader)
+            '    'writes the header columns
+            '    If DoOutputHeader = True Then
+            '        sw.Write(vbTab)
+            '        For Each GF In GenomicFeatures
+            '            sw.Write(GF.Name & vbTab)
+            '        Next
+            '        sw.Write(vbCrLf)
+            '    End If
+            '    'assembles a row of percent overlaps between the observed and the expected
+            '    sw.Write(FeaturesOfInterestName)
+            '    For Each GF In GenomicFeatures
+            '        Dim expected, observed, percentObservedExpected
+            '        observed = GF.ActualHits
+            '        If Settings.UseMonteCarlo Then
+            '            expected = GF.MCExpectedHits
+            '        ElseIf Settings.UseAnalytical = True Then
+            '            expected = GF.AnalyticalExpectedWithin
+            '        End If
+            '        ' if either observed or actual is 0, the the percentObserved is set to 0
+            '        If observed = 0 Or expected = 0 Then
+            '            percentObservedExpected = 0
+            '        Else
+            '            percentObservedExpected = observed / expected * 100.0
+            '        End If
+
+            '        sw.Write(vbTab & percentObservedExpected)
+            '    Next
+            '    sw.Write(vbCrLf)
+            'End Using
+
+            'MD implementation of observed/total
+            Using sw As New StreamWriter(Settings.OutputDir & Settings.EnrichmentJobName & "_PercentObsTot.gr", Not DoOutputHeader)
                 'writes the header columns
                 If DoOutputHeader = True Then
                     sw.Write(vbTab)
@@ -728,27 +761,14 @@ Namespace GenomeRunner
                     Next
                     sw.Write(vbCrLf)
                 End If
-                'assembles a row of percent overlaps between the observed and the expected
+                'assembles a row of the observed vs. total fraction, in %
                 sw.Write(FeaturesOfInterestName)
                 For Each GF In GenomicFeatures
-                    Dim expected, observed, percentObservedExpected
-                    observed = GF.ActualHits
-                    If Settings.UseMonteCarlo Then
-                        expected = GF.MCExpectedHits
-                    ElseIf Settings.UseAnalytical = True Then
-                        expected = GF.AnalyticalExpectedWithin
-                    End If
-                    ' if either observed or actual is 0, the the percentObserved is set to 0
-                    If observed = 0 Or expected = 0 Then
-                        percentObservedExpected = 0
-                    Else
-                        percentObservedExpected = observed / expected * 100.0
-                    End If
-
-                    sw.Write(vbTab & percentObservedExpected)
+                    sw.Write(vbTab & GF.ActualHits / NumOfFeatures * 100)
                 Next
                 sw.Write(vbCrLf)
             End Using
+
         End Sub
 
     End Class
