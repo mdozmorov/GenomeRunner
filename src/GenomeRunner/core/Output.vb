@@ -291,8 +291,8 @@ Namespace GenomeRunner
             Dim body As String = ""
             If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
                 Dim background As String = ""
-                If Settings.UseSNP = True Then
-                    background = "Used snp135 as background"
+                If Settings.UseSNP <> vbNullString Then
+                    background = Settings.UseSNP & " used as spot background"
                 Else
                     background = "Name of background used: " & Settings.BackgroundName
                 End If
@@ -477,8 +477,8 @@ Namespace GenomeRunner
             Dim body As String = ""
             If outputHeader = True Then                                                             'if this is the first pvalue being caluculated, header line is outputed
                 Dim background As String = ""
-                If Settings.UseSNP = True Then
-                    background = "Used snp135 as background"
+                If Settings.UseSNP <> vbNullString Then
+                    background = Settings.UseSNP & " used as spot background"
                 Else
                     background = "Name of background used: " & Settings.BackgroundName
                 End If

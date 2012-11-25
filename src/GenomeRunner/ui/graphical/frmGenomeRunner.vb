@@ -944,17 +944,33 @@ Public Class frmGenomeRunner
     Private Sub SNPsEnrichmentAnalysisToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SNPsEnrichmentAnalysisToolStripMenuItem.Click
         Dim hasSNP135 = False
         OpenDatabase()
-        cmd = New MySqlCommand("SHOW TABLES", cn)
-        dr = cmd.ExecuteReader()
-        While dr.Read()
-            If dr(0) = "snp135flagged" Then
-                hasSNP135 = True
-            End If
-        End While
-        dr.Close() : cmd.Dispose()
-        If hasSNP135 = False Then
-            MessageBox.Show("SNP analysis not available for this organism assembly. Can't locate the table snp135.")
-            Exit Sub
+        'cmd = New MySqlCommand("SHOW TABLES", cn)
+        'dr = cmd.ExecuteReader()
+        'While dr.Read()
+        '    If dr(0) = "snp135flagged" Then
+        '        hasSNP135 = True
+        '    End If
+        'End While
+        'dr.Close() : cmd.Dispose()
+        'If hasSNP135 = False Then
+        '    MessageBox.Show("SNP analysis not available for this organism assembly. Can't locate the table snp135.")
+        '    Exit Sub
+        'End If
+
+        Dim snpTableList As New List(Of String), snpTableSelected As String
+        cmd = New MySqlCommand("show tables like 'snp%';", cn) ' Show all snp-like tables
+        dr = cmd.ExecuteReader
+        If dr.HasRows Then
+            While dr.Read
+                snpTableList.Add(dr(0)) ' Populate list of snp-like tables
+            End While
+            Do
+                snpTableSelected = InputBox("Type in which of the following SNP tables to use:" & vbCrLf & String.Join(vbCrLf, snpTableList), "Select SNP table", snpTableList(0))
+                If snpTableSelected = vbNullString Then Exit Sub ' If cancel is pressed, just exit
+            Loop Until snpTableList.Contains(snpTableSelected) ' Continue until the right table selected
+        Else
+            MessageBox.Show("SNP analysis not available for this organism assembly. Can't locate SNP tables.")
+            Exit Sub ' Exit if no snp-like tables are available
         End If
 
         Dim GenomicFeaturesToAnalyze As New List(Of GenomicFeature)
@@ -975,7 +991,7 @@ Public Class frmGenomeRunner
             Next
 
             Dim Settings As EnrichmentSettings = GetUserSettings() 'gets the settigns set by the user in the user isnterface and adds them to a encrichmentsettings class which is pased on to the enrichment analyzer
-            Settings.UseSNP = True
+            Settings.UseSNP = snpTableSelected
             Dim args As EnrichmentArgument = New EnrichmentArgument(GenomicFeaturesToAnalyze, Settings, FeatureFilePaths, Background)
             BackgroundWorkerEnrichmentAnalysis.RunWorkerAsync(args)
             'Analyzer.RunEnrichmentAnlysis(FeatureFilePaths, GenomicFeaturesToAnalyze, Background, Settings)

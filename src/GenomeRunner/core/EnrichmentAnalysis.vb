@@ -35,7 +35,7 @@ Namespace GenomeRunner
         Public Strand As String
         Public OutputMerged As Boolean
         Public OuputPercentObservedExpected As Boolean = False
-        Public UseSNP As Boolean = False                                                            'whether 
+        Public UseSNP As String = vbNullString                                                      'if non-empty, then SNP table is used
 
         Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String, ByVal OutputMerged As Boolean)
             Me.ConnectionString = ConnectionString
@@ -301,8 +301,8 @@ Namespace GenomeRunner
                 Debug.Print("Running MC run# " & i + 1 & " of " & Settings.NumMCtoRun & " " & TimeOfDay)
                 progUpdate.Invoke(analysisProgress.overallRunProgress, analysisProgress.featureFileName, analysisProgress.genomicFeatureName, i + 1)
                 Dim RandomFeatures As New List(Of Feature)
-                If Settings.UseSNP = True Then
-                    RandomFeatures = Generate_Random_SNP("snp135", NumOfFeatures)
+                If Settings.UseSNP <> vbNullString Then
+                    RandomFeatures = Generate_Random_SNP(Settings.UseSNP, NumOfFeatures)
                 Else
                     RandomFeatures = createRandomRegions(FeaturesOfInterest, Background, Settings.UseSpotBackground) 'generates a random features of interest 
                 End If
