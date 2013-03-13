@@ -542,7 +542,7 @@ Namespace GenomeRunner
                         End If
                     ElseIf GFeature.ActualHits < GFeature.AnalyticalExpectedWithin Then
                         'features are UNDERrepresented 
-                        If GFeature.PValueAnalyticalBinomialDistribution < Settings.PvalueThreshold Then
+                        If UsePvalue < Settings.PvalueThreshold Then
                             diff = "UNDER"
                         Else
                             diff = "no"
