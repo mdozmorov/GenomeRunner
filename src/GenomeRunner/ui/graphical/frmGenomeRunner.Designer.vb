@@ -33,10 +33,6 @@ Partial Class frmGenomeRunner
         Me.btnMerge = New System.Windows.Forms.Button()
         Me.lnklblHost = New System.Windows.Forms.LinkLabel()
         Me.chkbxShortOnly = New System.Windows.Forms.CheckBox()
-        Me.lblOrganism = New System.Windows.Forms.Label()
-        Me.cmbOrganism = New System.Windows.Forms.ComboBox()
-        Me.lblDatabase = New System.Windows.Forms.Label()
-        Me.cmbDatabase = New System.Windows.Forms.ComboBox()
         Me.btnRemoveFeaturesToRun = New System.Windows.Forms.Button()
         Me.btnRemoveFOI = New System.Windows.Forms.Button()
         Me.lblLoadFile = New System.Windows.Forms.Label()
@@ -171,7 +167,7 @@ Partial Class frmGenomeRunner
         Me.Label2.AutoSize = True
         Me.Label2.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(206, 82)
+        Me.Label2.Location = New System.Drawing.Point(206, 51)
         Me.Label2.MaximumSize = New System.Drawing.Size(180, 0)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(139, 13)
@@ -185,10 +181,6 @@ Partial Class frmGenomeRunner
         Me.GroupBox1.Controls.Add(Me.btnMerge)
         Me.GroupBox1.Controls.Add(Me.lnklblHost)
         Me.GroupBox1.Controls.Add(Me.chkbxShortOnly)
-        Me.GroupBox1.Controls.Add(Me.lblOrganism)
-        Me.GroupBox1.Controls.Add(Me.cmbOrganism)
-        Me.GroupBox1.Controls.Add(Me.lblDatabase)
-        Me.GroupBox1.Controls.Add(Me.cmbDatabase)
         Me.GroupBox1.Controls.Add(Me.btnRemoveFeaturesToRun)
         Me.GroupBox1.Controls.Add(Me.btnRemoveFOI)
         Me.GroupBox1.Controls.Add(Me.lblLoadFile)
@@ -224,7 +216,7 @@ Partial Class frmGenomeRunner
         Me.chkbxoutputMerged.TabIndex = 80
         Me.chkbxoutputMerged.Text = "Output Merged"
         Me.ToolTip2.SetToolTip(Me.chkbxoutputMerged, "For several FOI files, output combined matrix (default), or individual matrixes f" & _
-        "or each FOI file (checked)")
+                "or each FOI file (checked)")
         Me.chkbxoutputMerged.UseVisualStyleBackColor = True
         '
         'btnMerge
@@ -235,7 +227,7 @@ Partial Class frmGenomeRunner
         Me.btnMerge.TabIndex = 79
         Me.btnMerge.Text = "Merge"
         Me.ToolTip2.SetToolTip(Me.btnMerge, "Merge individual for each FOI matrixes into one combined. Use if ""Output merged"" " & _
-        "was unchecked")
+                "was unchecked")
         Me.btnMerge.UseVisualStyleBackColor = True
         '
         'lnklblHost
@@ -259,48 +251,8 @@ Partial Class frmGenomeRunner
         Me.chkbxShortOnly.TabIndex = 77
         Me.chkbxShortOnly.Text = "Short Only"
         Me.ToolTip2.SetToolTip(Me.chkbxShortOnly, "If a FOI located outside a GF, return either left and right closest GFs (default)" & _
-        ", or closest onlyl (checked)")
+                ", or closest onlyl (checked)")
         Me.chkbxShortOnly.UseVisualStyleBackColor = True
-        '
-        'lblOrganism
-        '
-        Me.lblOrganism.AutoSize = True
-        Me.lblOrganism.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblOrganism.Location = New System.Drawing.Point(205, 40)
-        Me.lblOrganism.Name = "lblOrganism"
-        Me.lblOrganism.Size = New System.Drawing.Size(54, 13)
-        Me.lblOrganism.TabIndex = 76
-        Me.lblOrganism.Text = "Organism:"
-        '
-        'cmbOrganism
-        '
-        Me.cmbOrganism.FormattingEnabled = True
-        Me.cmbOrganism.Items.AddRange(New Object() {"Human", "Mouse"})
-        Me.cmbOrganism.Location = New System.Drawing.Point(209, 56)
-        Me.cmbOrganism.Name = "cmbOrganism"
-        Me.cmbOrganism.Size = New System.Drawing.Size(98, 23)
-        Me.cmbOrganism.TabIndex = 75
-        Me.cmbOrganism.Text = "Human"
-        Me.ToolTip2.SetToolTip(Me.cmbOrganism, "List of available organisms")
-        '
-        'lblDatabase
-        '
-        Me.lblDatabase.AutoSize = True
-        Me.lblDatabase.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblDatabase.Location = New System.Drawing.Point(310, 40)
-        Me.lblDatabase.Name = "lblDatabase"
-        Me.lblDatabase.Size = New System.Drawing.Size(56, 13)
-        Me.lblDatabase.TabIndex = 74
-        Me.lblDatabase.Text = "Database:"
-        '
-        'cmbDatabase
-        '
-        Me.cmbDatabase.FormattingEnabled = True
-        Me.cmbDatabase.Location = New System.Drawing.Point(313, 56)
-        Me.cmbDatabase.Name = "cmbDatabase"
-        Me.cmbDatabase.Size = New System.Drawing.Size(98, 23)
-        Me.cmbDatabase.TabIndex = 73
-        Me.ToolTip2.SetToolTip(Me.cmbDatabase, "Genome assemblies for selected organism")
         '
         'btnRemoveFeaturesToRun
         '
@@ -352,13 +304,13 @@ Partial Class frmGenomeRunner
         Me.cmbTier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbTier.FormattingEnabled = True
         Me.cmbTier.Items.AddRange(New Object() {"Tier1", "Tier2", "Tier3", "TFBS100"})
-        Me.cmbTier.Location = New System.Drawing.Point(208, 102)
+        Me.cmbTier.Location = New System.Drawing.Point(208, 72)
         Me.cmbTier.Name = "cmbTier"
         Me.cmbTier.Size = New System.Drawing.Size(161, 23)
         Me.cmbTier.TabIndex = 3
         Me.ToolTip2.SetToolTip(Me.cmbTier, "Tiered system of available genomic features. Tier 1 - most biologically interesti" & _
-        "ng, Tier 2 - adding some more advanced GFs, Tier 3 - all GFs, TFBS - ENCODE tran" & _
-        "scription factor binding sites")
+                "ng, Tier 2 - adding some more advanced GFs, Tier 3 - all GFs, TFBS - ENCODE tran" & _
+                "scription factor binding sites")
         '
         'btnPValue
         '
@@ -370,7 +322,7 @@ Partial Class frmGenomeRunner
         Me.btnPValue.TabIndex = 21
         Me.btnPValue.Text = "Enrichment Analysis"
         Me.ToolTip2.SetToolTip(Me.btnPValue, "Run Enrichment analysis, for identifying if a set of FOIs co-localize with GFs mo" & _
-        "re often than could happen by random chance")
+                "re often than could happen by random chance")
         Me.btnPValue.UseVisualStyleBackColor = False
         '
         'listFeaturesToRun
@@ -424,10 +376,10 @@ Partial Class frmGenomeRunner
         'ListFeaturesAvailable
         '
         Me.ListFeaturesAvailable.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.ListFeaturesAvailable.Location = New System.Drawing.Point(209, 131)
+        Me.ListFeaturesAvailable.Location = New System.Drawing.Point(209, 104)
         Me.ListFeaturesAvailable.Name = "ListFeaturesAvailable"
         Me.ListFeaturesAvailable.ShowItemToolTips = True
-        Me.ListFeaturesAvailable.Size = New System.Drawing.Size(161, 331)
+        Me.ListFeaturesAvailable.Size = New System.Drawing.Size(161, 358)
         Me.ListFeaturesAvailable.TabIndex = 57
         Me.ListFeaturesAvailable.UseCompatibleStateImageBehavior = False
         Me.ListFeaturesAvailable.View = System.Windows.Forms.View.SmallIcon
@@ -723,8 +675,8 @@ Partial Class frmGenomeRunner
         Me.txtproximity.Size = New System.Drawing.Size(119, 20)
         Me.txtproximity.TabIndex = 17
         Me.ToolTip2.SetToolTip(Me.txtproximity, "The number of base pairs that a feature of interest can be away from a genomic fe" & _
-        "ature and still be considered a hit.  The overlap type will be returned as a non" & _
-        "-overlap")
+                "ature and still be considered a hit.  The overlap type will be returned as a non" & _
+                "-overlap")
         '
         'Label4
         '
@@ -784,7 +736,7 @@ Partial Class frmGenomeRunner
         Me.btnLoadCustomGenomicFeatures.TabIndex = 19
         Me.btnLoadCustomGenomicFeatures.Text = "Load Custom Genomic Feature Tracks"
         Me.ToolTip2.SetToolTip(Me.btnLoadCustomGenomicFeatures, "Load a custom file that contains chrom,chromStart,chromEnd, in a tab deliminated " & _
-        "form")
+                "form")
         Me.btnLoadCustomGenomicFeatures.UseVisualStyleBackColor = False
         '
         'ProgressBar1
@@ -1145,10 +1097,6 @@ Partial Class frmGenomeRunner
     Friend WithEvents GroupBox6 As System.Windows.Forms.GroupBox
     Friend WithEvents UseGenomeAssemblyasBackgroundToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents rbTradMC As System.Windows.Forms.RadioButton
-    Friend WithEvents lblDatabase As System.Windows.Forms.Label
-    Friend WithEvents cmbDatabase As System.Windows.Forms.ComboBox
-    Friend WithEvents lblOrganism As System.Windows.Forms.Label
-    Friend WithEvents cmbOrganism As System.Windows.Forms.ComboBox
     Friend WithEvents mnuMergeLogFiles As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents chkbxShortOnly As System.Windows.Forms.CheckBox
     Friend WithEvents lnklblHost As System.Windows.Forms.LinkLabel

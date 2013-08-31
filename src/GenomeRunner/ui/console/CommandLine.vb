@@ -1,7 +1,8 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
 Imports GenomeRunner
 Imports System.IO
-Imports MySql.Data.MySqlClient
+'Imports MySql.Data.MySqlClient
+Imports System.Data.SQLite
 Imports System.Xml.Serialization
 
 Namespace UI

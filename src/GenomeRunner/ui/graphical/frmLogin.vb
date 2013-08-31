@@ -10,11 +10,11 @@ Public Class frmLogin
     ' such as the username, display name, etc.
 
     Private Sub OK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OK.Click
-        If txtUsername.Text <> vbNullString And txtPassword.Text <> vbNullString Then
-            SaveSetting("GenomeRunner", "Database", "uName", txtUsername.Text)
-            SaveSetting("GenomeRunner", "Database", "uPassword", txtPassword.Text)
+        If txtServer.Text <> vbNullString Then
+            'SaveSetting("GenomeRunner", "Database", "uName", txtUsername.Text)
+            'SaveSetting("GenomeRunner", "Database", "uPassword", txtPassword.Text)
             SaveSetting("GenomeRunner", "Database", "uServer", txtServer.Text)
-            SaveSetting("GenomeRunner", "Database", "uDatabase", txtDatabase.Text)
+            'SaveSetting("GenomeRunner", "Database", "uDatabase", txtDatabase.Text)
         End If
         Me.Close()
     End Sub
@@ -24,16 +24,24 @@ Public Class frmLogin
     End Sub
 
     Private Sub LoginForm1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        txtUsername.Text = GetSetting("GenomeRunner", "Database", "uName")
-        txtPassword.Text = GetSetting("GenomeRunner", "Database", "uPassword")
+        'txtUsername.Text = GetSetting("GenomeRunner", "Database", "uName")
+        'txtPassword.Text = GetSetting("GenomeRunner", "Database", "uPassword")
         txtServer.Text = GetSetting("GenomeRunner", "Database", "uServer")
-        txtDatabase.Text = GetSetting("GenomeRunner", "Database", "uDatabase")
+        'txtDatabase.Text = GetSetting("GenomeRunner", "Database", "uDatabase")
     End Sub
 
-    Private Sub btnDefaultDB_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDefaultDB.Click
-        txtUsername.Text = "genomerunner"
-        txtPassword.Text = "genomerunner"
-        txtServer.Text = "156.110.144.34"
-        txtDatabase.Text = "hg19test"
+    'Private Sub btnDefaultDB_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
+    'txtUsername.Text = "genomerunner"
+    'txtPassword.Text = "genomerunner"
+    'txtServer.Text = "156.110.144.34"
+    '    txtServer.Text = "E:\For Mikhail\Genome Runner\Development\Old Files\mm9.sqlite"
+    'txtDatabase.Text = "hg19test"
+    'End Sub
+
+    Private Sub Browse_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Browse.Click
+        Dim dialog As New OpenFileDialog()
+        If DialogResult.OK = dialog.ShowDialog Then
+            txtServer.Text = dialog.FileName
+        End If
     End Sub
 End Class

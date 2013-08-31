@@ -445,12 +445,12 @@ Namespace GenomeRunner
         End Sub
 
         'outputs the results of the enrichement analysis into a log file
-        Public Sub OutputPvalueLogFileShort(ByRef outputHeader As Boolean, ByRef GFeature As GenomicFeature, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String)
+        Public Sub OutputPvalueLogFileShort(ByRef outputHeader As Boolean, ByRef GFeature As GenomicFeature, ByVal Settings As EnrichmentSettings, ByVal FeaturesOfInterestName As String, ByVal FieldsWithNoStrand As String)
             Dim mean As Double, variance As Double, skewness As Double, kurtosis As Double
             mean = GFeature.MCMean : variance = GFeature.MCvariance : skewness = GFeature.MCskewness : kurtosis = GFeature.MCkurtosis
             '...header string showing what strand the genomic feature was filtered by
             Dim strStrandsIncluded As String
-            If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
+            'If GFeature.StrandToFilterBy <> "" Then : strStrandsIncluded = GFeature.StrandToFilterBy : Else : strStrandsIncluded = "Both" : End If
             '...header string that shows what method was used to calculate the number of random associations expected
             Dim strExpectedMethodUsed As String = "Expected associations calculated using: "
             If Settings.UseMonteCarlo = True Then : strExpectedMethodUsed &= Settings.NumMCtoRun & " Monte Carlo simulations" : ElseIf Settings.UseAnalytical = True Then : strExpectedMethodUsed &= "Analytical method" : End If
@@ -479,14 +479,18 @@ Namespace GenomeRunner
                 Dim background As String = ""
                 If Settings.UseSNP <> vbNullString Then
                     background = Settings.UseSNP & " used as spot background"
+                ElseIf (Settings.UseSpotBackground = True) Then
+                    background = Settings.BackgroundName & " used as spot background"
                 Else
                     background = "Name of background used: " & Settings.BackgroundName
+                    'background = "Name of background used: " & Settings.ConnectionString
                 End If
                 Dim header As String = vbCrLf & currentTime.Date & " " & currentTime.Hour & ":" & currentTime.Minute & " " _
                     & vbCrLf & "Features analyzed: " & FeaturesOfInterestName & " (Total " & NumOfFeatures & ")" _
                     & vbCrLf & background _
                     & vbCrLf & "Threshold at: " & Settings.FilterLevel _
-                    & vbCrLf & "Strand(s) included: " & strStrandsIncluded _
+                    & vbCrLf & "Strand(s) included: " & Settings.Strand _
+                    & FieldsWithNoStrand _
                     & vbCrLf & "Proximity (bp): " & Settings.Proximity _
                     & vbCrLf & strExpectedMethodUsed _
                     & vbCrLf & strPvalueCalcMethod _

@@ -15,10 +15,6 @@ Partial Class frmLogin
         End Try
     End Sub
     Friend WithEvents LogoPictureBox As System.Windows.Forms.PictureBox
-    Friend WithEvents UsernameLabel As System.Windows.Forms.Label
-    Friend WithEvents PasswordLabel As System.Windows.Forms.Label
-    Friend WithEvents txtUsername As System.Windows.Forms.TextBox
-    Friend WithEvents txtPassword As System.Windows.Forms.TextBox
     Friend WithEvents OK As System.Windows.Forms.Button
     Friend WithEvents Cancel As System.Windows.Forms.Button
 
@@ -32,17 +28,11 @@ Partial Class frmLogin
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmLogin))
         Me.LogoPictureBox = New System.Windows.Forms.PictureBox()
-        Me.UsernameLabel = New System.Windows.Forms.Label()
-        Me.PasswordLabel = New System.Windows.Forms.Label()
-        Me.txtUsername = New System.Windows.Forms.TextBox()
-        Me.txtPassword = New System.Windows.Forms.TextBox()
         Me.OK = New System.Windows.Forms.Button()
         Me.Cancel = New System.Windows.Forms.Button()
-        Me.txtDatabase = New System.Windows.Forms.TextBox()
-        Me.Label1 = New System.Windows.Forms.Label()
         Me.txtServer = New System.Windows.Forms.TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.btnDefaultDB = New System.Windows.Forms.Button()
+        Me.Browse = New System.Windows.Forms.Button()
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -51,48 +41,13 @@ Partial Class frmLogin
         Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"), System.Drawing.Image)
         Me.LogoPictureBox.Location = New System.Drawing.Point(1, 6)
         Me.LogoPictureBox.Name = "LogoPictureBox"
-        Me.LogoPictureBox.Size = New System.Drawing.Size(165, 171)
+        Me.LogoPictureBox.Size = New System.Drawing.Size(138, 113)
         Me.LogoPictureBox.TabIndex = 0
         Me.LogoPictureBox.TabStop = False
         '
-        'UsernameLabel
-        '
-        Me.UsernameLabel.Location = New System.Drawing.Point(173, 51)
-        Me.UsernameLabel.Name = "UsernameLabel"
-        Me.UsernameLabel.Size = New System.Drawing.Size(220, 23)
-        Me.UsernameLabel.TabIndex = 0
-        Me.UsernameLabel.Text = "&User name"
-        Me.UsernameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'PasswordLabel
-        '
-        Me.PasswordLabel.Location = New System.Drawing.Point(174, 94)
-        Me.PasswordLabel.Name = "PasswordLabel"
-        Me.PasswordLabel.Size = New System.Drawing.Size(220, 23)
-        Me.PasswordLabel.TabIndex = 2
-        Me.PasswordLabel.Text = "&Password"
-        Me.PasswordLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'txtUsername
-        '
-        Me.txtUsername.Location = New System.Drawing.Point(175, 71)
-        Me.txtUsername.Name = "txtUsername"
-        Me.txtUsername.Size = New System.Drawing.Size(220, 20)
-        Me.txtUsername.TabIndex = 2
-        Me.txtUsername.Text = "genomerunner"
-        '
-        'txtPassword
-        '
-        Me.txtPassword.Location = New System.Drawing.Point(176, 114)
-        Me.txtPassword.Name = "txtPassword"
-        Me.txtPassword.PasswordChar = Global.Microsoft.VisualBasic.ChrW(42)
-        Me.txtPassword.Size = New System.Drawing.Size(220, 20)
-        Me.txtPassword.TabIndex = 3
-        Me.txtPassword.Text = "genomerunner"
-        '
         'OK
         '
-        Me.OK.Location = New System.Drawing.Point(304, 183)
+        Me.OK.Location = New System.Drawing.Point(271, 96)
         Me.OK.Name = "OK"
         Me.OK.Size = New System.Drawing.Size(94, 23)
         Me.OK.TabIndex = 5
@@ -101,54 +56,37 @@ Partial Class frmLogin
         'Cancel
         '
         Me.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.Cancel.Location = New System.Drawing.Point(204, 183)
+        Me.Cancel.Location = New System.Drawing.Point(164, 96)
         Me.Cancel.Name = "Cancel"
         Me.Cancel.Size = New System.Drawing.Size(94, 23)
         Me.Cancel.TabIndex = 6
         Me.Cancel.Text = "&Cancel"
         '
-        'txtDatabase
-        '
-        Me.txtDatabase.Location = New System.Drawing.Point(175, 157)
-        Me.txtDatabase.Name = "txtDatabase"
-        Me.txtDatabase.Size = New System.Drawing.Size(220, 20)
-        Me.txtDatabase.TabIndex = 4
-        Me.txtDatabase.Text = "hg19"
-        '
-        'Label1
-        '
-        Me.Label1.Location = New System.Drawing.Point(173, 137)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(220, 23)
-        Me.Label1.TabIndex = 6
-        Me.Label1.Text = "&Database"
-        Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
         'txtServer
         '
-        Me.txtServer.Location = New System.Drawing.Point(176, 26)
+        Me.txtServer.Location = New System.Drawing.Point(148, 32)
         Me.txtServer.Name = "txtServer"
-        Me.txtServer.Size = New System.Drawing.Size(220, 20)
+        Me.txtServer.Size = New System.Drawing.Size(162, 20)
         Me.txtServer.TabIndex = 1
         Me.txtServer.Text = "156.110.144.34"
         '
         'Label2
         '
-        Me.Label2.Location = New System.Drawing.Point(173, 4)
+        Me.Label2.Location = New System.Drawing.Point(145, 6)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(220, 23)
         Me.Label2.TabIndex = 8
-        Me.Label2.Text = "&Server"
+        Me.Label2.Text = "&Select SQLite Database File:"
         Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'btnDefaultDB
+        'Browse
         '
-        Me.btnDefaultDB.Location = New System.Drawing.Point(108, 183)
-        Me.btnDefaultDB.Name = "btnDefaultDB"
-        Me.btnDefaultDB.Size = New System.Drawing.Size(90, 23)
-        Me.btnDefaultDB.TabIndex = 7
-        Me.btnDefaultDB.Text = "Default"
-        Me.btnDefaultDB.UseVisualStyleBackColor = True
+        Me.Browse.Location = New System.Drawing.Point(316, 32)
+        Me.Browse.Name = "Browse"
+        Me.Browse.Size = New System.Drawing.Size(75, 23)
+        Me.Browse.TabIndex = 9
+        Me.Browse.Text = "Browse..."
+        Me.Browse.UseVisualStyleBackColor = True
         '
         'frmLogin
         '
@@ -156,18 +94,12 @@ Partial Class frmLogin
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.Cancel
-        Me.ClientSize = New System.Drawing.Size(403, 211)
-        Me.Controls.Add(Me.btnDefaultDB)
+        Me.ClientSize = New System.Drawing.Size(403, 128)
+        Me.Controls.Add(Me.Browse)
         Me.Controls.Add(Me.txtServer)
         Me.Controls.Add(Me.Label2)
-        Me.Controls.Add(Me.txtDatabase)
-        Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.Cancel)
         Me.Controls.Add(Me.OK)
-        Me.Controls.Add(Me.txtPassword)
-        Me.Controls.Add(Me.txtUsername)
-        Me.Controls.Add(Me.PasswordLabel)
-        Me.Controls.Add(Me.UsernameLabel)
         Me.Controls.Add(Me.LogoPictureBox)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.MaximizeBox = False
@@ -181,10 +113,8 @@ Partial Class frmLogin
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents txtDatabase As System.Windows.Forms.TextBox
-    Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents txtServer As System.Windows.Forms.TextBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
-    Friend WithEvents btnDefaultDB As System.Windows.Forms.Button
+    Friend WithEvents Browse As System.Windows.Forms.Button
 
 End Class

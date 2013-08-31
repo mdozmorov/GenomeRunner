@@ -1,13 +1,14 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
-Imports MySql.Data.MySqlClient
+'Imports MySql.Data.MySqlClient
+Imports System.Data.SQLite
 Imports System.IO
 Imports System.Linq
 Imports alglib
 Namespace GenomeRunner
 
     Public Class GenomeRunnerEngine
-        Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader, cmd1 As MySqlCommand, dr1 As MySqlDataReader
-        Dim cn1 As MySqlConnection
+        Dim cn As SQLiteConnection, cmd As SQLiteCommand, dr As SQLiteDataReader, cmd1 As SQLiteCommand, dr1 As SQLiteDataReader
+        Dim cn1 As SQLiteConnection
         Dim UseInterval As Boolean = False
         Structure featureAvailable : Dim name As String, category As String, order As Integer : End Structure  'is used to store the featurenames and categories returned from the genomerunner table
         Dim GRFeaturesAvailable As New List(Of featureAvailable)
@@ -27,20 +28,25 @@ Namespace GenomeRunner
         Public UseSpotBackground As Boolean = False  'by default spotbackground is not used as the whole genome is treated as an interval. 
 
         Private Sub OpenDatabase(ByVal ConnectionString As String)
-            If IsNothing(cn) Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
-            ElseIf cn.State = ConnectionState.Closed Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
-            ElseIf ConnectionString <> cn.ConnectionString Then
-                cn.Close()
-                cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
-            End If
+
+            'KBean Changes
+            'MsgBox("Before Connection Strin is: " & ConnectionString)
+            'ConnectionString = "data source=E:\For Mikhail\Genome Runner\Development\Old Files\mm9.sqlite"
+
+            'If IsNothing(cn) Then
+            cn = New SQLiteConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
+            'ElseIf cn.State = ConnectionState.Closed Then
+            'cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
+            'ElseIf ConnectionString <> cn.ConnectionString Then
+            'cn.Close()
+            'cn = New MySqlConnection(ConnectionString) : cn.Open() 'lblProgress.Text = "Database open"
+            'End If
             'opens a second connection so that two reader objects can be used at once
-            If IsNothing(cn1) Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
-            ElseIf cn1.State = ConnectionState.Closed Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
-            End If
+            'If IsNothing(cn1) Then
+            cn1 = New SQLiteConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
+            'ElseIf cn1.State = ConnectionState.Closed Then
+            'cn1 = New MySqlConnection(ConnectionString) : cn1.Open() 'lblProgress.Text = "Database open"
+            'End If
         End Sub
 
         'is a simple structure that stores both the id and name of the GF 
@@ -57,52 +63,59 @@ Namespace GenomeRunner
             Dim GenomicFeatures As New List(Of GenomicFeature)
             OpenDatabase(ConnectionString)
             'gets the available features from the genomerunnertable and orders them by categories and then further orders the features in each category by the order they have been set to
-            cmd = New MySqlCommand("SELECT id,featurename, featuretable, queryType, thresholdtype,thresholdMin,thresholdMax,ThresholdMean, category, orderofcategory,tier  FROM genomerunner WHERE querytype != 'NA' ORDER BY category, orderofcategory ASC;", cn) 'gets a list of all of the features
+            cmd = New SQLiteCommand("SELECT id,featurename, featuretable, queryType, thresholdtype,thresholdMin,thresholdMax,ThresholdMean, category, orderofcategory,tier  FROM genomerunner WHERE querytype != 'NA' ORDER BY category, orderofcategory ASC;", cn) 'gets a list of all of the features
             dr = cmd.ExecuteReader()
             While dr.Read()
                 'creates a new genomic feature class and loads in the value for the Genome Feature
                 Dim GF As New GenomicFeature(dr(0), dr(1), dr(2), dr(3), dr(4), 0, dr(5), dr(6), dr(7), dr(8), dr(9), Nothing, "", dr(10))
                 GenomicFeatures.Add(GF)
+                'MsgBox("O: " & dr(0) & " 1: " & dr(1) & " 2: " & dr(2) & " 3: " & dr(3) & " 4: " & dr(4) & " 5: " & dr(5) & " 6: " & dr(6) & " 7: " & dr(7) & " 8: " & dr(8) & " 9: " & dr(9) & " 10: " & dr(10))
             End While
             cmd.Dispose() : dr.Close()
             Return GenomicFeatures
         End Function
 
         'returns whether a column for name exists or not
-        Private Function NameColumnExists(ByVal TableName As String, ByVal ConnectionString As String) As Boolean
-            OpenDatabase(ConnectionString)
-            cmd1 = New MySqlCommand("SHOW COLUMNS FROM " & TableName, cn1)
-            dr1 = cmd1.ExecuteReader()
-            Dim columnnames As String = ""
-            While dr1.Read()
-                columnnames &= dr1(0)
-            End While
-            dr1.Close() : cmd1.Dispose()
-            'checks if name columne exists
-            Dim strandIndex As Integer = columnnames.ToLower().IndexOf("name")
-            If strandIndex <> -1 Then
-                Return True
-            Else
-                Return False
-            End If
-        End Function
+        'Private Function NameColumnExists(ByVal TableName As String, ByVal ConnectionString As String) As Boolean
+        '   OpenDatabase(ConnectionString)
+        'cmd1 = New SQLiteCommand("SHOW COLUMNS FROM " & TableName, cn1)
+        'KBean Changes
+        '  cmd1 = New SQLiteCommand("PRAGMA table_info(" & TableName & ")", cn1)
+        ' dr1 = cmd1.ExecuteReader()
+        'Dim columnnames As String = ""
+        '   While dr1.Read()
+        '      columnnames &= dr1(0)
+        ' End While
+        'MsgBox("Column Names: " & columnnames)
+        'dr1.Close() : cmd1.Dispose()
+        'checks if name columne exists
+        'Dim strandIndex As Integer = columnnames.ToLower().IndexOf("name")
+        '   If strandIndex <> -1 Then
+        '      Return True
+        ' Else
+        '    Return False
+        'End If
+        'End Function
 
         'returns whether a column for strand exists or not
         Private Function StrandColumnExists(ByVal TableName As String, ByVal ConnectionString As String) As Boolean
             Dim StrandColExists As Boolean = False
             OpenDatabase(ConnectionString)
-            cmd1 = New MySqlCommand("SHOW COLUMNS FROM " & TableName, cn1)
+            'KBean Changes
+            'cmd1 = New SQLiteCommand("SHOW COLUMNS FROM " & TableName, cn1)
+            cmd1 = New SQLiteCommand("PRAGMA table_info(" & TableName & ")", cn1)
             dr1 = cmd1.ExecuteReader()
             Dim columnnames As String = ""
             While dr1.Read()
-                columnnames &= dr1(0)
+                columnnames &= dr1(1)
             End While
+            'MsgBox("Column Names: " & columnnames)
             dr1.Close() : cmd1.Dispose()
             'checks if strand columne exists
             Dim strandIndex As Integer = columnnames.ToLower().IndexOf("strand")
             If strandIndex <> -1 Then
                 'checks if strand not blank
-                cmd1 = New MySqlCommand("SELECT strand FROM " & TableName & " LIMIT 1", cn1)
+                cmd1 = New SQLiteCommand("SELECT strand FROM " & TableName & " LIMIT 1", cn1)
                 dr1 = cmd1.ExecuteReader()
                 Dim strandData = ""
                 While dr1.Read()
@@ -120,10 +133,11 @@ Namespace GenomeRunner
         Private Function StrandColumnHasPositiveStrand(ByVal GF As GenomicFeature, ByVal ConnectionString As String) As Boolean
             Dim PositiveHasRows As Boolean = False
             OpenDatabase(ConnectionString)
-            cmd1 = New MySqlCommand("SELECT strand FROM " & GF.TableName & " Where strand='" & "+' LIMIT 1;", cn1)
+            cmd1 = New SQLiteCommand("SELECT strand FROM " & GF.TableName & " Where strand='" & "+' LIMIT 1;", cn1)
             dr1 = cmd1.ExecuteReader()
             If dr1.HasRows = True Then
                 PositiveHasRows = True
+                'MsgBox("Column has positive strand " & GF.TableName)
             End If
             dr1.Close() : cmd1.Dispose()
             Return PositiveHasRows
@@ -133,10 +147,11 @@ Namespace GenomeRunner
         Private Function StrandColumnHasNegativeStrand(ByVal GF As GenomicFeature, ByVal ConnectionString As String) As Boolean
             Dim NegativeHasRows As Boolean = False
             OpenDatabase(ConnectionString)
-            cmd1 = New MySqlCommand("SELECT strand FROM " & GF.TableName & " Where strand='" & "-" & "' LIMIT 1;", cn1)
+            cmd1 = New SQLiteCommand("SELECT strand FROM " & GF.TableName & " Where strand='" & "-" & "' LIMIT 1;", cn1)
             dr1 = cmd1.ExecuteReader()
             If dr1.HasRows = True Then
                 NegativeHasRows = True
+                'MsgBox("Column has negative strand " & GF.TableName)
             End If
             dr1.Close() : cmd1.Dispose()
             Return NegativeHasRows
@@ -147,13 +162,21 @@ Namespace GenomeRunner
             Dim GenomicFeaturesByStrand As New List(Of GenomicFeature)
             For Each GF In GenomicFeatures
                 Dim StrandExists As Boolean = StrandColumnExists(GF.TableName, ConnectionString) 'whether a strand column exists in the genomic feature's table
-                If StrandExists = True Then
-                    'checks if the strand column actually has any positive or negative strand data before adding the feature to the list
-                    If StrandColumnHasPositiveStrand(GF, ConnectionString) = True And StrandToAnalyze = "+" Then
-                        GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, "Plus:" & GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "+", GF.Tier))
-                    End If
-                    If StrandColumnHasNegativeStrand(GF, ConnectionString) = True And StrandToAnalyze = "-" Then
-                        GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, "Minus:" & GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "-", GF.Tier))
+                If StrandToAnalyze = "Both" Then
+                    GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "", GF.Tier))
+                Else
+                    If StrandExists = True Then
+                        'checks if the strand column actually has any positive or negative strand data before adding the feature to the list
+                        If StrandColumnHasPositiveStrand(GF, ConnectionString) = True And StrandToAnalyze = "+" Then
+                            'GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, "Plus:" & GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "+", GF.Tier))
+                            GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "+", GF.Tier))
+                        End If
+                        If StrandColumnHasNegativeStrand(GF, ConnectionString) = True And StrandToAnalyze = "-" Then
+                            'GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, "Minus:" & GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "-", GF.Tier))
+                            GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "-", GF.Tier))
+                        End If
+                    Else
+                        GenomicFeaturesByStrand.Add(New GenomicFeature(GF.id, GF.Name, GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, "", GF.FilteredByName, GF.NamesToInclude, "", GF.Tier))
                     End If
                 End If
             Next
@@ -166,17 +189,19 @@ Namespace GenomeRunner
             For Each GF In GenomicFeatures
                 OpenDatabase(connectionString)
                 Dim NameColumn As String = vbNullString
-                cmd = New MySqlCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
+                cmd = New SQLiteCommand("SELECT Name FROM genomerunner WHERE FeatureTable = '" & GF.TableName & "';", cn)
                 dr = cmd.ExecuteReader()
                 'Get name from the Name column
                 If dr.HasRows Then dr.Read() : NameColumn = dr(0)
+                'MsgBox("Name Column: " & dr(0))
                 dr.Close() : cmd.Dispose()
                 If NameColumn <> vbNullString And NameColumn <> "NULL" Then
                     Dim Names As New List(Of String)
-                    cmd = New MySqlCommand("SELECT DISTINCT " & NameColumn & " FROM " & GF.TableName, cn)
+                    cmd = New SQLiteCommand("SELECT DISTINCT " & NameColumn & " FROM " & GF.TableName, cn)
                     dr = cmd.ExecuteReader()
                     While dr.Read()
                         Names.Add(dr(0))
+                        'MsgBox("Distinct Name: " & dr(0))
                     End While
                     dr.Close() : cmd.Dispose()
                     'creates a genomic feature to analyze for each name found which is set to filter by the name 
@@ -226,7 +251,7 @@ Namespace GenomeRunner
         Public Function GetGenomeBackground(ByVal ConnectionString As String) As List(Of Feature)
             Dim Background As New List(Of Feature)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT * FROM background;", cn)
+            cmd = New SQLiteCommand("SELECT * FROM background;", cn)
             dr = cmd.ExecuteReader()
             While dr.Read()
                 Dim feature As New Feature
@@ -241,7 +266,7 @@ Namespace GenomeRunner
         Public Function GetChromInfo(ByVal ConnectionString As String) As List(Of Feature)
             Dim ChromInfo As New List(Of Feature)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT * FROM chromInfo;", cn)
+            cmd = New SQLiteCommand("SELECT * FROM chromInfo;", cn)
             dr = cmd.ExecuteReader()
             While dr.Read()
                 'chromInfo table format:
@@ -309,21 +334,25 @@ Namespace GenomeRunner
             Dim Background As List(Of Feature) = New List(Of Feature)
             Dim chrom As List(Of String) = New List(Of String)
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT DISTINCT chrom FROM " & SelectedGFname & ";", cn)
+            cmd = New SQLiteCommand("SELECT DISTINCT chrom FROM " & SelectedGFname & ";", cn)
             dr = cmd.ExecuteReader
             While dr.Read
                 chrom.Add(dr(0))
+                'MsgBox("Read in Chrom: " & dr(0))
             End While
             dr.Close() : cmd.Dispose()
 
             For Each chromosome In chrom
-                cmd = New MySqlCommand("SELECT chromStart,chromEnd FROM " & SelectedGFname & " WHERE chrom='" & chromosome & "';", cn)
+                cmd = New SQLiteCommand("SELECT chromStart,chromEnd FROM " & SelectedGFname & " WHERE chrom='" & chromosome & "';", cn)
                 dr = cmd.ExecuteReader
                 While dr.Read
                     Dim Interval As New Feature
                     Interval.Chrom = chromosome
                     Interval.ChromStart = dr(0)
                     Interval.ChromEnd = dr(1)
+
+                    'MsgBox("Chromosome: " & chromosome & " Start: " & dr(0) & " End: " & dr(1))
+
                     Background.Add(Interval)
                 End While
                 dr.Close() : cmd.Dispose() : GC.Collect()

@@ -1,5 +1,6 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
-Imports MySql.Data.MySqlClient
+Imports System.Data.SQLite
+'Imports MySql.Data.MySqlClient
 Imports System.IO
 Imports alglib
 
@@ -31,7 +32,7 @@ Namespace GenomeRunner
     End Class
 
     Public Class AnnotationAnalysis
-        Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader, cmd1 As MySqlCommand, dr1 As MySqlDataReader, cn1 As MySqlConnection
+        Dim cn As SQLiteConnection, cmd As SQLiteCommand, dr As SQLiteDataReader, cmd1 As SQLiteCommand, dr1 As SQLiteDataReader, cn1 As SQLiteConnection
         Dim kgIDToGeneSymbolDict As New Dictionary(Of String, String)                   'is a dictionary that is loaded with the values from the kgxref (kgID, geneSymbol) to convert the gene name into standard form
         Dim Background As List(Of Feature)                                              'the background from which random features of interest are generated for the Monte Carlo simulation
         Dim ConnectionString As String                                                  'stores settings which are used by the annotation analysis
@@ -42,19 +43,26 @@ Namespace GenomeRunner
 
         'opens a connection to the database
         Private Sub OpenDatabase(ByVal ConnectionString As String)
-            If IsNothing(cn) Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open()
-            End If
-            If cn.State = ConnectionState.Closed Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open()
-            End If
+
+            'KBean changes
+            'ConnectionString = "data source=E:\For Mikhail\Genome Runner\Development\Old Files\mm9.sqlite"
+
+            'If IsNothing(cn) Then
+            cn = New SQLiteConnection(ConnectionString) : cn.Open()
+            'End If
+            'If cn.State = ConnectionState.Closed Then
+            'cn = New SQLiteConnection(ConnectionString) : cn.Open()
+            'End If
             'opens a second connection so that two reader objects can be used at once
-            If IsNothing(cn1) Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
-            End If
-            If cn1.State = ConnectionState.Closed Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
-            End If
+            'If IsNothing(cn1) Then
+            cn1 = New SQLiteConnection(ConnectionString) : cn1.Open()
+                'End If
+                'If cn1.State = ConnectionState.Closed Then
+                'cn1 = New SQLiteConnection(ConnectionString) : cn1.Open()
+            'End If
+            'cmd = New SQLiteCommand("SELECT id FROM genomerunner limit 1;", cn)
+            'dr = cmd.ExecuteReader()
+
         End Sub
 
 
@@ -542,14 +550,16 @@ FeatureLoadStart:
                     OpenDatabase(ConnectionString)
                     'A workaround Promoter is not a table. Remove "Promoter" from tablename and use it to get strand/name, and to get actual Promoter data ("Promoter" query)
                     Dim GFeature_TableName As String = Replace(GFeature.TableName, "Promoter", vbNullString)
-                    cmd = New MySqlCommand("SHOW COLUMNS FROM " & GFeature_TableName, cn)
+                    'KBean Changes
+                    'cmd = New SQLiteCommand("SHOW COLUMNS FROM " & GFeature_TableName, cn)
+                    cmd = New SQLiteCommand("PRAGMA table_info(" & GFeature_TableName & ")", cn)
                     dr = cmd.ExecuteReader()
 
                     'controls whether strand or should be outputed or not
                     Dim useNameUseStrand As String = "nonamenostrand"
                     Dim columnnames As String
                     While dr.Read()
-                        columnnames &= dr(0)
+                        columnnames &= dr(1)
                     End While
                     dr.Close() : cmd.Dispose()
                     Dim nameIndex As Integer = columnnames.ToLower().IndexOf("name")
@@ -583,7 +593,7 @@ FeatureLoadStart:
                             If useNameUseStrand = "yesnameyesstrand" Then
                                 OpenDatabase(ConnectionString)
                                 'returns the entire database and enters the values into the listFeatureData
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",strand,name FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",strand,name FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
                                                        & "'" & StrandQuery & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -601,7 +611,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonameyesstrand" Then
                                 'this is for the case that the table does not have a strand column
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",strand FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",strand FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
                                                        & "'" & StrandQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -619,7 +629,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "yesnamenostrand" Then
                                 'this is for the case that the table does not have a strand column
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",name FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & ",name FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
                                                        & "' " & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -637,7 +647,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonamenostrand" Then
                                 'this is for the case that the table does not have a strand column
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & " AND " & GFeature.ThresholdType & ">='" & Threshold _
                                                        & "';", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
@@ -659,7 +669,7 @@ FeatureLoadStart:
                         Case Is = "General"
                             If useNameUseStrand = "yesnameyesstrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,strand,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,strand,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -676,7 +686,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "yesnamenostrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,name,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -693,7 +703,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonameyesstrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,strand,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,strand,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -710,7 +720,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonamenostrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "';", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "';", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -730,7 +740,7 @@ FeatureLoadStart:
                         Case Is = "OutputScore"
                             If useNameUseStrand = "yesnameyesstrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,strand,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,strand,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -747,7 +757,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "yesnamenostrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,name,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & NameQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -764,7 +774,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonameyesstrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,strand,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,strand,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -781,7 +791,7 @@ FeatureLoadStart:
                                 dr.Close() : cmd.Dispose()
                             ElseIf useNameUseStrand = "nonamenostrand" Then
                                 OpenDatabase(ConnectionString)
-                                cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & ";", cn)
+                                cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd," & GFeature.ThresholdType & " FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & ";", cn)
                                 dr = cmd.ExecuteReader()
                                 If dr.HasRows Then
                                     While dr.Read()
@@ -801,7 +811,7 @@ FeatureLoadStart:
                         Case Is = "GeneOnly"
                             OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT tName,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
+                            cmd = New SQLiteCommand("SELECT tName,tStart,tEnd FROM " & GFeature.TableName & " WHERE tName='" & Chrom & "'" & StrandQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -820,7 +830,7 @@ FeatureLoadStart:
                         Case Is = "Gene"
                             OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                            cmd = New SQLiteCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -839,7 +849,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase(ConnectionString)
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
+                            cmd = New SQLiteCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -859,7 +869,7 @@ FeatureLoadStart:
                         Case Is = "Promoter"
                             OpenDatabase(ConnectionString)
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature_TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                            cmd = New SQLiteCommand("SELECT chrom,strand,name,txStart,txEnd FROM " & GFeature_TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -879,7 +889,7 @@ FeatureLoadStart:
                             'populates the dictionary of gene name conversions
                             kgIDToGeneSymbolDict.Clear()
                             OpenDatabase(ConnectionString)
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
+                            cmd = New SQLiteCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -933,7 +943,7 @@ FeatureLoadStart:
                             GenomicFeatureDataBaseData.Clear() 'clears the list of data returned from the mysql database
                             GC.Collect()
                             'returns the entire database and enters the values into the listFeatureData
-                            cmd = New MySqlCommand("SELECT chrom,strand,name,exonStart,exonEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
+                            cmd = New SQLiteCommand("SELECT chrom,strand,name,exonStart,exonEnd FROM " & GFeature.TableName & " WHERE chrom='" & Chrom & "'" & StrandQuery & NameQuery & ";", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -953,7 +963,7 @@ FeatureLoadStart:
                             kgIDToGeneSymbolDict.Clear()
 
                             OpenDatabase(ConnectionString)
-                            cmd = New MySqlCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
+                            cmd = New SQLiteCommand("Select kgID,geneSymbol,mRNA FROM kgXref;", cn)
                             dr = cmd.ExecuteReader()
                             If dr.HasRows Then
                                 While dr.Read()
@@ -991,7 +1001,7 @@ FeatureLoadStart:
                 Return GenomicFeatureDataBaseData
             Catch e As Exception
                 If cn.State = ConnectionState.Open Then : cn.Close() : End If           'closes the connection if it's open
-                'MessageBox.Show("There was an error retrieving the genomic feature data from the server." & vbCrLf & "Retrying to load data" & vbCrLf & e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                MessageBox.Show("There was an error retrieving the genomic feature data from the server." & vbCrLf & "Retrying to load data" & vbCrLf & e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 GoTo FeatureLoadStart
             End Try
         End Function

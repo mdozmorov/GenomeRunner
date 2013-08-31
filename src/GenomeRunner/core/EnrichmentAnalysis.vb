@@ -1,7 +1,9 @@
 ﻿'Mikhail G. Dozmorov, Lukas R. Cara, Cory B. Giles, Jonathan D. Wren. "GenomeRunner: Automating genome exploration". 2011
 Imports alglib
 Imports System.IO
-Imports MySql.Data.MySqlClient
+'Imports MySql.Data.MySqlClient
+Imports System.Data.SQLite
+
 Namespace GenomeRunner
     Public Delegate Sub ProgressStart(ByVal Total As Integer)
     Public Delegate Sub ProgressUpdate(ByVal CurrItem As Integer, ByVal CurrFeaturesOfInterestName As String, ByVal GenomicFeatureName As String, ByVal NumMonteCarloRunDone As Integer)
@@ -36,6 +38,7 @@ Namespace GenomeRunner
         Public OutputMerged As Boolean
         Public OuputPercentObservedExpected As Boolean = False
         Public UseSNP As String = vbNullString                                                      'if non-empty, then SNP table is used
+        Public FieldsWithNoStrandTable As String                                                    'stores the fields that have no strand information for output in the log file
 
         Public Sub New(ByVal ConnectionString As String, ByVal EnrichmentJobName As String, ByVal OutputDir As String, ByVal UseMonteCarlo As Boolean, ByVal UseAnalytical As Boolean, ByVal UseTradMC As Boolean, ByVal UseChiSquare As Boolean, ByVal UseBinomialDistribution As Boolean, ByVal OutputPercentOverlapPvalueMatrix As Boolean, ByVal SquarePercentOverlap As Boolean, ByVal OutputPCCweightedPvalueMatrix As Boolean, ByVal PearsonsAudjustment As Integer, ByVal AllAdjustments As Boolean, ByVal BackGroundName As String, ByVal UseSpotBackground As Boolean, ByVal NumMCtoRun As Integer, ByVal PValueThreshold As Double, ByVal FilterLevel As String, ByVal PromoterUpstream As UInteger, ByVal PromoterDownstream As UInteger, ByVal proximity As UInteger, ByVal Strand As String, ByVal OutputMerged As Boolean)
             Me.ConnectionString = ConnectionString
@@ -61,6 +64,7 @@ Namespace GenomeRunner
             Me.PromoterDownstream = PromoterDownstream
             Me.Strand = Strand
             Me.OutputMerged = OutputMerged
+            Me.FieldsWithNoStrandTable = ""
         End Sub
 
         Public Sub New()
@@ -88,22 +92,28 @@ Namespace GenomeRunner
 
     Public Class EnrichmentAnalysis
         Public ConnectionString As String
-        Dim cn As MySqlConnection, cmd As MySqlCommand, dr As MySqlDataReader, cmd1 As MySqlCommand, dr1 As MySqlDataReader, cn1 As MySqlConnection
+        Dim cn As SQLiteConnection, cmd As SQLiteCommand, dr As SQLiteDataReader, cmd1 As SQLiteCommand, dr1 As SQLiteDataReader, cn1 As SQLiteConnection
+        Dim FieldsWithNoStrand As String
+
         'opens a connection to the database
         Private Sub OpenDatabase(ByVal ConnectionString As String)
-            If IsNothing(cn) Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open()
-            End If
-            If cn.State = ConnectionState.Closed Then
-                cn = New MySqlConnection(ConnectionString) : cn.Open()
-            End If
+            'MsgBox("Connection String is currently:" & ConnectionString)
+            'KBean Changes
+            'ConnectionString = "data source=E:\For Mikhail\Genome Runner\Development\Old Files\mm9.sqlite"
+
+            'If IsNothing(cn) Then
+            cn = New SQLiteConnection(ConnectionString) : cn.Open()
+            'End If
+            'If cn.State = ConnectionState.Closed Then
+            'cn = New SQLiteConnection(ConnectionString) : cn.Open()
+            'End If
             'opens a second connection so that two reader objects can be used at once
-            If IsNothing(cn1) Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
-            End If
-            If cn1.State = ConnectionState.Closed Then
-                cn1 = New MySqlConnection(ConnectionString) : cn1.Open()
-            End If
+            'If IsNothing(cn1) Then
+            cn1 = New SQLiteConnection(ConnectionString) : cn1.Open()
+            'End If
+            'If cn1.State = ConnectionState.Closed Then
+            'cn1 = New SQLiteConnection(ConnectionString) : cn1.Open()
+            'End If
         End Sub
 
         Dim progStart As ProgressStart                                                                      'used to set initial progress
@@ -167,6 +177,22 @@ Namespace GenomeRunner
             '      AccumulatedGenomicFeatures = ["CpGIslands"] => {CpGIslands Genomic Feature calculated with CDBox, CpGIslands Genomic Feature calculated with HAcaBox},
             '                                   ["ORegAnno"]   => {ORegAnno Genomic Feature calculated with CDBox, ORegAnno Genomic Feature calculated with HAcaBox},
             '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            FieldsWithNoStrand = ""
+
+            If (Settings.Strand <> "Both") Then
+                For Each GF In GenomicFeatures
+                    If (GF.StrandToFilterBy = "") Then
+                        If (FieldsWithNoStrand = "") Then
+                            FieldsWithNoStrand = GF.TableName
+                        Else
+                            FieldsWithNoStrand = FieldsWithNoStrand & ", " & GF.TableName
+                        End If
+                    End If
+                Next
+                FieldsWithNoStrand = vbCrLf & "Tables with no strand info: " & FieldsWithNoStrand
+            Else
+                FieldsWithNoStrand = ""
+            End If
 
             For Each GF In GenomicFeatures
                 If GF.NamesToInclude.Count > 0 Then
@@ -192,7 +218,7 @@ Namespace GenomeRunner
                 For Each GF In GenomicFeatures
 
                     progUpdate.Invoke(currGF, Path.GetFileName(FeatureFilePath), GF.Name, 0)
-                  
+
                     'uses either monte carlo or the analytical method for the enrichment analysis
                     If Settings.UseMonteCarlo = True Then
                         Debug.Print("Running initial analysis MonteCarlo for " & GF.Name)
@@ -207,7 +233,7 @@ Namespace GenomeRunner
                     Else
                         AccumulatedGenomicFeatures(GF.TableName).add(GF.Clone)
                     End If
-                    Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath))           'results are added on to the log file after each genomic feature is analyzed
+                    Outputer.OutputPvalueLogFileShort(isFirstPvalue, GF, Settings, Path.GetFileNameWithoutExtension(FeatureFilePath), FieldsWithNoStrand)           'results are added on to the log file after each genomic feature is analyzed
 
                     GF.FeatureReturnedData.Clear()
                     isFirstPvalue = False
@@ -381,7 +407,7 @@ Namespace GenomeRunner
         Public Function Generate_Random_SNP(ByRef TableName As String, ByVal NumOfFeatures As Integer) As List(Of Feature)
             OpenDatabase(ConnectionString)
             ' Get the max id from the table
-            cmd = New MySqlCommand("SELECT max(id) FROM " & TableName, cn)
+            cmd = New SQLiteCommand("SELECT max(ROWID) FROM " & TableName, cn)
             dr = cmd.ExecuteReader()
             dr.Read()
             Dim snp_count = dr(0)
@@ -400,7 +426,7 @@ Namespace GenomeRunner
             ' Return the SNPs with the by the randomly selected id
             Dim SNPcount As Integer = 0
             OpenDatabase(ConnectionString)
-            cmd = New MySqlCommand("SELECT chrom,chromStart,chromEnd,strand FROM " & TableName & " WHERE id IN (" & random_SNP & ")", cn)
+            cmd = New SQLiteCommand("SELECT chrom,chromStart,chromEnd,strand FROM " & TableName & " WHERE ROWID IN (" & random_SNP & ")", cn)
             dr = cmd.ExecuteReader()
             If dr.HasRows Then
                 While SNPcount < NumOfFeatures 'Select random SNPs, same number as the number of features
