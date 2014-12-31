@@ -208,7 +208,8 @@ Namespace GenomeRunner
                     For Each name In Names
                         Dim lName As New List(Of String)
                         lName.Add(name) 'adds the single name to list of names to filter which is passed to the genomic feature. 
-                        Dim nGF As New GenomicFeature(GF.id, NameColumn & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                        'Dim nGF As New GenomicFeature(GF.id, NameColumn & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
+                        Dim nGF As New GenomicFeature(GF.id, NameColumn & "." & GF.TableName & "." & lName(0), GF.TableName, GF.QueryType, GF.ThresholdType, GF.Threshold, GF.ThresholdMin, GF.ThresholdMax, GF.ThresholdMean, GF.UICategory, GF.IUOrderInCategory, lName, GF.StrandToFilterBy, GF.Tier)
                         GenomicFeaturesByName.Add(nGF)
                     Next
                 Else
